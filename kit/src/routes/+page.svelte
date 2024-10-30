@@ -79,7 +79,9 @@
 
 <svelte:document {onvisibilitychange} {onmousedown} />
 
-<article>
+<main>
+	<h1>z!</h1>
+
 	<AutogrowingTextarea
 		bind:textareaElement
 		bind:value
@@ -89,4 +91,11 @@
 		autocomplete="off"
 		autocapitalize="off"
 	/>
-</article>
+</main>
+
+<style>
+	main {
+		margin: 4px 0;
+		height: calc(100svh - 8px);
+	}
+</style>
