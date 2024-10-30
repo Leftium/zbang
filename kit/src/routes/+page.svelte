@@ -22,6 +22,15 @@
 		inputHasFocus = false
 	}
 
+	function handleSearch() {
+		blurInput()
+		// Need to insert space after first newline so triggers are not joined with other text.
+		// Need to percent encode to preserve newlines.
+		const query = encodeURIComponent(value.replace('\n', ' \n'))
+
+		window.open(`https://kagi.com/search?q=${query}`, '_blank')
+	}
+
 	function onkeydown(this: HTMLInputElement, event: Event) {
 		const e = event as KeyboardEvent
 
@@ -48,12 +57,7 @@
 
 		// Execute search on Kagi.com:
 		if (e.key === 'Enter' && (e.ctrlKey || e.altKey)) {
-			blurInput()
-			// Need to insert space after first newline so triggers are not joined with other text.
-			// Need to percent encode to preserve newlines.
-			const query = encodeURIComponent(value.replace('\n', ' \n'))
-
-			window.open(`https://kagi.com/search?q=${query}`, '_blank')
+			handleSearch()
 			e.preventDefault()
 		}
 	}
@@ -79,6 +83,10 @@
 			blurInput()
 		}
 	}
+
+	function onclick() {
+		handleSearch()
+	}
 </script>
 
 <svelte:document {onvisibilitychange} {onmousedown} />
@@ -95,8 +103,9 @@
 		autocomplete="off"
 		autocapitalize="off"
 	/>
+	<button {onclick}>Search</button>
 
-	<pre>{value}</pre>
+	<pre hidden>{value}</pre>
 </main>
 
 <style lang="scss">
@@ -105,5 +114,10 @@
 	main {
 		margin: $size-1 0;
 		height: calc(100svh - ($size-1 * 2));
+
+		button {
+			margin-top: $size-1;
+			width: 100%;
+		}
 	}
 </style>
