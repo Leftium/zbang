@@ -93,9 +93,11 @@
 	/>
 </main>
 
-<style>
+<style lang="scss">
+	@use 'open-props-scss' as *;
+
 	main {
-		margin: 4px 0;
-		height: calc(100svh - 8px);
+		margin: $size-1 0;
+		height: calc(100svh - ($size-1 * 2));
 	}
 </style>

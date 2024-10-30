@@ -37,6 +37,9 @@ importers:
       globals:
         specifier: ^15.0.0
         version: 15.11.0
+      open-props-scss:
+        specifier: ^0.7.1
+        version: 0.7.1
       prettier:
         specifier: ^3.3.2
         version: 3.3.3
@@ -2038,6 +2041,10 @@ packages:
   /object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
     engines: {node: '>=0.10.0'}
+    dev: true
+
+  /open-props-scss@0.7.1:
+    resolution: {integrity: sha512-K2WKO5dLLakprGoAO46w8iht+vzM9aTfoRyo4NZ5zzikZDBI6Xm48xSrMf2Pe3dd46OCN+6W9En/ySVH89ApFA==}
     dev: true
 
   /optionator@0.9.4:
