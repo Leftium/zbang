@@ -47,9 +47,13 @@
 		}
 
 		// Execute search on Kagi.com:
-		if (e.key === 'Enter') {
+		if (e.key === 'Enter' && (e.ctrlKey || e.altKey)) {
 			blurInput()
-			window.open(`https://kagi.com/search?q=${value}`, '_blank')
+			// Need to insert space after first newline so triggers are not joined with other text.
+			// Need to percent encode to preserve newlines.
+			const query = encodeURIComponent(value.replace('\n', ' \n'))
+
+			window.open(`https://kagi.com/search?q=${query}`, '_blank')
 			e.preventDefault()
 		}
 	}
@@ -91,6 +95,8 @@
 		autocomplete="off"
 		autocapitalize="off"
 	/>
+
+	<pre>{value}</pre>
 </main>
 
 <style lang="scss">
