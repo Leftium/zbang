@@ -1,0 +1,5 @@
+packages:
+  # PocketBase Server
+  - pb
+  # SvelteKit FrontEnd
+  - kit

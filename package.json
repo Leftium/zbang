@@ -1,0 +1,11 @@
+{
+	"name": "spock-stack-spa-starter",
+	"version": "0.0.1",
+	"description": "SvelteKit + PocketBase SPA Template",
+	"scripts": {
+		"format": "prettier --write ."
+	},
+	"keywords": [],
+	"author": "Leftium",
+	"license": "MIT"
+}
