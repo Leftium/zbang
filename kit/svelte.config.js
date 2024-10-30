@@ -17,6 +17,13 @@ const config = {
 		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
 		adapter: adapter({ pages: '../deploy/pb_public', fallback: 'index.html' }),
 	},
+	vitePlugin: {
+		inspector: {
+			toggleKeyCombo: 'control-shift',
+			holdMode: true,
+			toggleButtonPos: 'bottom-right',
+		},
+	},
 }
 
 export default config
