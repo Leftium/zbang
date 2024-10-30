@@ -1,5 +1,8 @@
 <script lang="ts">
 	import AutogrowingTextarea from '$lib/components/AutogrowingTextarea.svelte'
+	import { onMount } from 'svelte'
+
+	let viewportElement = $state<HTMLElement>()
 
 	let textareaElement = $state<HTMLTextAreaElement>()
 	let inputHasFocus = $state(false)
@@ -87,37 +90,74 @@
 	function onclick() {
 		handleSearch()
 	}
+
+	onMount(() => {
+		let height = window.visualViewport?.height || 0
+		const viewport = window.visualViewport
+
+		function resizeHandler() {
+			if (!/iPhone|iPad|iPod/.test(window.navigator.userAgent)) {
+				height = viewport?.height || 0
+			}
+			if (viewportElement) {
+				viewportElement.style.top = `${height - (viewport?.height || 0)}px`
+			}
+		}
+
+		window.visualViewport?.addEventListener('resize', resizeHandler)
+	})
 </script>
 
 <svelte:document {onvisibilitychange} {onmousedown} />
 
-<main>
-	<h1>z!</h1>
-
-	<AutogrowingTextarea
-		bind:textareaElement
-		bind:value
-		{onkeydown}
-		autofocus
-		spellcheck="false"
-		autocomplete="off"
-		autocapitalize="off"
-	/>
-	<button {onclick}>Search</button>
-
-	<pre hidden>{value}</pre>
-</main>
+<dynamic-viewport bind:this={viewportElement}>
+	<content>
+		<h1>z!</h1>
+		<pre>{#each Array.from({ length: 99 }, (e, i) => i) as item}{item + '\n'}{/each}</pre>
+	</content>
+	<search-controls>
+		<AutogrowingTextarea
+			bind:textareaElement
+			bind:value
+			{onkeydown}
+			autofocus
+			spellcheck="false"
+			autocomplete="off"
+			autocapitalize="off"
+		/>
+		<button {onclick}>Search</button>
+	</search-controls>
+</dynamic-viewport>
 
 <style lang="scss">
 	@use 'open-props-scss' as *;
 
-	main {
-		margin: $size-1 0;
-		height: calc(100svh - ($size-1 * 2));
+	dynamic-viewport {
+		///border: 4px solid $yellow-5;
+		///background-color: $blue-5;
+		display: flex;
+		flex-direction: column;
 
-		button {
-			margin-top: $size-1;
-			width: 100%;
+		position: fixed;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+
+		transition: top 350ms ease-out 0s;
+
+		content {
+			flex-shrink: 1;
+			flex-grow: 1;
+			overflow: auto;
+		}
+
+		search-controls {
+			///border: 4px solid $violet-5;
+			button {
+				margin-block: $size-1;
+				width: 100%;
+			}
 		}
 	}
 </style>
