@@ -25,7 +25,8 @@
 </script>
 
 <grow-wrap>
-	<textarea bind:this={textareaElement} bind:value oninput={handleInput} {...props}></textarea>
+	<textarea rows="1" bind:this={textareaElement} bind:value oninput={handleInput} {...props}
+	></textarea>
 </grow-wrap>
 
 <style lang="scss">
