@@ -3,7 +3,12 @@
 
 	import type { HTMLTextareaAttributes, FormEventHandler } from 'svelte/elements'
 
-	let { oninput, value = $bindable(), ...props }: HTMLTextareaAttributes = $props()
+	let {
+		textareaElement = $bindable(),
+		value = $bindable(),
+		oninput,
+		...props
+	}: HTMLTextareaAttributes & { textareaElement?: HTMLTextAreaElement } = $props()
 
 	function handleInput(
 		this: HTMLTextAreaElement,
@@ -20,7 +25,7 @@
 </script>
 
 <grow-wrap>
-	<textarea bind:value oninput={handleInput} {...props}></textarea>
+	<textarea bind:this={textareaElement} bind:value oninput={handleInput} {...props}></textarea>
 </grow-wrap>
 
 <style lang="scss">
