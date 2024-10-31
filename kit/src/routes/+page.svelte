@@ -112,10 +112,13 @@
 
 <dynamic-viewport bind:this={viewportElement}>
 	<content>
-		<h1>z!</h1>
-		<pre>{#each Array.from({ length: 99 }, (e, i) => i) as item}{item + '\n'}{/each}</pre>
+		<pre hidden>{#each Array.from({ length: 99 }, (e, i) => i) as item}{item + '\n'}{/each}</pre>
 	</content>
 	<search-controls>
+		<h1>
+			<span class="logo">[z!]</span>
+			<span class="brand-secondary">whi</span><span class="brand-primary">zbang</span>
+		</h1>
 		<AutogrowingTextarea
 			bind:textareaElement
 			bind:value
@@ -154,8 +157,31 @@
 
 		search-controls {
 			///border: 4px solid $violet-5;
+			padding: $size-1;
+
+			.brand-primary {
+				color: $orange-8;
+
+				// Svelte logo color
+				color: #ff3e00;
+
+				// Svelte theme color
+				color: hsl(12, 94%, 62%);
+			}
+
+			.brand-secondary {
+				color: $gray-5;
+			}
+
+			.logo {
+				color: $gray-5;
+
+				// Svelte logo color
+				color: #ff3e00;
+			}
+
 			button {
-				margin-block: $size-1;
+				margin-top: $size-1;
 				width: 100%;
 			}
 		}
