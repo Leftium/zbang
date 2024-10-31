@@ -8,6 +8,8 @@
 	let inputHasFocus = $state(false)
 	let value = $state('')
 
+	let theme = $state('')
+
 	function selectionLength(inputElement: HTMLTextAreaElement | HTMLInputElement) {
 		return (inputElement.selectionEnd || 0) - (inputElement.selectionStart || 0)
 	}
@@ -91,7 +93,23 @@
 		handleSearch()
 	}
 
+	function autoTheme(event: MouseEvent) {
+		theme = ''
+		document.documentElement.dataset.theme = theme
+		localStorage.setItem('theme', theme)
+	}
+
+	function toggleTheme(event: MouseEvent) {
+		theme = theme === 'dark' ? 'light' : 'dark'
+		document.documentElement.dataset.theme = theme
+		localStorage.setItem('theme', theme)
+	}
+
 	onMount(() => {
+		// Dark/light mode:
+		theme = localStorage.getItem('theme') || ''
+		document.documentElement.dataset.theme = theme
+
 		let height = window.visualViewport?.height || 0
 		const viewport = window.visualViewport
 
@@ -116,8 +134,13 @@
 	</content>
 	<search-controls>
 		<h1>
-			<span class="logo">[z!]</span>
-			<span class="brand-secondary">whi</span><span class="brand-primary">zbang</span>
+			<div>
+				<span class="logo">[z!]</span>
+				<span class="brand-secondary">whi</span><span class="brand-primary">zbang</span>
+			</div>
+			<button class="theme outline" onclick={toggleTheme} ondblclick={autoTheme}>
+				colors: {theme || 'auto'}
+			</button>
 		</h1>
 		<AutogrowingTextarea
 			bind:textareaElement
@@ -128,7 +151,7 @@
 			autocomplete="off"
 			autocapitalize="off"
 		/>
-		<button {onclick}>Search</button>
+		<button class="search" {onclick}>Search</button>
 	</search-controls>
 </dynamic-viewport>
 
@@ -180,7 +203,20 @@
 				color: #ff3e00;
 			}
 
-			button {
+			h1 {
+				display: flex;
+				justify-content: space-between;
+				align-items: baseline;
+				width: 100%;
+			}
+
+			button.theme {
+				float: right;
+				width: $size-11;
+				padding: $size-1 $size-2;
+			}
+
+			button.search {
 				margin-top: $size-1;
 				width: 100%;
 			}
