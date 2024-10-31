@@ -39,9 +39,11 @@
 	function onkeydown(this: HTMLInputElement, event: Event) {
 		const e = event as KeyboardEvent
 
+		const prevChar = value.at(-1)
+
 		if (e.key === ' ') {
-			// Convert space key to `!` if first character or follows another space:
-			if (value === '' || value.at(-1) === ' ') {
+			// Convert space key to `!` if first character or follows another space/newline:
+			if (value === '' || prevChar === ' ' || prevChar === '\n') {
 				value += '!'
 				e.preventDefault()
 			}
@@ -61,7 +63,7 @@
 		}
 
 		// Execute search on Kagi.com:
-		if (e.key === 'Enter' && (e.ctrlKey || e.altKey)) {
+		if (e.key === 'Enter' && (e.ctrlKey || e.altKey || prevChar === '!')) {
 			handleSearch()
 			e.preventDefault()
 		}
