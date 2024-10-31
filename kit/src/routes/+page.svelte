@@ -38,12 +38,11 @@
 
 	function onkeydown(this: HTMLInputElement, event: Event) {
 		const e = event as KeyboardEvent
-
-		const prevChar = value.at(-1)
+		const prevChar = value.at(-1) || ''
 
 		if (e.key === ' ') {
 			// Convert space key to `!` if first character or follows another space/newline:
-			if (value === '' || prevChar === ' ' || prevChar === '\n') {
+			if (value === '' || [' ', '\n'].includes(prevChar)) {
 				value += '!'
 				e.preventDefault()
 			}
