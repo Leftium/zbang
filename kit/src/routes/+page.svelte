@@ -136,7 +136,7 @@
 		<h1>
 			<div>
 				<span class="logo">[z!]</span>
-				<span class="brand-secondary">whi</span><span class="brand-primary">zbang</span>
+				<span class="brand-secondary">whi</span><span class="brand-primary">zBang</span>
 			</div>
 			<button class="theme outline" onclick={toggleTheme} ondblclick={autoTheme}>
 				colors: {theme || 'auto'}
