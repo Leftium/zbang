@@ -10,6 +10,16 @@
 
 	let theme = $state('')
 
+	let isAndroid = $state(false)
+	let isSpaceKey = $state(false)
+	let isEnterKey = $state(false)
+
+	let debugInfo = $derived({
+		isAndroid,
+		isSpaceKey,
+		isEnterKey,
+	})
+
 	function selectionLength(inputElement: HTMLTextAreaElement | HTMLInputElement) {
 		return (inputElement.selectionEnd || 0) - (inputElement.selectionStart || 0)
 	}
@@ -36,33 +46,39 @@
 		window.open(`https://kagi.com/search?q=${query}`, '_blank')
 	}
 
-	function onkeydown(this: HTMLInputElement, event: Event) {
+	function onkeydown(this: HTMLInputElement, event: KeyboardEvent) {
 		const e = event as KeyboardEvent
 		const prevChar = value.at(-1) || ''
 
-		if (e.key === ' ') {
-			// Convert space key to `!` if first character or follows another space/newline:
-			if (value === '' || [' ', '\n'].includes(prevChar)) {
-				value += '!'
-				e.preventDefault()
+		// On Android, IME results in e.which == 229 for almost all keys...
+		isSpaceKey = !isAndroid ? e.key === ' ' : false
+		isEnterKey = !isAndroid ? e.key === '\n' : e.which === 13
+
+		// These substitutions don't work on Android: the other input events are not being canceled.
+		if (!isAndroid) {
+			if (isSpaceKey) {
+				// Convert space key to `!` if first character or follows another space/newline:
+				if (value === '' || [' ', '\n'].includes(prevChar)) {
+					value += '!'
+					e.preventDefault()
+				}
+
+				// Convert selection to `!` if all selected:
+				if (textareaElement && value.length === selectionLength(textareaElement)) {
+					value = '!'
+					textareaElement.selectionStart = textareaElement.selectionEnd
+					e.preventDefault()
+				}
 			}
 
-			// Convert selection to `!` if all selected:
-			if (textareaElement && value.length === selectionLength(textareaElement)) {
-				value = '!'
-				textareaElement.selectionStart = textareaElement.selectionEnd
+			// Handle double tap space to ". " on iOS:
+			if (e.key === '. ') {
+				value += ' !'
 				e.preventDefault()
 			}
 		}
-
-		// Handle double tap space to ". " on iOS:
-		if (e.key === '. ') {
-			value += ' !'
-			e.preventDefault()
-		}
-
 		// Execute search on Kagi.com:
-		if (e.key === 'Enter' && (e.ctrlKey || e.altKey || prevChar === '!')) {
+		if (isEnterKey && (e.ctrlKey || e.altKey || prevChar === '!')) {
 			handleSearch()
 			e.preventDefault()
 		}
@@ -107,6 +123,8 @@
 	}
 
 	onMount(() => {
+		isAndroid = /Android/i.test(navigator.userAgent)
+
 		// Dark/light mode:
 		theme = localStorage.getItem('theme') || ''
 		document.documentElement.dataset.theme = theme
@@ -153,6 +171,7 @@
 			autocapitalize="off"
 		/>
 		<button class="search" {onclick}>Search</button>
+		<pre>{JSON.stringify({ debugInfo }, null, 4)}</pre>
 	</search-controls>
 </dynamic-viewport>
 
