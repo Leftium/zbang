@@ -211,9 +211,9 @@
 			}
 
 			button.theme {
+				font-size: $font-size-0;
 				float: right;
-				width: $size-11;
-				padding: $size-1 $size-2;
+				padding: $size-1;
 			}
 
 			button.search {
