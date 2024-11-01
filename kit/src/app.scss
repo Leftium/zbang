@@ -1,3 +1,7 @@
 @use '@picocss/pico/scss/pico' with (
 	$theme-color: 'zinc'
 );
+
+html {
+	transition: background-color var(--pico-transition);
+}
