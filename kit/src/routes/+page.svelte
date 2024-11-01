@@ -107,8 +107,8 @@
 		if (interval < 250) {
 			if (inputType === 'insertLineBreak' && inputHistory[1].inputType === 'insertLineBreak') {
 				doubleKeypress = '\n'
-			} else if (data === inputHistory[1].data) {
-				doubleKeypress = data
+			} else if (data?.toLowerCase() === inputHistory[1].data?.toLowerCase()) {
+				doubleKeypress = inputHistory[1].data
 			}
 		}
 
