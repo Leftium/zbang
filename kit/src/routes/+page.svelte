@@ -137,10 +137,6 @@
 			cancelDoubleKeypres()
 			handleSearch()
 		}
-
-		if (doubleKeypress === 'backspace') {
-			value = ''
-		}
 	}
 
 	// Toggle between selecting all text and no text.
