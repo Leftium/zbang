@@ -10,14 +10,24 @@
 
 	let theme = $state('')
 
-	let isAndroid = $state(false)
-	let isSpaceKey = $state(false)
-	let isEnterKey = $state(false)
+	type InputFrame = {
+		data: string | null
+		inputType: string
+		ts: number
+		interval: number
+	}
+	let inputHistory: InputFrame[] = $state([])
+
+	// Double keypress: same key pressed twice in a row within certain interval.
+	let doubleKeypress: string | null = $state(null)
+
+	// When double-tapping the spacebar inserts period followed by a space.
+	let isPeriodShortcut = $state(false)
 
 	let debugInfo = $derived({
-		isAndroid,
-		isSpaceKey,
-		isEnterKey,
+		isPeriodShortcut,
+		doubleKeypress,
+		inputHistory,
 	})
 
 	function selectionLength(inputElement: HTMLTextAreaElement | HTMLInputElement) {
@@ -37,6 +47,38 @@
 		inputHasFocus = false
 	}
 
+	// Simulate Backspace
+	function simulateBackspace() {
+		if (textareaElement) {
+			const start = textareaElement.selectionStart
+			const end = textareaElement.selectionEnd
+
+			if (start === end && start > 0) {
+				// No selection, just a cursor
+				textareaElement.value =
+					textareaElement.value.slice(0, start - 1) + textareaElement.value.slice(start)
+				textareaElement.setSelectionRange(start - 1, start - 1)
+			} else if (start !== end) {
+				// There is a selection
+				textareaElement.value =
+					textareaElement.value.slice(0, start) + textareaElement.value.slice(end)
+				textareaElement.setSelectionRange(start, start)
+			}
+		}
+	}
+
+	// Simulate pressing '!'
+	function simulateExclamation() {
+		if (textareaElement) {
+			const start = textareaElement.selectionStart
+			const end = textareaElement.selectionEnd
+
+			textareaElement.value =
+				textareaElement.value.slice(0, start) + '!' + textareaElement.value.slice(end)
+			textareaElement.setSelectionRange(start + 1, start + 1)
+		}
+	}
+
 	function handleSearch() {
 		blurInput()
 		// Need to insert space after first newline so triggers are not joined with other text.
@@ -46,44 +88,54 @@
 		window.open(`https://kagi.com/search?q=${query}`, '_blank')
 	}
 
-	function onkeydown(this: HTMLInputElement, event: KeyboardEvent) {
-		const e = event as KeyboardEvent
-		const prevChar = value.at(-1) || ''
+	function onbeforeinput(this: HTMLInputElement | HTMLTextAreaElement, event: InputEvent) {
+		const { data, inputType } = event
 
-		// On Android, IME results in e.which == 229 for almost all keys...
-		isSpaceKey = !isAndroid ? e.key === ' ' : false
-		isEnterKey = !isAndroid ? e.key === '\n' : e.which === 13
+		const ts = +new Date()
+		const interval = ts - inputHistory[0]?.ts
+		const inputFrame = {
+			data,
+			inputType,
+			ts,
+			interval,
+		}
 
-		// These substitutions don't work on Android: the other input events are not being canceled.
-		if (!isAndroid) {
-			if (isSpaceKey) {
-				// Convert space key to `!` if first character or follows another space/newline:
-				if (value === '' || [' ', '\n'].includes(prevChar)) {
-					value += '!'
-					e.preventDefault()
-				}
+		inputHistory.unshift(inputFrame)
+		if (inputHistory.length > 2) {
+			inputHistory.pop()
+		}
 
-				// Convert selection to `!` if all selected:
-				if (textareaElement && value.length === selectionLength(textareaElement)) {
-					value = '!'
-					textareaElement.selectionStart = textareaElement.selectionEnd
-					e.preventDefault()
-				}
-			}
-
-			// Handle double tap space to ". " on iOS:
-			if (e.key === '. ') {
-				value += ' !'
-				e.preventDefault()
+		doubleKeypress = null
+		if (interval < 250) {
+			if (inputType === 'insertLineBreak' && inputHistory[1].inputType === 'insertLineBreak') {
+				doubleKeypress = '\n'
+			} else if (data === inputHistory[1].data) {
+				doubleKeypress = data
 			}
 		}
-		// Execute search on Kagi.com:
-		if (isEnterKey && (e.ctrlKey || e.altKey || prevChar === '!')) {
+
+		isPeriodShortcut = inputType === 'insertText' && data === '. '
+	}
+
+	function oninput(this: HTMLInputElement) {
+		function cancelDoubleKeypres() {
+			simulateBackspace()
+			simulateBackspace()
+		}
+
+		if (isPeriodShortcut || doubleKeypress === ' ') {
+			cancelDoubleKeypres()
+			simulateExclamation()
+			inputHistory[0].data = '!'
+		}
+
+		if (doubleKeypress === '\n') {
+			cancelDoubleKeypres()
 			handleSearch()
-			e.preventDefault()
 		}
 	}
 
+	// Toggle between selecting all text and no text.
 	function onmousedown(e: Event) {
 		if (textareaElement && inputHasFocus) {
 			if (selectionLength(textareaElement) > 0) {
@@ -110,21 +162,19 @@
 		handleSearch()
 	}
 
-	function autoTheme(event: MouseEvent) {
+	function autoTheme() {
 		theme = ''
 		document.documentElement.dataset.theme = theme
 		localStorage.setItem('theme', theme)
 	}
 
-	function toggleTheme(event: MouseEvent) {
+	function toggleTheme() {
 		theme = theme === 'dark' ? 'light' : 'dark'
 		document.documentElement.dataset.theme = theme
 		localStorage.setItem('theme', theme)
 	}
 
 	onMount(() => {
-		isAndroid = /Android/i.test(navigator.userAgent)
-
 		// Dark/light mode:
 		theme = localStorage.getItem('theme') || ''
 		document.documentElement.dataset.theme = theme
@@ -164,7 +214,8 @@
 		<AutogrowingTextarea
 			bind:textareaElement
 			bind:value
-			{onkeydown}
+			{onbeforeinput}
+			{oninput}
 			autofocus
 			spellcheck="false"
 			autocomplete="off"
