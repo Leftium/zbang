@@ -252,7 +252,7 @@
 		}
 
 		button.search {
-			margin-top: $size-1;
+			margin-block: $size-1;
 			width: 100%;
 		}
 	}
