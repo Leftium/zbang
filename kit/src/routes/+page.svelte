@@ -164,7 +164,7 @@
 
 	function autoTheme() {
 		theme = ''
-		document.documentElement.dataset.theme = theme
+		document.documentElement.removeAttribute('data-theme')
 		localStorage.setItem('theme', theme)
 	}
 
@@ -177,7 +177,9 @@
 	onMount(() => {
 		// Dark/light mode:
 		theme = localStorage.getItem('theme') || ''
-		document.documentElement.dataset.theme = theme
+		if (theme) {
+			document.documentElement.dataset.theme = theme
+		}
 
 		let height = window.visualViewport?.height || 0
 		const viewport = window.visualViewport
