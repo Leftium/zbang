@@ -105,8 +105,14 @@
 
 		doubleKeypress = null
 		if (interval < 250) {
-			if (inputType === 'insertLineBreak' && inputHistory[1].inputType === 'insertLineBreak') {
-				doubleKeypress = '\n'
+			if (
+				interval > 50 &&
+				inputType === 'deleteContentBackward' &&
+				inputType === inputHistory[1].inputType
+			) {
+				doubleKeypress = 'backspace'
+			} else if (inputType === 'insertLineBreak' && inputType === inputHistory[1].inputType) {
+				doubleKeypress = 'newline'
 			} else if (data?.toLowerCase() === inputHistory[1].data?.toLowerCase()) {
 				doubleKeypress = inputHistory[1].data
 			}
@@ -127,9 +133,13 @@
 			inputHistory[0].data = '!'
 		}
 
-		if (doubleKeypress === '\n') {
+		if (doubleKeypress === 'newline') {
 			cancelDoubleKeypres()
 			handleSearch()
+		}
+
+		if (doubleKeypress === 'backspace') {
+			value = ''
 		}
 	}
 
