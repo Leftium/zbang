@@ -2,8 +2,6 @@
 	import AutogrowingTextarea from '$lib/components/AutogrowingTextarea.svelte'
 	import { onMount } from 'svelte'
 
-	let viewportElement = $state<HTMLElement>()
-
 	let textareaElement = $state<HTMLTextAreaElement>()
 	let inputHasFocus = $state(false)
 	let value = $state('')
@@ -180,119 +178,82 @@
 		if (theme) {
 			document.documentElement.dataset.theme = theme
 		}
-
-		let height = window.visualViewport?.height || 0
-		const viewport = window.visualViewport
-
-		function resizeHandler() {
-			if (!/iPhone|iPad|iPod/.test(window.navigator.userAgent)) {
-				height = viewport?.height || 0
-			}
-			if (viewportElement) {
-				viewportElement.style.top = `${height - (viewport?.height || 0)}px`
-			}
-		}
-
-		window.visualViewport?.addEventListener('resize', resizeHandler)
 	})
 </script>
 
 <svelte:document {onvisibilitychange} {onmousedown} />
 
-<dynamic-viewport bind:this={viewportElement}>
+<main>
+	<h1>
+		<div>
+			<span class="logo">[z!]</span>
+			<span class="brand-secondary">whi</span><span class="brand-primary">zBang</span>
+		</div>
+		<button class="theme outline" onclick={toggleTheme} ondblclick={autoTheme}>
+			colors: {theme || 'auto'}
+		</button>
+	</h1>
+	<AutogrowingTextarea
+		bind:textareaElement
+		bind:value
+		{onbeforeinput}
+		{oninput}
+		autofocus
+		spellcheck="false"
+		autocomplete="off"
+		autocapitalize="off"
+	/>
+	<button class="search" {onclick}>Search</button>
+	<pre>{JSON.stringify({ debugInfo }, null, 4)}</pre>
 	<content>
 		<pre hidden>{#each Array.from({ length: 99 }, (e, i) => i) as item}{item + '\n'}{/each}</pre>
 	</content>
-	<search-controls>
-		<h1>
-			<div>
-				<span class="logo">[z!]</span>
-				<span class="brand-secondary">whi</span><span class="brand-primary">zBang</span>
-			</div>
-			<button class="theme outline" onclick={toggleTheme} ondblclick={autoTheme}>
-				colors: {theme || 'auto'}
-			</button>
-		</h1>
-		<AutogrowingTextarea
-			bind:textareaElement
-			bind:value
-			{onbeforeinput}
-			{oninput}
-			autofocus
-			spellcheck="false"
-			autocomplete="off"
-			autocapitalize="off"
-		/>
-		<button class="search" {onclick}>Search</button>
-		<pre>{JSON.stringify({ debugInfo }, null, 4)}</pre>
-	</search-controls>
-</dynamic-viewport>
+</main>
 
 <style lang="scss">
 	@use 'open-props-scss' as *;
 
-	dynamic-viewport {
-		///border: 4px solid $yellow-5;
-		///background-color: $blue-5;
-		display: flex;
-		flex-direction: column;
+	main {
+		///border: 4px solid $violet-5;
+		padding: $size-1;
 
-		position: fixed;
-		top: 0;
-		bottom: 0;
-		left: 0;
-		right: 0;
+		.brand-primary {
+			color: $orange-8;
 
-		transition: top 350ms ease-out 0s;
+			// Svelte logo color
+			color: #ff3e00;
 
-		content {
-			flex-shrink: 1;
-			flex-grow: 1;
-			overflow: auto;
+			// Svelte theme color
+			color: hsl(12, 94%, 62%);
 		}
 
-		search-controls {
-			///border: 4px solid $violet-5;
+		.brand-secondary {
+			color: $gray-5;
+		}
+
+		.logo {
+			color: $gray-5;
+
+			// Svelte logo color
+			color: #ff3e00;
+		}
+
+		h1 {
+			display: flex;
+			justify-content: space-between;
+			align-items: baseline;
+			width: 100%;
+		}
+
+		button.theme {
+			font-size: $font-size-0;
+			float: right;
 			padding: $size-1;
+		}
 
-			.brand-primary {
-				color: $orange-8;
-
-				// Svelte logo color
-				color: #ff3e00;
-
-				// Svelte theme color
-				color: hsl(12, 94%, 62%);
-			}
-
-			.brand-secondary {
-				color: $gray-5;
-			}
-
-			.logo {
-				color: $gray-5;
-
-				// Svelte logo color
-				color: #ff3e00;
-			}
-
-			h1 {
-				display: flex;
-				justify-content: space-between;
-				align-items: baseline;
-				width: 100%;
-			}
-
-			button.theme {
-				font-size: $font-size-0;
-				float: right;
-				padding: $size-1;
-			}
-
-			button.search {
-				margin-top: $size-1;
-				width: 100%;
-			}
+		button.search {
+			margin-top: $size-1;
+			width: 100%;
 		}
 	}
 </style>
