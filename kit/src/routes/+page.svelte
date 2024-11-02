@@ -51,7 +51,7 @@
 			const start = textareaElement.selectionStart
 			const end = textareaElement.selectionEnd
 
-			if (start === end && start > 0) {
+			if (start === end && start > 0 && textareaElement.value.charAt(start - 1) !== '\n') {
 				// No selection, just a cursor
 				textareaElement.value =
 					textareaElement.value.slice(0, start - 1) + textareaElement.value.slice(start)
@@ -122,19 +122,19 @@
 	}
 
 	function oninput(this: HTMLInputElement) {
-		function cancelDoubleKeypres() {
+		function cancelDoubleKeypress() {
 			simulateBackspace()
 			simulateBackspace()
 		}
 
 		if (isPeriodShortcut || doubleKeypress === ' ') {
-			cancelDoubleKeypres()
+			cancelDoubleKeypress()
 			simulateExclamation()
 			inputHistory[0].data = '!'
 		}
 
 		if (doubleKeypress === 'newline') {
-			cancelDoubleKeypres()
+			cancelDoubleKeypress()
 			handleSearch()
 		}
 	}
@@ -190,7 +190,7 @@
 <svelte:document {onvisibilitychange} {onmousedown} />
 
 <main>
-	<h1>
+	<header>
 		<div>
 			<span class="logo">[z!]</span>
 			<span class="brand-secondary">whi</span><span class="brand-primary">zBang</span>
@@ -198,7 +198,7 @@
 		<button class="theme outline" onclick={toggleTheme} ondblclick={autoTheme}>
 			colors: {theme || 'auto'}
 		</button>
-	</h1>
+	</header>
 	<AutogrowingTextarea
 		bind:textareaElement
 		bind:value
@@ -208,8 +208,14 @@
 		spellcheck="false"
 		autocomplete="off"
 		autocapitalize="off"
-	/>
-	<button class="search" {onclick}>Search</button>
+	>
+		<status-bar>
+			<div>Settings</div>
+			<div>100c 20w</div>
+			<button class="search" {onclick}>Search</button>
+		</status-bar>
+	</AutogrowingTextarea>
+
 	<pre>{JSON.stringify({ debugInfo }, null, 4)}</pre>
 	<content>
 		<pre hidden>{#each Array.from({ length: 99 }, (e, i) => i) as item}{item + '\n'}{/each}</pre>
@@ -223,43 +229,72 @@
 		///border: 4px solid $violet-5;
 		padding: $size-1;
 
-		.brand-primary {
-			color: $orange-8;
-
-			// Svelte logo color
-			color: #ff3e00;
-
-			// Svelte theme color
-			color: hsl(12, 94%, 62%);
-		}
-
-		.brand-secondary {
-			color: $gray-5;
-		}
-
-		.logo {
-			color: $gray-5;
-
-			// Svelte logo color
-			color: #ff3e00;
-		}
-
-		h1 {
+		header {
 			display: flex;
 			justify-content: space-between;
-			align-items: baseline;
+			align-items: start;
 			width: 100%;
+
+			span {
+				font-size: $font-size-4;
+				font-weight: $font-weight-9;
+			}
+
+			.brand-primary {
+				color: $orange-8;
+
+				// Svelte logo color
+				color: #ff3e00;
+
+				// Svelte theme color
+				color: hsl(12, 94%, 62%);
+			}
+
+			.brand-secondary {
+				color: $gray-5;
+			}
+
+			.logo {
+				color: $gray-5;
+
+				// Svelte logo color
+				color: #ff3e00;
+			}
+		}
+
+		status-bar {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+
+			font-size: $font-size-0;
+
+			padding: $size-1;
+			padding-inline: $size-2;
+
+			border-top: 1px solid #ccc;
 		}
 
 		button.theme {
-			font-size: $font-size-0;
+			align-self: center;
+
+			font-size: calc($font-size-0);
+			font-weight: $font-weight-5;
+			padding: calc($size-1);
 			float: right;
-			padding: $size-1;
 		}
 
 		button.search {
-			margin-block: $size-1;
-			width: 100%;
+			align-self: center;
+
+			padding: 0 calc($size-1);
+
+			font-size: calc($font-size-0 * 0.9);
+			font-weight: $font-weight-5;
+		}
+
+		pre {
+			margin-top: $size-1;
 		}
 	}
 </style>

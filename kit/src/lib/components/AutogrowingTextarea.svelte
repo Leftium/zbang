@@ -33,13 +33,33 @@
 <grow-wrap>
 	<textarea rows="1" bind:this={textareaElement} bind:value oninput={handleInput} {...props}
 	></textarea>
+	<slot />
 </grow-wrap>
 
 <style lang="scss">
+	@use 'open-props-scss' as *;
+
 	grow-wrap {
+		display: block;
+		border: 1px solid #ccc;
+		border-radius: $size-1;
+
 		textarea {
-			white-space: nowrap;
+			margin: 0;
+			padding-block: 0;
+			padding-inline: $size-2;
+
+			white-space: pre;
 			font-family: monospace;
+
+			border: none;
+			resize: none;
+
+			&:focus {
+				outline: none;
+				border: none;
+				box-shadow: none;
+			}
 		}
 	}
 </style>
