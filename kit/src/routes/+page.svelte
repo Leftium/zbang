@@ -6,6 +6,7 @@
 	let inputHasFocus = $state(false)
 	let value = $state('')
 
+	let fullscreen = $state(false)
 	let theme = $state('')
 
 	type InputFrame = {
@@ -28,13 +29,9 @@
 		inputHistory,
 	})
 
-	function selectionLength(inputElement: HTMLTextAreaElement | HTMLInputElement) {
-		return (inputElement.selectionEnd || 0) - (inputElement.selectionStart || 0)
-	}
-
 	function focusInput() {
 		textareaElement?.focus()
-		if (!inputHasFocus) {
+		if (false && !inputHasFocus) {
 			textareaElement?.select()
 		}
 		inputHasFocus = true
@@ -137,20 +134,16 @@
 			cancelDoubleKeypress()
 			handleSearch()
 		}
+
+		if (doubleKeypress === 'F') {
+			cancelDoubleKeypress()
+			fullscreen = !fullscreen
+		}
 	}
 
 	// Toggle between selecting all text and no text.
 	function onmousedown(e: Event) {
-		if (textareaElement && inputHasFocus) {
-			if (selectionLength(textareaElement) > 0) {
-				textareaElement.selectionEnd = textareaElement.selectionStart = value.length
-			} else {
-				textareaElement.selectionStart = 0
-				textareaElement.selectionEnd = value.length
-			}
-		}
 		focusInput()
-
 		e.preventDefault()
 	}
 
@@ -202,6 +195,7 @@
 	<AutogrowingTextarea
 		bind:textareaElement
 		bind:value
+		bind:fullscreen
 		{onbeforeinput}
 		{oninput}
 		autofocus
@@ -210,7 +204,11 @@
 		autocapitalize="off"
 	>
 		<status-bar>
-			<div>Settings</div>
+			<div>
+				<button class="outline" onclick={() => (fullscreen = !fullscreen)}>
+					{fullscreen ? 'Restore' : 'Fullscreen'}
+				</button>
+			</div>
 			<div>100c 20w</div>
 			<button class="search" {onclick}>Search</button>
 		</status-bar>
@@ -272,7 +270,16 @@
 			padding: $size-1;
 			padding-inline: $size-2;
 
-			border-top: 1px solid #ccc;
+			border-top: 1px solid var(--pico-form-element-border-color);
+
+			button {
+				align-self: center;
+
+				padding: 0 calc($size-1);
+
+				font-size: calc($font-size-0 * 0.9);
+				font-weight: $font-weight-5;
+			}
 		}
 
 		button.theme {
@@ -282,15 +289,6 @@
 			font-weight: $font-weight-5;
 			padding: calc($size-1);
 			float: right;
-		}
-
-		button.search {
-			align-self: center;
-
-			padding: 0 calc($size-1);
-
-			font-size: calc($font-size-0 * 0.9);
-			font-weight: $font-weight-5;
 		}
 
 		pre {
