@@ -7,6 +7,7 @@
 		value = $bindable(),
 		oninput,
 		fullscreen = $bindable(),
+		children,
 		...props
 	}: HTMLTextareaAttributes & {
 		textareaElement?: HTMLTextAreaElement
@@ -66,7 +67,7 @@
 <grow-wrap bind:this={growWrapElement} class:fullscreen>
 	<textarea rows="1" bind:this={textareaElement} bind:value oninput={handleInput} {...props}
 	></textarea>
-	<slot />
+	{@render children?.()}
 </grow-wrap>
 
 <style lang="scss">
