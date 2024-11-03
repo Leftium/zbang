@@ -6,6 +6,9 @@
 	let inputHasFocus = $state(false)
 	let value = $state('')
 
+	let charCount = $derived(value.trim().length)
+	let wordCount = $derived(value.split(/\S+/).length - 1)
+
 	let fullscreen = $state(false)
 	let theme = $state('')
 
@@ -209,7 +212,7 @@
 					{fullscreen ? 'Restore' : 'Fullscreen'}
 				</button>
 			</div>
-			<div>100c 20w</div>
+			<div>{charCount}c {wordCount}w</div>
 			<button class="search" {onclick}>Search</button>
 		</status-bar>
 	</AutogrowingTextarea>
