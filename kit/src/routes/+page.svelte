@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { dev } from '$app/environment'
 	import AutogrowingTextarea from '$lib/components/AutogrowingTextarea.svelte'
 	import { onMount } from 'svelte'
 
@@ -8,6 +9,7 @@
 
 	let charCount = $derived(value.trim().length)
 	let wordCount = $derived(value.split(/\S+/).length - 1)
+	let lineCount = $derived(value.split('\n').length)
 
 	let fullscreen = $state(false)
 	let theme = $state('')
@@ -212,14 +214,19 @@
 					{fullscreen ? 'Restore' : 'Fullscreen'}
 				</button>
 			</div>
-			<div>{charCount}c {wordCount}w</div>
+			<div>
+				{#if lineCount > 1}{lineCount}L{/if}
+				{wordCount}w {charCount}c
+			</div>
 			<button class="search" {onclick}>Search</button>
 		</status-bar>
 	</AutogrowingTextarea>
 
-	<pre>{JSON.stringify({ debugInfo }, null, 4)}</pre>
 	<content>
-		<pre hidden>{#each Array.from({ length: 99 }, (e, i) => i) as item}{item + '\n'}{/each}</pre>
+		{#if dev}
+			<pre>{JSON.stringify({ debugInfo }, null, 4)}</pre>
+			<pre>{#each Array.from({ length: 99 }, (e, i) => i) as item}{item + '\n'}{/each}</pre>
+		{/if}
 	</content>
 </main>
 
