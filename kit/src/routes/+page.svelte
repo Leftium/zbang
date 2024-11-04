@@ -53,7 +53,7 @@
 			const start = textareaElement.selectionStart
 			const end = textareaElement.selectionEnd
 
-			if (start === end && start > 0 && textareaElement.value.charAt(start - 1) !== '\n') {
+			if (start === end && start > 0) {
 				// No selection, just a cursor
 				textareaElement.value =
 					textareaElement.value.slice(0, start - 1) + textareaElement.value.slice(start)
