@@ -1,20 +1,21 @@
-bang-tools
-=================
+# bang-tools
 
 CLI to manage (z)bang files.
-
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/bang-tools.svg)](https://npmjs.org/package/bang-tools)
 [![Downloads/week](https://img.shields.io/npm/dw/bang-tools.svg)](https://npmjs.org/package/bang-tools)
 
-
 <!-- toc -->
-* [Usage](#usage)
-* [Commands](#commands)
+
+- [Usage](#usage)
+- [Commands](#commands)
 <!-- tocstop -->
+
 # Usage
+
 <!-- usage -->
+
 ```sh-session
 $ npm install -g mycli123
 $ mycli123 COMMAND
@@ -26,22 +27,26 @@ USAGE
   $ mycli123 COMMAND
 ...
 ```
+
 <!-- usagestop -->
+
 # Commands
+
 <!-- commands -->
-* [`mycli123 hello PERSON`](#mycli123-hello-person)
-* [`mycli123 hello world`](#mycli123-hello-world)
-* [`mycli123 help [COMMAND]`](#mycli123-help-command)
-* [`mycli123 plugins`](#mycli123-plugins)
-* [`mycli123 plugins add PLUGIN`](#mycli123-plugins-add-plugin)
-* [`mycli123 plugins:inspect PLUGIN...`](#mycli123-pluginsinspect-plugin)
-* [`mycli123 plugins install PLUGIN`](#mycli123-plugins-install-plugin)
-* [`mycli123 plugins link PATH`](#mycli123-plugins-link-path)
-* [`mycli123 plugins remove [PLUGIN]`](#mycli123-plugins-remove-plugin)
-* [`mycli123 plugins reset`](#mycli123-plugins-reset)
-* [`mycli123 plugins uninstall [PLUGIN]`](#mycli123-plugins-uninstall-plugin)
-* [`mycli123 plugins unlink [PLUGIN]`](#mycli123-plugins-unlink-plugin)
-* [`mycli123 plugins update`](#mycli123-plugins-update)
+
+- [`mycli123 hello PERSON`](#mycli123-hello-person)
+- [`mycli123 hello world`](#mycli123-hello-world)
+- [`mycli123 help [COMMAND]`](#mycli123-help-command)
+- [`mycli123 plugins`](#mycli123-plugins)
+- [`mycli123 plugins add PLUGIN`](#mycli123-plugins-add-plugin)
+- [`mycli123 plugins:inspect PLUGIN...`](#mycli123-pluginsinspect-plugin)
+- [`mycli123 plugins install PLUGIN`](#mycli123-plugins-install-plugin)
+- [`mycli123 plugins link PATH`](#mycli123-plugins-link-path)
+- [`mycli123 plugins remove [PLUGIN]`](#mycli123-plugins-remove-plugin)
+- [`mycli123 plugins reset`](#mycli123-plugins-reset)
+- [`mycli123 plugins uninstall [PLUGIN]`](#mycli123-plugins-uninstall-plugin)
+- [`mycli123 plugins unlink [PLUGIN]`](#mycli123-plugins-unlink-plugin)
+- [`mycli123 plugins update`](#mycli123-plugins-update)
 
 ## `mycli123 hello PERSON`
 
@@ -393,4 +398,5 @@ DESCRIPTION
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.0.16/src/commands/plugins/update.ts)_
+
 <!-- commandsstop -->
