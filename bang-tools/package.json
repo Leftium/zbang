@@ -10,7 +10,6 @@
   "dependencies": {
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
-    "@oclif/plugin-plugins": "^5",
     "bang-tools": "link:"
   },
   "devDependencies": {
@@ -50,15 +49,10 @@
     "dirname": "bang-tools",
     "commands": "./dist/commands",
     "plugins": [
-      "@oclif/plugin-help",
-      "@oclif/plugin-plugins"
+      "@oclif/plugin-help"
     ],
     "topicSeparator": " ",
-    "topics": {
-      "hello": {
-        "description": "Say hello to the world and others"
-      }
-    }
+    "topics": {}
   },
   "repository": "leftium/bang-tools",
   "scripts": {
