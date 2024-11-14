@@ -7,8 +7,8 @@
 /node_modules
 oclif.manifest.json
 
+/bangs
+
 
 yarn.lock
 package-lock.json
-
-

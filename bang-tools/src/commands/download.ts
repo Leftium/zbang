@@ -1,30 +1,35 @@
-import {Args, Command, Flags} from '@oclif/core'
+import {Command, Flags} from '@oclif/core'
+import jetpack from 'fs-jetpack'
+
+const urls = [
+  'https://duckduckgo.com/bang.js',
+  'https://github.com/kagisearch/bangs/raw/refs/heads/main/data/bangs.json',
+  'https://github.com/kagisearch/bangs/raw/refs/heads/main/data/kagi_bangs.json',
+  'https://github.com/kagisearch/bangs/raw/refs/heads/main/data/assistant_bangs.json',
+]
+
+const filenames = urls.map((url) => url.split('/').at(-1))
+filenames[0] = 'duckduckgo_bangs.json'
 
 export default class Download extends Command {
-  static override args = {
-    file: Args.string({description: 'file to read'}),
-  }
-
-  static override description = 'describe the command here'
-
-  static override examples = [
-    '<%= config.bin %> <%= command.id %>',
-  ]
+  static override description = 'Download bang files.'
 
   static override flags = {
-    // flag with no value (-f, --force)
-    force: Flags.boolean({char: 'f'}),
     // flag with a value (-n, --name=VALUE)
-    name: Flags.string({char: 'n', description: 'name to print'}),
+    outputDir: Flags.string({char: 'o', description: 'output directory'}),
   }
 
   public async run(): Promise<void> {
-    const {args, flags} = await this.parse(Download)
+    const {flags} = await this.parse(Download)
 
-    const name = flags.name ?? 'world'
-    this.log(`hello ${name} from S:\\p\\zbang\\bang-tools\\src\\commands\\download.ts`)
-    if (args.file && flags.force) {
-      this.log(`you input --force and --file: ${args.file}`)
+    const outputDir = flags.outputDir ?? 'bangs'
+    this.log(`output directory: ${outputDir}`)
+
+    const fetchedAll = await Promise.all(urls.map((url) => fetch(url)))
+    const textedAll = await Promise.all(fetchedAll.map((fetched) => fetched.text()))
+
+    for (const [index, texted] of textedAll.entries()) {
+      jetpack.write(`${outputDir}/${filenames[index]}`, texted)
     }
   }
 }
