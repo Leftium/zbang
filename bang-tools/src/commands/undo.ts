@@ -1,13 +1,8 @@
-import { Args, Command, Flags } from '@oclif/core'
+import { Command, Flags } from '@oclif/core'
+import jetpack from 'fs-jetpack'
 
 export default class Undo extends Command {
-	static override args = {
-		file: Args.string({ description: 'file to read' }),
-	}
-
-	static override description = 'describe the command here'
-
-	static override examples = ['<%= config.bin %> <%= command.id %>']
+	static override description = 'Undo last command.'
 
 	static override flags = {
 		// flag with no value (-f, --force)
@@ -17,12 +12,37 @@ export default class Undo extends Command {
 	}
 
 	public async run(): Promise<void> {
-		const { args, flags } = await this.parse(Undo)
+		// const { args, flags } = await this.parse(Undo)
 
-		const name = flags.name ?? 'world'
-		this.log(`hello ${name} from S:\\p\\zbang\\bang-tools\\src\\commands\\undo.ts`)
-		if (args.file && flags.force) {
-			this.log(`you input --force and --file: ${args.file}`)
+		const bangsDir = `bangs`
+		const historyDir = `bangs.history`
+
+		const existsBangsHistory = jetpack.exists(historyDir)
+		if (!existsBangsHistory) {
+			this.error(`Directory ${historyDir} does not exist.`, { exit: 1 })
 		}
+
+		if (existsBangsHistory !== 'dir') {
+			this.error(`${historyDir} is not a folder.`, { exit: 1 })
+		}
+
+		const listBangsHistory = jetpack.list(historyDir)
+		if (!listBangsHistory?.length) {
+			this.error(`${historyDir} is empty`, { exit: 1 })
+		}
+
+		// console.log(listBangsHistory)
+
+		// eslint-disable-next-line no-warning-comments
+		// TODO: confirm files in `after` folder match files in `bangs` folder
+
+		const cwdLastHistoryItem = jetpack.cwd(`${historyDir}/${listBangsHistory.at(-1)}`)
+		const cwdLastHistoryItemBefore = cwdLastHistoryItem.cwd('before')
+
+		jetpack.remove(bangsDir)
+		const cwdBangs = jetpack.dir(bangsDir)
+		jetpack.copy(cwdLastHistoryItemBefore.path(), cwdBangs.path(), { overwrite: true })
+
+		jetpack.remove(cwdLastHistoryItem.path())
 	}
 }
