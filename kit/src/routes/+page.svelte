@@ -146,10 +146,14 @@
 		}
 	}
 
-	// Toggle between selecting all text and no text.
+	// Ensure textarea has focus on mousedown:
 	function onmousedown(e: Event) {
 		focusInput()
-		e.preventDefault()
+
+		const target = e.target as HTMLElement
+		if (target.tagName !== 'TEXTAREA') {
+			e.preventDefault()
+		}
 	}
 
 	function onvisibilitychange() {
