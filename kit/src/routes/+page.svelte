@@ -88,6 +88,13 @@
 		window.open(`https://kagi.com/search?q=${query}`, '_blank')
 	}
 
+	function onkeydown(event: KeyboardEvent) {
+		if (event.key === 'Enter' && (event.shiftKey || event.altKey || event.ctrlKey)) {
+			handleSearch()
+			event.preventDefault()
+		}
+	}
+
 	function onbeforeinput(this: HTMLInputElement | HTMLTextAreaElement, event: InputEvent) {
 		const { data, inputType } = event
 
@@ -207,6 +214,7 @@
 		bind:fullscreen
 		{onbeforeinput}
 		{oninput}
+		{onkeydown}
 		autofocus
 		spellcheck="false"
 		autocomplete="off"
