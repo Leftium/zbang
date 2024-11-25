@@ -3,6 +3,14 @@
 	import AutogrowingTextarea from '$lib/components/AutogrowingTextarea.svelte'
 	import { onMount } from 'svelte'
 
+	import zbangs from '$lib/zbangs.json'
+
+	import fuzzysort from 'fuzzysort'
+
+	import _ from 'lodash'
+
+	const FIXED_DIGITS = 3
+
 	let textareaElement = $state<HTMLTextAreaElement>()
 	let inputHasFocus = $state(false)
 	let value = $state('')
@@ -33,6 +41,20 @@
 		doubleKeypress,
 		inputHistory,
 	})
+
+	const FUZZYSORT_KEYS = [
+		'name',
+		(o: { code: any[] }) => o.code.join(' '),
+		(o: { tags: any[] }) => o.tags.join(' '),
+		'urls.s',
+	]
+
+	let fuzzysortResults = $derived(
+		fuzzysort.go(value, zbangs, {
+			all: true,
+			keys: FUZZYSORT_KEYS,
+		})
+	)
 
 	function focusInput() {
 		textareaElement?.focus()
@@ -235,7 +257,32 @@
 	</AutogrowingTextarea>
 
 	<content>
-		{#if dev}
+		<div>Results: {fuzzysortResults.length}/{zbangs.length}</div>
+
+		{#each _.orderBy(fuzzysortResults || [], ['score', 'obj.rank'], ['desc', 'asc']).slice(0, 10) as result, resultNum}
+			{@const object = result.obj}
+			<div>
+				{resultNum + 1}
+				<b>score:</b>{result.score.toFixed(FIXED_DIGITS)}
+				<b>rank:</b>{object.rank}
+				<b>ddgr:</b>{object.ddgr}
+			</div>
+			<div class="result-item">
+				{#each FUZZYSORT_KEYS as key, index}
+					<div>{result[index].score.toFixed(FIXED_DIGITS)}</div>
+					<div>
+						{#if result[index].score}
+							{@html result[index].highlight()}
+						{:else}
+							{typeof key === 'string' ? _.get(object, key) : key(object)}
+						{/if}
+					</div>
+				{/each}
+			</div>
+			<pre hidden>{JSON.stringify(object, null, 4)}</pre>
+		{/each}
+
+		{#if dev && false}
 			<pre>{JSON.stringify({ debugInfo }, null, 4)}</pre>
 			<pre>{#each Array.from({ length: 99 }, (e, i) => i) as item}{item + '\n'}{/each}</pre>
 		{/if}
@@ -244,6 +291,20 @@
 
 <style lang="scss">
 	@use 'open-props-scss' as *;
+
+	.result-item {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		margin-bottom: $size-5;
+		justify-content: left;
+		border: 1px solid lightgray;
+
+		div {
+			border-bottom: 1px solid #eee;
+			border-left: 1px solid #eee;
+			padding-inline: $size-1;
+		}
+	}
 
 	main {
 		///border: 4px solid $violet-5;
