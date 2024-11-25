@@ -25,7 +25,7 @@ export default class Merge extends Command {
 		const cwdOutput = jetpack.dir(outputDir)
 
 		const ddgBangsFilename = 'duckduckgo_bangs.json'
-		const outputFilename = 'zbang.json'
+		const outputFilename = 'zbangs.json'
 
 		const bangFilenames = new Set(cwdInput.list())
 		bangFilenames.delete(outputFilename)
