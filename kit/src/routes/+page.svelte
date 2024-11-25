@@ -44,8 +44,26 @@
 
 	const FUZZYSORT_KEYS = [
 		'name',
-		(o: { code: any[] }) => o.code.join(' '),
-		(o: { tags: any[] }) => o.tags.join(' '),
+		'code.0',
+		'code.1',
+		'code.2',
+		'code.3',
+		'code.4',
+		'code.5',
+		'code.6',
+		'code.7',
+		'code.8',
+		'code.9',
+		'tags.0',
+		'tags.1',
+		'tags.2',
+		'tags.3',
+		'tags.4',
+		'tags.5',
+		'tags.6',
+		'tags.7',
+		'tags.8',
+		'tags.9',
 		'urls.s',
 	]
 
@@ -259,7 +277,7 @@
 	<content>
 		<div>Results: {fuzzysortResults.length}/{zbangs.length}</div>
 
-		{#each _.orderBy(fuzzysortResults || [], ['score', 'obj.rank'], ['desc', 'asc']).slice(0, 10) as result, resultNum}
+		{#each _.orderBy(fuzzysortResults || [], [(r) => r.score > 0.95, (r) => r.score > 0.5, 'obj.rank', 'score'], ['desc', 'desc', 'asc', 'desc']).slice(0, 50) as result, resultNum}
 			{@const object = result.obj}
 			<div>
 				{resultNum + 1}
@@ -269,14 +287,42 @@
 			</div>
 			<div class="result-item">
 				{#each FUZZYSORT_KEYS as key, index}
-					<div>{result[index].score.toFixed(FIXED_DIGITS)}</div>
-					<div>
-						{#if result[index].score}
-							{@html result[index].highlight()}
-						{:else}
-							{typeof key === 'string' ? _.get(object, key) : key(object)}
+					{@const isListRow = key.includes('code') || key.includes('tags')}
+					{#if key === 'code.0'}
+						<div></div>
+						<div>
+							{#each object.code as code, offset}
+								{#if result[index + offset].score}
+									{@html result[index + offset].highlight()}&nbsp;
+								{:else}
+									{code}&nbsp;
+								{/if}
+							{/each}
+						</div>
+					{/if}
+
+					{#if key === 'tags.0'}
+						<div></div>
+						<div>
+							{#each object.tags as code, offset}
+								{#if result[index + offset].score}
+									{@html result[index + offset].highlight()}&nbsp;
+								{:else}
+									{code}&nbsp;
+								{/if}
+							{/each}
+						</div>
+					{/if}
+					{#if result[index].score}
+						<div>{result[index].score.toFixed(FIXED_DIGITS)}</div>
+						<div>{@html result[index].highlight()}</div>
+					{:else}
+						{@const value = _.get(object, key)}
+						{#if value !== undefined && !isListRow}
+							<div>{result[index].score.toFixed(FIXED_DIGITS)}</div>
+							<div>{value}</div>
 						{/if}
-					</div>
+					{/if}
 				{/each}
 			</div>
 			<pre hidden>{JSON.stringify(object, null, 4)}</pre>
