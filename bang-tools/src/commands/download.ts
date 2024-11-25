@@ -31,10 +31,10 @@ export default class Download extends Command {
 			filenames[0] = 'duckduckgo_bangs.json'
 
 			const fetchedAll = await Promise.all(urls.map((url) => fetch(url)))
-			const textedAll = await Promise.all(fetchedAll.map((fetched) => fetched.text()))
+			const jsoneddAll = await Promise.all(fetchedAll.map((fetched) => fetched.json()))
 
-			for (const [index, texted] of textedAll.entries()) {
-				jetpack.write(cwdOutput.path(filenames[index] || 'filename.json'), texted)
+			for (const [index, jsoned] of jsoneddAll.entries()) {
+				jetpack.write(cwdOutput.path(filenames[index] || 'filename.json'), jsoned)
 			}
 		}
 

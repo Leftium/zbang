@@ -34,10 +34,10 @@ export default class Undo extends Command {
 		// console.log(listBangsHistory)
 
 		// eslint-disable-next-line no-warning-comments
-		// TODO: confirm files in `after` folder match files in `bangs` folder
+		// TODO: confirm files in `2-after` folder match files in `bangs` folder
 
 		const cwdLastHistoryItem = jetpack.cwd(`${historyDir}/${listBangsHistory.at(-1)}`)
-		const cwdLastHistoryItemBefore = cwdLastHistoryItem.cwd('before')
+		const cwdLastHistoryItemBefore = cwdLastHistoryItem.cwd('1-before')
 
 		jetpack.remove(bangsDir)
 		const cwdBangs = jetpack.dir(bangsDir)
