@@ -83,10 +83,12 @@
 	})
 
 	// if your targets don't change often, provide prepared targets instead of raw strings!
-	const zbangsPrepared = [...zbangs].map((zbang, index) => ({
+	const zbangsPrepared = [...zbangs].map((zbang) => ({
 		...zbang,
 		name: fuzzysort.prepare(zbang.name),
-		index,
+		code: zbang.code.map(fuzzysort.prepare),
+		tags: zbang.tags.map(fuzzysort.prepare),
+		urls: { s: fuzzysort.prepare(zbang.urls.s) },
 	}))
 
 	const fuzzysortThreshold = 0.7
@@ -105,6 +107,9 @@
 		const object = {
 			...result.obj,
 			name: result.obj.name.target,
+			code: result.obj.code.map((c) => c.target),
+			tags: result.obj.tags.map((t) => t.target),
+			urls: { s: result.obj.urls.s.target },
 		}
 		let codeScores: { html: string; score: number }[] = []
 		let tagsScores: { html: string; score: number }[] = []
