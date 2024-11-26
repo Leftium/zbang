@@ -345,7 +345,6 @@
 
 		{#each _.orderBy(fuzzysortResults || [], [(r) => r.score > 0.95, (r) => r.score > 0.6, 'obj.rank', 'score'], ['desc', 'desc', 'asc', 'desc']).slice(0, 50) as result, resultNum}
 			{@const resultProcessed = process(result)}
-			{@const object = result.obj}
 			{#if VERBOSE}
 				<div class="score-and-rank">
 					{resultNum + 1}
@@ -355,7 +354,7 @@
 			{/if}
 			<div class="result-item">
 				<div>{result[0].score.toFixed(FIXED_DIGITS)}</div>
-				<div>{@html result[0].highlight() || object.name}</div>
+				<div>{@html result[0].highlight() || resultProcessed.object.name}</div>
 
 				<div>{resultProcessed.codeScoreMax?.toFixed(FIXED_DIGITS)}</div>
 				<div>
@@ -393,7 +392,6 @@
 				{/if}
 			</div>
 			<pre hidden>{JSON.stringify(resultProcessed, null, 4)}</pre>
-			<pre hidden>{JSON.stringify(object, null, 4)}</pre>
 		{/each}
 
 		{#if dev && false}
