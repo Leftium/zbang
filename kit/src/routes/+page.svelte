@@ -338,6 +338,10 @@
 <style lang="scss">
 	@use 'open-props-scss' as *;
 
+	.score-and-rank {
+		justify-self: right;
+	}
+
 	.result-item {
 		display: grid;
 		grid-template-columns: auto 1fr;
@@ -349,6 +353,10 @@
 			border-bottom: 1px solid #eee;
 			border-left: 1px solid #eee;
 			padding-inline: $size-1;
+
+			text-overflow: ellipsis;
+			overflow: hidden;
+			white-space: nowrap;
 		}
 	}
 
