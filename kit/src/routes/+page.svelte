@@ -82,15 +82,30 @@
 		return keys
 	})
 
+	// if your targets don't change often, provide prepared targets instead of raw strings!
+	const zbangsPrepared = [...zbangs].map((zbang, index) => ({
+		...zbang,
+		name: fuzzysort.prepare(zbang.name),
+		index,
+	}))
+
+	const fuzzysortThreshold = 0.7
+	const fuzzysortLimit = 50
+
 	let fuzzysortResults = $derived(
-		fuzzysort.go(value, zbangs, {
+		fuzzysort.go(value, zbangsPrepared, {
+			limit: fuzzysortLimit,
+			threshold: fuzzysortThreshold,
 			all: true,
 			keys: fuzzysortKeys,
 		})
 	)
 
 	function process(result: (typeof fuzzysortResults)[0]) {
-		const object = result.obj
+		const object = {
+			...result.obj,
+			name: result.obj.name.target,
+		}
 		let codeScores: { html: string; score: number }[] = []
 		let tagsScores: { html: string; score: number }[] = []
 		_.forEach(fuzzysortKeys, (key, index) => {
