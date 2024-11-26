@@ -8,12 +8,13 @@
 
 	import _ from 'lodash'
 
-	const FIXED_DIGITS = 3
+	const FIXED_DIGITS = 2
 	const VERBOSE = false
 
 	let textareaElement = $state<HTMLTextAreaElement>()
 	let inputHasFocus = $state(false)
 	let value = $state('')
+	let currentLine = $derived(getCurrentLineValue(value))
 
 	let charCount = $derived(value.trim().length)
 	let wordCount = $derived(value.split(/\S+/).length - 1)
@@ -93,13 +94,21 @@
 	const fuzzysortThreshold = 0.7
 	const fuzzysortLimit = 20
 
-	let fuzzysortResults = $derived(
-		fuzzysort.go(value, zbangsPrepared, {
+	const fuzzysortResults = $derived(
+		fuzzysort.go(currentLine, zbangsPrepared, {
 			limit: fuzzysortLimit,
 			threshold: fuzzysortThreshold,
 			all: true,
 			keys: fuzzysortKeys,
 		})
+	)
+
+	const adjustedFuzzySortResults = $derived(
+		_.orderBy(
+			fuzzysortResults,
+			[(r) => r.score > 0.95, (r) => r.score > 0.6, 'obj.rank', 'score'],
+			['desc', 'desc', 'asc', 'desc']
+		)
 	)
 
 	function process(result: (typeof fuzzysortResults)[0]) {
@@ -194,6 +203,43 @@
 		}
 	}
 
+	function getCurrentLineValue(value: string) {
+		if (!textareaElement) {
+			return ''
+		}
+
+		const text = textareaElement.value
+		const start = textareaElement.selectionStart
+		const beforeCursor = text.substring(0, start)
+
+		const lastNewlineBeforeCursor = beforeCursor.lastIndexOf('\n') + 1
+		const nextNewlineAfterCursor = text.indexOf('\n', start)
+
+		const lineStart = lastNewlineBeforeCursor
+		const lineEnd = nextNewlineAfterCursor !== -1 ? nextNewlineAfterCursor : text.length
+
+		return text.substring(lineStart, lineEnd)
+	}
+
+	function replaceCurrentLine(newText: string) {
+		if (!textareaElement) {
+			return
+		}
+		const text = textareaElement.value
+		const start = textareaElement.selectionStart
+		const end = textareaElement.selectionEnd
+		const beforeCursor = text.substring(0, start)
+		const afterCursor = text.substring(end)
+
+		const lastNewlineBeforeCursor = beforeCursor.lastIndexOf('\n') + 1
+		const nextNewlineAfterCursor = afterCursor.indexOf('\n') + end
+		const lineStart = lastNewlineBeforeCursor
+		const lineEnd = nextNewlineAfterCursor !== end - 1 ? nextNewlineAfterCursor : text.length
+
+		textareaElement.value = text.substring(0, lineStart) + newText + text.substring(lineEnd)
+		textareaElement.setSelectionRange(lineStart + newText.length, lineStart + newText.length)
+	}
+
 	function handleSearch() {
 		blurInput()
 		// Need to insert space after first newline so triggers are not joined with other text.
@@ -276,6 +322,31 @@
 			syncTextareaElementValue()
 			fullscreen = !fullscreen
 		}
+
+		for (const [key, index] of Object.entries(doubleKeypressToFuzzySortIndex)) {
+			if (doubleKeypress === key) {
+				cancelDoubleKeypress()
+				syncTextareaElementValue()
+				const text = adjustedFuzzySortResults[index].obj.code[0].target
+				if (text) {
+					replaceCurrentLine(text + '\n')
+				}
+				syncTextareaElementValue()
+			}
+		}
+	}
+
+	const doubleKeypressToFuzzySortIndex = {
+		Q: 0,
+		W: 1,
+		E: 2,
+		R: 3,
+		T: 4,
+		Y: 5,
+		U: 6,
+		I: 7,
+		O: 8,
+		P: 9,
 	}
 
 	// Ensure textarea has focus on mousedown:
@@ -362,22 +433,27 @@
 	</AutogrowingTextarea>
 
 	<content>
-		<div>Results: {fuzzysortResults.length}/{zbangs.length}</div>
+		<div class="result-count">Results: {fuzzysortResults.length}/{zbangs.length}</div>
 
-		{#each _.orderBy(fuzzysortResults || [], [(r) => r.score > 0.95, (r) => r.score > 0.6, 'obj.rank', 'score'], ['desc', 'desc', 'asc', 'desc']).slice(0, 50) as result, resultNum}
+		{#each adjustedFuzzySortResults as result, resultNum}
 			{@const resultProcessed = process(result)}
-			{#if VERBOSE}
-				<div class="score-and-rank">
-					{resultNum + 1}
-					<b>rank:</b>{resultProcessed.object.rank}
-					<b>score:</b>{result.score.toFixed(FIXED_DIGITS)}
+			{@const keys = Object.keys(doubleKeypressToFuzzySortIndex)}
+			<div class="result-item no-scores">
+				<div class="score">{result[0].score.toFixed(FIXED_DIGITS)}</div>
+				<div class="name-row">
+					{#if keys[resultNum]}
+						<div class="number-and-shortcut">
+							<button class="outline">{keys[resultNum]}{keys[resultNum]}</button>
+						</div>
+					{/if}
+					<div class="name">{@html result[0].highlight() || resultProcessed.object.name}</div>
+					<div class="score-and-rank">
+						<b>r:</b>{resultProcessed.object.rank}
+						<b>s:</b>{result.score.toFixed(FIXED_DIGITS)}
+					</div>
 				</div>
-			{/if}
-			<div class="result-item">
-				<div>{result[0].score.toFixed(FIXED_DIGITS)}</div>
-				<div>{@html result[0].highlight() || resultProcessed.object.name}</div>
 
-				<div>{resultProcessed.codeScoreMax?.toFixed(FIXED_DIGITS)}</div>
+				<div class="score">{resultProcessed.codeScoreMax?.toFixed(FIXED_DIGITS)}</div>
 				<div>
 					{#each resultProcessed.codeScores as codeScore}
 						<span title={codeScore.score?.toFixed(FIXED_DIGITS)}>{@html codeScore.html}</span>&nbsp;
@@ -387,12 +463,12 @@
 				{#if VERBOSE}
 					{#each _.orderBy(resultProcessed.codeScores, ['score'], ['desc']) as codeScore}
 						{@const hidden = codeScore.score === 0}
-						<div {hidden}>{codeScore.score?.toFixed(FIXED_DIGITS)}</div>
+						<div class="score" {hidden}>{codeScore.score?.toFixed(FIXED_DIGITS)}</div>
 						<div {hidden}>{@html codeScore.html}</div>
 					{/each}
 				{/if}
 
-				<div>{resultProcessed.tagsScoreMax?.toFixed(FIXED_DIGITS)}</div>
+				<div class="score">{resultProcessed.tagsScoreMax?.toFixed(FIXED_DIGITS)}</div>
 				<div>
 					{#each resultProcessed.tagsScores as tagScore}
 						<span title={tagScore.score.toFixed(FIXED_DIGITS)}>{@html tagScore.html}</span>&nbsp;
@@ -402,13 +478,13 @@
 				{#if VERBOSE}
 					{#each _.orderBy(resultProcessed.tagsScores, ['score'], ['desc']) as tagScore}
 						{@const hidden = tagScore.score === 0}
-						<div {hidden}>{tagScore.score.toFixed(FIXED_DIGITS)}</div>
+						<div class="score" {hidden}>{tagScore.score.toFixed(FIXED_DIGITS)}</div>
 						<div {hidden}>{@html tagScore.html}</div>
 					{/each}
 				{/if}
 
 				{#if includeUrlKeys}
-					<div>{result.at(-1)?.score.toFixed(FIXED_DIGITS)}</div>
+					<div class="score">{result.at(-1)?.score.toFixed(FIXED_DIGITS)}</div>
 					<div>{@html result.at(-1)?.highlight()}</div>
 				{/if}
 			</div>
@@ -425,19 +501,31 @@
 <style lang="scss">
 	@use 'open-props-scss' as *;
 
-	.score-and-rank {
-		justify-self: right;
+	.result-count {
+		text-align: right;
 	}
 
 	.result-item {
 		display: grid;
 		grid-template-columns: auto 1fr;
 		overflow: hidden;
-		margin-bottom: $size-5;
+		margin-bottom: $size-3;
 		justify-content: left;
 		border: 1px solid var(--pico-muted-border-color);
 
-		div {
+		&.no-scores {
+			grid-template-columns: 1fr;
+
+			.score {
+				display: none;
+			}
+		}
+
+		.score-and-rank {
+			text-align: end;
+		}
+
+		& > div {
 			padding-inline: $size-1;
 
 			// Internal borders:
@@ -449,6 +537,30 @@
 			text-overflow: ellipsis;
 			overflow: hidden;
 			white-space: nowrap;
+		}
+
+		.name-row {
+			display: flex;
+			align-items: center;
+
+			background-color: var(--pico-code-background-color);
+
+			.number-and-shortcut {
+				button {
+					width: $size-7;
+					padding: 0 calc($size-1);
+					margin-right: $size-2;
+
+					font-size: calc($font-size-0 * 0.9);
+					font-weight: $font-weight-5;
+
+					float: left;
+				}
+			}
+
+			.score-and-rank {
+				flex-grow: 1;
+			}
 		}
 	}
 
