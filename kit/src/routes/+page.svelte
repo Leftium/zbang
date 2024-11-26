@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { dev } from '$app/environment'
+	import { browser, dev } from '$app/environment'
 	import AutogrowingTextarea from '$lib/components/AutogrowingTextarea.svelte'
-	import { onMount } from 'svelte'
 
 	import zbangs from '$lib/zbangs.json'
 
@@ -313,13 +312,15 @@
 		localStorage.setItem('theme', theme)
 	}
 
-	onMount(() => {
+	if (browser) {
 		// Dark/light mode:
 		theme = localStorage.getItem('theme') || ''
+		// svelte-ignore state_referenced_locally
 		if (theme) {
+			// svelte-ignore state_referenced_locally
 			document.documentElement.dataset.theme = theme
 		}
-	})
+	}
 </script>
 
 <svelte:document {onvisibilitychange} {onmousedown} />
@@ -431,14 +432,19 @@
 	.result-item {
 		display: grid;
 		grid-template-columns: auto 1fr;
+		overflow: hidden;
 		margin-bottom: $size-5;
 		justify-content: left;
-		border: 1px solid lightgray;
+		border: 1px solid var(--pico-muted-border-color);
 
 		div {
-			border-bottom: 1px solid #eee;
-			border-left: 1px solid #eee;
 			padding-inline: $size-1;
+
+			// Internal borders:
+			border-bottom: 1px solid var(--pico-muted-border-color);
+			border-left: 1px solid var(--pico-muted-border-color);
+			margin-left: -1px;
+			margin-bottom: -1px;
 
 			text-overflow: ellipsis;
 			overflow: hidden;
