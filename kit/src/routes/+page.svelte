@@ -176,19 +176,29 @@
 			simulateBackspace()
 		}
 
+		function syncTextareaElementValue() {
+			if (textareaElement) {
+				value = textareaElement.value
+			}
+		}
+
 		if (isPeriodShortcut || doubleKeypress === ' ') {
 			cancelDoubleKeypress()
 			simulateExclamation()
+			syncTextareaElementValue()
+
 			inputHistory[0].data = '!'
 		}
 
 		if (doubleKeypress === 'newline') {
 			cancelDoubleKeypress()
+			syncTextareaElementValue()
 			handleSearch()
 		}
 
 		if (doubleKeypress === 'F') {
 			cancelDoubleKeypress()
+			syncTextareaElementValue()
 			fullscreen = !fullscreen
 		}
 	}
