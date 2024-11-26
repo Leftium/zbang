@@ -92,7 +92,7 @@
 	}))
 
 	const fuzzysortThreshold = 0.7
-	const fuzzysortLimit = 50
+	const fuzzysortLimit = 20
 
 	let fuzzysortResults = $derived(
 		fuzzysort.go(value, zbangsPrepared, {
