@@ -10,6 +10,7 @@
 	import _ from 'lodash'
 
 	const FIXED_DIGITS = 3
+	const VERBOSE = false
 
 	let textareaElement = $state<HTMLTextAreaElement>()
 	let inputHasFocus = $state(false)
@@ -42,37 +43,92 @@
 		inputHistory,
 	})
 
-	const FUZZYSORT_KEYS = [
-		'name',
-		'code.0',
-		'code.1',
-		'code.2',
-		'code.3',
-		'code.4',
-		'code.5',
-		'code.6',
-		'code.7',
-		'code.8',
-		'code.9',
-		'tags.0',
-		'tags.1',
-		'tags.2',
-		'tags.3',
-		'tags.4',
-		'tags.5',
-		'tags.6',
-		'tags.7',
-		'tags.8',
-		'tags.9',
-		'urls.s',
-	]
+	const includeTagKeys = $derived(value.includes('#'))
+	const includeUrlKeys = $derived(value.includes('//'))
+
+	const fuzzysortKeys = $derived.by(() => {
+		let keys = [
+			'name',
+			'code.0',
+			'code.1',
+			'code.2',
+			'code.3',
+			'code.4',
+			'code.5',
+			'code.6',
+			'code.7',
+			'code.8',
+			'code.9',
+		]
+
+		if (includeTagKeys) {
+			keys = keys.concat([
+				'tags.0',
+				'tags.1',
+				'tags.2',
+				'tags.3',
+				'tags.4',
+				'tags.5',
+				'tags.6',
+				'tags.7',
+				'tags.8',
+				'tags.9',
+			])
+		}
+
+		if (includeUrlKeys) {
+			keys.push('urls.s')
+		}
+		return keys
+	})
 
 	let fuzzysortResults = $derived(
 		fuzzysort.go(value, zbangs, {
 			all: true,
-			keys: FUZZYSORT_KEYS,
+			keys: fuzzysortKeys,
 		})
 	)
+
+	function process(result: (typeof fuzzysortResults)[0]) {
+		const object = result.obj
+		let codeScores: { html: string; score: number }[] = []
+		let tagsScores: { html: string; score: number }[] = []
+		_.forEach(fuzzysortKeys, (key, index) => {
+			if (key === 'code.0') {
+				codeScores = _.map(object.code, (code, offset) => {
+					const score = result[index + offset]?.score
+					const html = offset < 10 && score ? result[index + offset]?.highlight() : code
+
+					return {
+						html,
+						score,
+					}
+				})
+			}
+
+			if (key === 'tags.0') {
+				tagsScores = _.map(object.tags, (tag, offset) => {
+					const score = result[index + offset]?.score
+					const html = offset < 10 && score ? result[index + offset]?.highlight() : tag
+
+					return {
+						html,
+						score,
+					}
+				})
+			}
+		})
+		const codeScoreMax = _.maxBy(codeScores, 'score')?.score
+		const tagsScoreMax = _.maxBy(tagsScores, 'score')?.score
+
+		return {
+			object,
+			codeScores,
+			codeScoreMax,
+			tagsScores,
+			tagsScoreMax,
+		}
+	}
 
 	function focusInput() {
 		textareaElement?.focus()
@@ -287,54 +343,56 @@
 	<content>
 		<div>Results: {fuzzysortResults.length}/{zbangs.length}</div>
 
-		{#each _.orderBy(fuzzysortResults || [], [(r) => r.score > 0.95, (r) => r.score > 0.5, 'obj.rank', 'score'], ['desc', 'desc', 'asc', 'desc']).slice(0, 50) as result, resultNum}
+		{#each _.orderBy(fuzzysortResults || [], [(r) => r.score > 0.95, (r) => r.score > 0.6, 'obj.rank', 'score'], ['desc', 'desc', 'asc', 'desc']).slice(0, 50) as result, resultNum}
+			{@const resultProcessed = process(result)}
 			{@const object = result.obj}
-			<div>
-				{resultNum + 1}
-				<b>score:</b>{result.score.toFixed(FIXED_DIGITS)}
-				<b>rank:</b>{object.rank}
-				<b>ddgr:</b>{object.ddgr}
-			</div>
+			{#if VERBOSE}
+				<div class="score-and-rank">
+					{resultNum + 1}
+					<b>rank:</b>{resultProcessed.object.rank}
+					<b>score:</b>{result.score.toFixed(FIXED_DIGITS)}
+				</div>
+			{/if}
 			<div class="result-item">
-				{#each FUZZYSORT_KEYS as key, index}
-					{@const isListRow = key.includes('code') || key.includes('tags')}
-					{#if key === 'code.0'}
-						<div></div>
-						<div>
-							{#each object.code as code, offset}
-								{#if result[index + offset].score}
-									{@html result[index + offset].highlight()}&nbsp;
-								{:else}
-									{code}&nbsp;
-								{/if}
-							{/each}
-						</div>
-					{/if}
+				<div>{result[0].score.toFixed(FIXED_DIGITS)}</div>
+				<div>{@html result[0].highlight() || object.name}</div>
 
-					{#if key === 'tags.0'}
-						<div></div>
-						<div>
-							{#each object.tags as code, offset}
-								{#if result[index + offset].score}
-									{@html result[index + offset].highlight()}&nbsp;
-								{:else}
-									{code}&nbsp;
-								{/if}
-							{/each}
-						</div>
-					{/if}
-					{#if result[index].score}
-						<div>{result[index].score.toFixed(FIXED_DIGITS)}</div>
-						<div>{@html result[index].highlight()}</div>
-					{:else}
-						{@const value = _.get(object, key)}
-						{#if value !== undefined && !isListRow}
-							<div>{result[index].score.toFixed(FIXED_DIGITS)}</div>
-							<div>{value}</div>
-						{/if}
-					{/if}
-				{/each}
+				<div>{resultProcessed.codeScoreMax?.toFixed(FIXED_DIGITS)}</div>
+				<div>
+					{#each resultProcessed.codeScores as codeScore}
+						<span title={codeScore.score?.toFixed(FIXED_DIGITS)}>{@html codeScore.html}</span>&nbsp;
+					{/each}
+				</div>
+
+				{#if VERBOSE}
+					{#each _.orderBy(resultProcessed.codeScores, ['score'], ['desc']) as codeScore}
+						{@const hidden = codeScore.score === 0}
+						<div {hidden}>{codeScore.score?.toFixed(FIXED_DIGITS)}</div>
+						<div {hidden}>{@html codeScore.html}</div>
+					{/each}
+				{/if}
+
+				<div>{resultProcessed.tagsScoreMax?.toFixed(FIXED_DIGITS)}</div>
+				<div>
+					{#each resultProcessed.tagsScores as tagScore}
+						<span title={tagScore.score.toFixed(FIXED_DIGITS)}>{@html tagScore.html}</span>&nbsp;
+					{/each}
+				</div>
+
+				{#if VERBOSE}
+					{#each _.orderBy(resultProcessed.tagsScores, ['score'], ['desc']) as tagScore}
+						{@const hidden = tagScore.score === 0}
+						<div {hidden}>{tagScore.score.toFixed(FIXED_DIGITS)}</div>
+						<div {hidden}>{@html tagScore.html}</div>
+					{/each}
+				{/if}
+
+				{#if includeUrlKeys}
+					<div>{result.at(-1)?.score.toFixed(FIXED_DIGITS)}</div>
+					<div>{@html result.at(-1)?.highlight()}</div>
+				{/if}
 			</div>
+			<pre hidden>{JSON.stringify(resultProcessed, null, 4)}</pre>
 			<pre hidden>{JSON.stringify(object, null, 4)}</pre>
 		{/each}
 
