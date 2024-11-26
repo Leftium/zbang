@@ -61,7 +61,7 @@ function process(zbangs: Zbang[]) {
 
 			// Get summary, prefer from rated bangs, longer titles.
 			const name = _.chain(sources)
-				.orderBy([({ ddgr }) => ddgr > 0, ({ name }) => name.length], ['desc', 'desc'])
+				.orderBy(['ddgr', ({ name }) => name.length], ['desc', 'desc'])
 				.head()
 				.get('name')
 				.value()
@@ -76,7 +76,7 @@ function process(zbangs: Zbang[]) {
 
 			_.each(summaries, (summary) => {
 				if (summary !== name) {
-					const key = `Alt-Name/${summary}`
+					const key = `AKA/${summary}`
 					const keyLowerCase = key.toLocaleLowerCase()
 					labelRanks.set(keyLowerCase, [[-1, key]])
 				}
@@ -84,7 +84,7 @@ function process(zbangs: Zbang[]) {
 
 			// eslint-disable-next-line arrow-body-style
 			const labels = [...labelRanks.values()].map((value) => {
-				return `#${value[0]?.[1]}`
+				return `#${value[0]?.[1]}`.replaceAll(' ', '-')
 			})
 
 			// Get shortest url, preferring https.
