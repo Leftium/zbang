@@ -551,6 +551,7 @@
 					padding: 0 calc($size-1);
 					margin-right: $size-2;
 
+					font-family: monospace;
 					font-size: calc($font-size-0 * 0.9);
 					font-weight: $font-weight-5;
 
