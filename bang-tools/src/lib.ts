@@ -3,6 +3,22 @@ import jetpack from 'fs-jetpack'
 import { FSJetpack } from 'fs-jetpack/types.js'
 import normalizeUrl from 'normalize-url'
 
+export type Zbang = {
+	code: string[]
+	ddgr: number
+	name: string
+	nurl?: string
+	rank?: number
+	urls: {
+		s: string
+	}
+}
+
+export interface WithHttpStatus {
+	status?: number
+	statusText?: string
+}
+
 export async function doWithHistory(
 	cwdOutput: FSJetpack,
 	callback: { (): Promise<void>; (): unknown }

@@ -2,18 +2,7 @@ import { Args, Command, Flags } from '@oclif/core'
 import jetpack from 'fs-jetpack'
 import _ from 'lodash'
 
-import { doWithHistory, normalizeUrlTemplate } from '../lib.js'
-
-type Zbang = {
-	code: string[]
-	ddgr: number
-	name: string
-	nurl?: string
-	rank?: number
-	urls: {
-		s: string
-	}
-}
+import { Zbang, doWithHistory, normalizeUrlTemplate } from '../lib.js'
 
 const ddgrCounts: Record<number, { count: number; ddgr: number; rank?: number }> = {}
 
