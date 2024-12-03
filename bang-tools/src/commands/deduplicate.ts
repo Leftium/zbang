@@ -13,7 +13,7 @@ function process(zbangs: Zbang[]) {
 			try {
 				const result = {
 					...bang,
-					nurl: normalizeUrlTemplate(url).replaceAll('{s}', '%s'),
+					nurl: normalizeUrlTemplate(url, { stripWWW: true }).replaceAll('{s}', '%s'),
 				}
 				return result
 			} catch {

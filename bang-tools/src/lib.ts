@@ -53,8 +53,11 @@ export function getDomain(href: string) {
 	}
 }
 
-export function normalizeUrlTemplate(url: string, options: { keepCase?: boolean } = {}) {
-	const { keepCase } = { keepCase: false, ...options }
+export function normalizeUrlTemplate(
+	url: string,
+	options: { keepCase?: boolean; stripWWW?: boolean } = {}
+) {
+	const { keepCase, stripWWW } = { keepCase: false, stripWWW: false, ...options }
 
 	// console.log(url)
 	if (url[0] === '/') {
@@ -63,7 +66,7 @@ export function normalizeUrlTemplate(url: string, options: { keepCase?: boolean 
 	}
 
 	url = deepUnescape(url).trim()
-	url = normalizeUrl(url)
+	url = normalizeUrl(url, { stripWWW })
 	url = deepUnescape(url).trim() // Undo any additional escaping that was done.
 
 	if (!keepCase) {

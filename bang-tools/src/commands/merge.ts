@@ -42,7 +42,7 @@ export default class Merge extends Command {
 					uurl: bang.u,
 				}
 
-				const nurl = normalizeUrlTemplate(bang.u)
+				const nurl = normalizeUrlTemplate(bang.u, { stripWWW: true })
 				if (nurl !== bang.u) {
 					result[bang.t].nurl = nurl
 				}
@@ -68,9 +68,9 @@ export default class Merge extends Command {
 
 					const bangWithCode = triggerToRankAndUrl[bang.t]
 					const domainFromDuck = bangWithCode
-						? getDomain(normalizeUrlTemplate(bangWithCode.uurl))
+						? getDomain(normalizeUrlTemplate(bangWithCode.uurl, { stripWWW: true }))
 						: 'NA'
-					const domainFromKagi = getDomain(normalizeUrlTemplate(bang.u))
+					const domainFromKagi = getDomain(normalizeUrlTemplate(bang.u, { stripWWW: true }))
 
 					const domainDistance = distance(domainFromDuck, domainFromKagi)
 					const domainLength = domainFromKagi.length
