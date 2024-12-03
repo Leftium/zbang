@@ -14,7 +14,7 @@ async function process(zbangs: Zbang[]) {
 	// Make a queue of array indices to process
 	const zbangIndexQueue = [...processedBangs.keys()]
 
-	const numConsumers = Math.min(8, zbangIndexQueue.length)
+	const numConsumers = Math.min(16, zbangIndexQueue.length)
 
 	let numDone = 0
 
