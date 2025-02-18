@@ -432,7 +432,7 @@
 		</status-bar>
 	</AutogrowingTextarea>
 
-	<content>
+	<content hidden={fullscreen}>
 		<div class="result-count">Results: {fuzzysortResults.length}/{zbangs.length}</div>
 
 		{#each adjustedFuzzySortResults as result, resultNum}
