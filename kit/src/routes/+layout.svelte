@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '$src/app.scss'
-	import favicon from '$lib/assets/favicon.svg'
+	import { favicon } from '@leftium/logo'
 
 	let { children } = $props()
 </script>
