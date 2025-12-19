@@ -59,10 +59,10 @@ export default class Merge extends Command {
 			[...bangFilenames],
 			(result, filename) => {
 				const bangs = _.map(cwdInput.read(filename, 'json'), (bang) => {
-					const code = [`!${bang.t}`]
+					const code = [`!${bang.t}`, ...(bang.ts || []).map((t: string) => `!${t}`)]
 					const name = bang.s
 					const tags: string[] = bang.c && bang.sc ? [`${bang.c}/${bang.sc}`] : []
-					const urls = { s: normalizeUrlTemplate(bang.u, { keepCase: true }) }
+					const urls = { s: normalizeUrlTemplate(bang.u, { keepCase: true, stripWWW: true }) }
 					let ddgr = 1
 					const rank = -1
 
@@ -109,11 +109,11 @@ export default class Merge extends Command {
 					ddgrCounts[ddgr].count++
 
 					// eslint-disable-next-line perfectionist/sort-objects
-					return { code, rank, ddgr, name, tags, urls }
+					return { rank, ddgr, name, code, tags, urls }
 				})
 				return [...result, ...bangs]
 			},
-			[] as { ddgr: number }[]
+			[] as { rank: number; ddgr: number; name: string; code: string[]; tags: string[]; urls: { s: string } }[]
 		)
 
 		let rank = 1
@@ -125,8 +125,12 @@ export default class Merge extends Command {
 		const zbangs = _.chain(kagiBangs)
 			.orderBy(['ddgr'], ['desc'])
 			.map((bang) => ({
-				...bang,
 				rank: ddgrCounts[bang.ddgr]?.rank,
+				ddgr: bang.ddgr,
+				name: bang.name,
+				code: bang.code,
+				tags: bang.tags,
+				urls: bang.urls,
 			}))
 
 		async function mergeIntoZbangJson() {
