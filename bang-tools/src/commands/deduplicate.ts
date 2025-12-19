@@ -100,7 +100,7 @@ function process(zbangs: Zbang[]) {
 
 			// Make list of triggers with shortest and longest first.
 			// eslint-disable-next-line unicorn/prefer-spread
-			const code = _.uniq(_.concat(tShort, tlong, _.map(sources, 'code.0')))
+			const code = _.uniq(_.concat(tShort, tlong, _.flatMap(sources, 'code')))
 
 			// eslint-disable-next-line perfectionist/sort-objects
 			ddgrCounts[ddgr] = ddgrCounts[ddgr] || { ddgr, count: 0 }
