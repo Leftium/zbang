@@ -27,7 +27,7 @@ export default class Merge extends Command {
 		const ddgBangsFilename = 'duckduckgo_bangs.json'
 		const outputFilename = 'zbangs.json'
 
-		const bangFilenames = new Set(cwdInput.list())
+		const bangFilenames = new Set(cwdInput.list()?.filter((f) => f.endsWith('.json')))
 		bangFilenames.delete(outputFilename)
 		bangFilenames.delete(ddgBangsFilename)
 
