@@ -79,8 +79,14 @@ export default class Merge extends Command {
 						console.log(`No query: ${bang.u}`)
 					}
 
+					// Triggers where Kagi's bang-provider feature differs from DDG's target
+					const mismatchedTriggers = ['p', 'q', 'k', 'code']
+
 					if (bang.c === 'Region search') {
 						// Region search bangs use country codes that DDG uses for other purposes
+						ddgr = 2
+					} else if (mismatchedTriggers.includes(bang.t) && domainFromKagi === 'bang-provider') {
+						// Known mismatches: Kagi Podcasts/Pinterest, Kagi Quick/Quora, Kagi Search/Konsolentreff, Kagi Code/SearchCode
 						ddgr = 2
 					} else if (bangWithCode) {
 						if (
