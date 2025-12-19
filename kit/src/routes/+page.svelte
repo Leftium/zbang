@@ -244,9 +244,10 @@
 
 	function handleSearch() {
 		blurInput()
+		// Strip trailing newlines before submitting.
 		// Need to insert space after first newline so triggers are not joined with other text.
 		// Need to percent encode to preserve newlines.
-		const query = encodeURIComponent(value.replace('\n', ' \n'))
+		const query = encodeURIComponent(value.trimEnd().replace('\n', ' \n'))
 
 		window.open(`https://kagi.com/search?q=${query}`, '_blank')
 	}
