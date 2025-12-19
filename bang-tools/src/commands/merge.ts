@@ -61,7 +61,7 @@ export default class Merge extends Command {
 				const bangs = _.map(cwdInput.read(filename, 'json'), (bang) => {
 					const code = [`!${bang.t}`, ...(bang.ts || []).map((t: string) => `!${t}`)]
 					const name = bang.s
-					const tags: string[] = bang.c && bang.sc ? [`${bang.c}/${bang.sc}`] : []
+					const tags: string[] = bang.c ? (bang.sc ? [`${bang.c}/${bang.sc}`] : [bang.c]) : []
 					const urls = { s: normalizeUrlTemplate(bang.u, { keepCase: true, stripWWW: true }) }
 					let ddgr = 1
 					const rank = -1
@@ -79,7 +79,10 @@ export default class Merge extends Command {
 						console.log(`No query: ${bang.u}`)
 					}
 
-					if (bangWithCode) {
+					if (bang.c === 'Region search') {
+						// Region search bangs use country codes that DDG uses for other purposes
+						ddgr = 2
+					} else if (bangWithCode) {
 						if (
 							domainFromDuck !== domainFromKagi &&
 							domainFromKagi !== 'bang-provider' &&
