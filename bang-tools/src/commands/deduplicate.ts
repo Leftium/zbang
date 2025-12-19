@@ -84,23 +84,14 @@ function process(zbangs: Zbang[]) {
 				.value()
 			// .replaceAll('{{{s}}}', queryPlaceholder)
 
-			// Get shortest trigger; higher r breaks ties.
-			const tShort = _.chain(sources)
-				.orderBy([({ code }) => code[0].length, 'ddgr'], ['asc', 'desc'])
-				.head()
-				.get('code')
-				.value()[0]
-
-			// Get longest trigger; higher r breaks ties.
-			const tlong = _.chain(sources)
-				.orderBy([({ code }) => code[0].length, 'ddgr'], ['desc', 'desc'])
-				.head()
-				.get('code')
-				.value()[0]
-
-			// Make list of triggers with shortest and longest first.
-			// eslint-disable-next-line unicorn/prefer-spread
-			const code = _.uniq(_.concat(tShort, tlong, _.flatMap(sources, 'code')))
+			// Sort triggers: shortest, longest, remaining by increasing length (ddgr breaks ties)
+			const allCodes = _.chain(sources)
+				.flatMap((source) => source.code.map((c: string) => ({ code: c, ddgr: source.ddgr })))
+				.orderBy(['code.length', 'ddgr'], ['asc', 'desc'])
+				.map('code')
+				.uniq()
+				.value()
+			const code = allCodes.length <= 2 ? allCodes : [allCodes[0], allCodes.at(-1), ...allCodes.slice(1, -1)]
 
 			// eslint-disable-next-line perfectionist/sort-objects
 			ddgrCounts[ddgr] = ddgrCounts[ddgr] || { ddgr, count: 0 }
