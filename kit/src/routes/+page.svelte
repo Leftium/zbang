@@ -436,7 +436,7 @@
 	</AutogrowingTextarea>
 
 	<content hidden={fullscreen}>
-		<div class="result-count">Results: {fuzzysortResults.length}/{zbangs.length}</div>
+		<div class="result-count">Results: {fuzzysortResults.total}/{zbangs.length}</div>
 
 		{#each adjustedFuzzySortResults as result, resultNum}
 			{@const resultProcessed = process(result)}
