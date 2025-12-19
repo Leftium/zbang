@@ -447,17 +447,19 @@
 						</div>
 					{/if}
 					<div class="name">{@html result[0].highlight() || resultProcessed.object.name}</div>
+				</div>
+
+				<div class="score">{resultProcessed.codeScoreMax?.toFixed(FIXED_DIGITS)}</div>
+				<div class="triggers-row">
+					<div class="triggers">
+						{#each resultProcessed.codeScores as codeScore}
+							<span title={codeScore.score?.toFixed(FIXED_DIGITS)}>{@html codeScore.html}</span>&nbsp;
+						{/each}
+					</div>
 					<div class="score-and-rank">
 						<b>r:</b>{resultProcessed.object.rank}
 						<b>s:</b>{result.score.toFixed(FIXED_DIGITS)}
 					</div>
-				</div>
-
-				<div class="score">{resultProcessed.codeScoreMax?.toFixed(FIXED_DIGITS)}</div>
-				<div>
-					{#each resultProcessed.codeScores as codeScore}
-						<span title={codeScore.score?.toFixed(FIXED_DIGITS)}>{@html codeScore.html}</span>&nbsp;
-					{/each}
 				</div>
 
 				{#if VERBOSE}
@@ -558,9 +560,22 @@
 					float: left;
 				}
 			}
+		}
+
+		.triggers-row {
+			display: flex;
+			align-items: center;
+
+			.triggers {
+				flex: 1;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
 
 			.score-and-rank {
-				flex-grow: 1;
+				flex-shrink: 0;
+				margin-left: auto;
 			}
 		}
 	}
