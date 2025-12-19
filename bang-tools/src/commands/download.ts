@@ -20,12 +20,11 @@ export default class Download extends Command {
 		const cwdOutput = jetpack.dir(outputDir)
 
 		async function downloadBangFiles() {
-			const urls = [
-				'https://duckduckgo.com/bang.js',
-				'https://github.com/kagisearch/bangs/raw/refs/heads/main/data/bangs.json',
-				'https://github.com/kagisearch/bangs/raw/refs/heads/main/data/kagi_bangs.json',
-				'https://github.com/kagisearch/bangs/raw/refs/heads/main/data/assistant_bangs.json',
-			]
+		const urls = [
+			'https://duckduckgo.com/bang.js',
+			'https://github.com/kagisearch/bangs/raw/refs/heads/main/data/bangs.json',
+			'https://github.com/kagisearch/bangs/raw/refs/heads/main/data/kagi_bangs.json',
+		]
 
 			const filenames = urls.map((url) => url.split('/').at(-1))
 			filenames[0] = 'duckduckgo_bangs.json'
