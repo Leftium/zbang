@@ -94,8 +94,10 @@
 	const fuzzysortThreshold = 0.7
 	const fuzzysortLimit = 20
 
+	const fuzzysortQuery = $derived(includeUrlKeys ? currentLine.replace('//', '') : currentLine)
+
 	const fuzzysortResults = $derived(
-		fuzzysort.go(currentLine, zbangsPrepared, {
+		fuzzysort.go(fuzzysortQuery, zbangsPrepared, {
 			limit: fuzzysortLimit,
 			threshold: fuzzysortThreshold,
 			all: true,
@@ -447,7 +449,7 @@
 						</div>
 					{/if}
 					<div class="name">{@html result[0].highlight() || resultProcessed.object.name}</div>
-					<div class="url">{resultProcessed.object.urls.s.replace(/^https?:\/\//, '')}</div>
+					<div class="url">{@html (includeUrlKeys ? result.at(-1)?.highlight() : resultProcessed.object.urls.s)?.replace(/^https?:\/\//, '') ?? ''}</div>
 				</div>
 
 				<div class="score">{resultProcessed.codeScoreMax?.toFixed(FIXED_DIGITS)}</div>
@@ -486,10 +488,7 @@
 					{/each}
 				{/if}
 
-				{#if includeUrlKeys}
-					<div class="score">{result.at(-1)?.score.toFixed(FIXED_DIGITS)}</div>
-					<div>{@html result.at(-1)?.highlight()}</div>
-				{/if}
+
 			</div>
 			<pre hidden>{JSON.stringify(resultProcessed, null, 4)}</pre>
 		{/each}
@@ -576,6 +575,11 @@
 				margin-left: $size-2;
 				font-size: $font-size-0;
 				font-weight: $font-weight-3;
+
+				:global(b) {
+					color: var(--pico-color) !important;
+					font-weight: $font-weight-6 !important;
+				}
 			}
 		}
 
