@@ -447,6 +447,7 @@
 						</div>
 					{/if}
 					<div class="name">{@html result[0].highlight() || resultProcessed.object.name}</div>
+					<div class="url">{resultProcessed.object.urls.s.replace(/^https?:\/\//, '')}</div>
 				</div>
 
 				<div class="score">{resultProcessed.codeScoreMax?.toFixed(FIXED_DIGITS)}</div>
@@ -560,6 +561,22 @@
 					float: left;
 				}
 			}
+
+			.name {
+				flex-shrink: 0;
+			}
+
+			.url {
+				flex: 1;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+				text-align: right;
+				color: var(--pico-muted-color);
+				margin-left: $size-2;
+				font-size: $font-size-0;
+				font-weight: $font-weight-3;
+			}
 		}
 
 		.triggers-row {
@@ -576,6 +593,8 @@
 			.score-and-rank {
 				flex-shrink: 0;
 				margin-left: auto;
+				font-size: $font-size-0;
+				font-weight: $font-weight-3;
 			}
 		}
 	}
