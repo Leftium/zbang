@@ -84,14 +84,17 @@ function process(zbangs: Zbang[]) {
 				.value()
 			// .replaceAll('{{{s}}}', queryPlaceholder)
 
-			// Sort triggers: shortest, longest, remaining by increasing length (ddgr breaks ties)
+			// Sort triggers: shortest, highest ranked, longest, remaining by length (ddgr breaks ties)
 			const allCodes = _.chain(sources)
 				.flatMap((source) => source.code.map((c: string) => ({ code: c, ddgr: source.ddgr })))
 				.orderBy(['code.length', 'ddgr'], ['asc', 'desc'])
 				.map('code')
 				.uniq()
 				.value()
-			const code = allCodes.length <= 2 ? allCodes : [allCodes[0], allCodes.at(-1), ...allCodes.slice(1, -1)]
+			const shortest = allCodes[0]
+			const longest = allCodes.at(-1)
+			const highestRanked = _.chain(sources).orderBy(['ddgr'], ['desc']).head().get('code[0]').value()
+			const code = _.uniq([shortest, highestRanked, longest, ...allCodes])
 
 			// eslint-disable-next-line perfectionist/sort-objects
 			ddgrCounts[ddgr] = ddgrCounts[ddgr] || { ddgr, count: 0 }
