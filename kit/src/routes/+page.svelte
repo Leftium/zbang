@@ -95,10 +95,22 @@
 	const fuzzysortThreshold = 0.7
 	const fuzzysortLimit = 20
 
+	// Detect if user is typing a bang (e.g., "test query !g" or "test query !")
+	// Single ! = bang mode (search without !), double !! = include ! in search
+	const bangSearchMatch = $derived(currentLine.match(/(!!?)([^\s]*)$/))
+
 	const fuzzysortQuery = $derived.by(() => {
+		// If typing a bang, search only the text after !
+		if (bangSearchMatch) {
+			const prefix = bangSearchMatch[1] // "!" or "!!"
+			const bangQuery = bangSearchMatch[2] // "g", "goo", ""
+			// !! keeps one ! in the query, single ! doesn't
+			return prefix === '!!' ? '!' + bangQuery : bangQuery
+		}
+
 		let query = currentLine
-		// Filter out bangs (e.g., "!g ", "!ddg ") so they don't affect search results
-		query = query.replace(/![^\s]*\s*/g, '')
+		// Filter out completed bangs (e.g., "!g ", "!ddg ") so they don't affect search results
+		query = query.replace(/![^\s]*\s+/g, '')
 		// Handle URL search
 		if (includeUrlKeys) {
 			query = query.replace('//', '')
@@ -115,8 +127,8 @@
 		})
 	)
 
-	// Extract bangs already used in the current line
-	const usedBangs = $derived((currentLine.match(/![^\s]+/g) || []) as string[])
+	// Extract bangs already used (completed with trailing space) in the current line
+	const usedBangs = $derived((currentLine.match(/![^\s]+(?=\s)/g) || []) as string[])
 
 	const adjustedFuzzySortResults = $derived.by(() => {
 		const ordered = _.orderBy(
@@ -412,6 +424,11 @@
 				// Now get the bang text based on updated search results
 				const text = adjustedFuzzySortResults[index]?.obj.code[0].target
 				if (text) {
+					// Remove the search input that led to this result
+					// If in bang mode, remove the full match (e.g., "!!wire"), otherwise just the query
+					const charsToRemove = bangSearchMatch ? bangSearchMatch[0].length : fuzzysortQuery.length
+					for (let i = 0; i < charsToRemove; i++) simulateBackspace()
+
 					insertTextAtCursor(text + ' ')
 					syncTextareaElementValue()
 					inputHistory[0].data = '!'
