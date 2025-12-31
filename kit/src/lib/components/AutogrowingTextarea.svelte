@@ -53,9 +53,6 @@
 
 		function resizeHandler() {
 			if (growWrapElement) {
-				if (!/iPhone|iPad|iPod/.test(window.navigator.userAgent)) {
-					height = viewport?.height || 0
-				}
 				growWrapElement.style.bottom = `${height - (viewport?.height || 0)}px`
 			}
 		}
