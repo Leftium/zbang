@@ -71,8 +71,6 @@
 </grow-wrap>
 
 <style lang="scss">
-	@use 'open-props-scss' as *;
-
 	grow-wrap {
 		display: block;
 
@@ -97,7 +95,7 @@
 		textarea {
 			margin: 0;
 			padding-block: 0;
-			padding-inline: $size-2;
+			padding-inline: var(--size-2);
 
 			flex-grow: 1;
 

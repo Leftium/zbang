@@ -502,8 +502,6 @@
 </main>
 
 <style lang="scss">
-	@use 'open-props-scss' as *;
-
 	.result-count {
 		text-align: right;
 	}
@@ -512,7 +510,7 @@
 		display: grid;
 		grid-template-columns: auto 1fr;
 		overflow: hidden;
-		margin-bottom: $size-3;
+		margin-bottom: var(--size-3);
 		justify-content: left;
 		border: 1px solid var(--pico-muted-border-color);
 
@@ -529,7 +527,7 @@
 		}
 
 		& > div {
-			padding-inline: $size-1;
+			padding-inline: var(--size-1);
 
 			// Internal borders:
 			border-bottom: 1px solid var(--pico-muted-border-color);
@@ -550,13 +548,13 @@
 
 			.number-and-shortcut {
 				button {
-					width: $size-7;
-					padding: 0 calc($size-1);
-					margin-right: $size-2;
+					width: var(--size-7);
+					padding: 0 calc(var(--size-1));
+					margin-right: var(--size-2);
 
 					font-family: monospace;
-					font-size: calc($font-size-0 * 0.9);
-					font-weight: $font-weight-5;
+					font-size: calc(var(--font-size-0) * 0.9);
+					font-weight: var(--font-weight-5);
 
 					float: left;
 				}
@@ -573,13 +571,13 @@
 				white-space: nowrap;
 				text-align: right;
 				color: var(--pico-muted-color);
-				margin-left: $size-2;
-				font-size: $font-size-0;
-				font-weight: $font-weight-3;
+				margin-left: var(--size-2);
+				font-size: var(--font-size-0);
+				font-weight: var(--font-weight-3);
 
 				:global(b) {
 					color: var(--pico-color) !important;
-					font-weight: $font-weight-6 !important;
+					font-weight: var(--font-weight-6) !important;
 				}
 			}
 		}
@@ -598,15 +596,15 @@
 			.score-and-rank {
 				flex-shrink: 0;
 				margin-left: auto;
-				font-size: $font-size-0;
-				font-weight: $font-weight-3;
+				font-size: var(--font-size-0);
+				font-weight: var(--font-weight-3);
 			}
 		}
 	}
 
 	main {
 		///border: 4px solid $violet-5;
-		padding: $size-1;
+		padding: var(--size-1);
 
 		header {
 			display: flex;
@@ -615,12 +613,12 @@
 			width: 100%;
 
 			span {
-				font-size: $font-size-4;
-				font-weight: $font-weight-9;
+				font-size: var(--font-size-4);
+				font-weight: var(--font-weight-9);
 			}
 
 			.brand-primary {
-				color: $orange-8;
+				color: var(--orange-8);
 
 				// Svelte logo color
 				color: #ff3e00;
@@ -630,11 +628,11 @@
 			}
 
 			.brand-secondary {
-				color: $gray-5;
+				color: var(--gray-5);
 			}
 
 			.logo {
-				color: $gray-5;
+				color: var(--gray-5);
 
 				// Svelte logo color
 				color: #ff3e00;
@@ -646,34 +644,34 @@
 			justify-content: space-between;
 			align-items: center;
 
-			font-size: $font-size-0;
+			font-size: var(--font-size-0);
 
-			padding: $size-1;
-			padding-inline: $size-2;
+			padding: var(--size-1);
+			padding-inline: var(--size-2);
 
 			border-top: 1px solid var(--pico-form-element-border-color);
 
 			button {
 				align-self: center;
 
-				padding: 0 calc($size-1);
+				padding: 0 calc(var(--size-1));
 
-				font-size: calc($font-size-0 * 0.9);
-				font-weight: $font-weight-5;
+				font-size: calc(var(--font-size-0) * 0.9);
+				font-weight: var(--font-weight-5);
 			}
 		}
 
 		button.theme {
 			align-self: center;
 
-			font-size: calc($font-size-0);
-			font-weight: $font-weight-5;
-			padding: calc($size-1);
+			font-size: calc(var(--font-size-0));
+			font-weight: var(--font-weight-5);
+			padding: calc(var(--size-1));
 			float: right;
 		}
 
 		pre {
-			margin-top: $size-1;
+			margin-top: var(--size-1);
 		}
 	}
 </style>

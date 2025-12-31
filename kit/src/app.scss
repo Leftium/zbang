@@ -1,6 +1,7 @@
 @use '@picocss/pico/scss/pico' with (
 	$theme-color: 'zinc'
 );
+@import 'open-props/style';
 
 html {
 	transition: background-color var(--pico-transition);
