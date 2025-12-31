@@ -1,3 +1,7 @@
+# zBang
+
+zBang is a front-end for Kagi (search + bangs)
+
 ## Main features
 - Bang filter/search
 - Kagi search QoL features
