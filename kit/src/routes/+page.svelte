@@ -23,6 +23,7 @@
 	let lineCount = $derived(value.split('\n').length)
 
 	let fullscreen = $state(false)
+	let wordwrap = $state(false)
 	let theme = $state('')
 
 	type InputFrame = {
@@ -515,6 +516,7 @@
 		bind:textareaElement
 		bind:value
 		bind:fullscreen
+		bind:wordwrap
 		{onbeforeinput}
 		{oninput}
 		{onkeydown}
@@ -528,6 +530,7 @@
 				<button class="outline" onclick={() => (fullscreen = !fullscreen)}>
 					{fullscreen ? 'Restore' : 'Fullscreen'}
 				</button>
+				<label><input type="checkbox" bind:checked={wordwrap} /> Wrap</label>
 			</div>
 			<div>
 				{#if lineCount > 1}{lineCount}L{/if}
@@ -747,8 +750,7 @@
 
 			font-size: var(--font-size-0);
 
-			padding: var(--size-1);
-			padding-inline: var(--size-2);
+			padding: 0.25rem var(--size-2);
 
 			border-top: 1px solid var(--pico-form-element-border-color);
 
@@ -756,9 +758,32 @@
 				align-self: center;
 
 				padding: 0 calc(var(--size-1));
+				margin: 0;
 
 				font-size: calc(var(--font-size-0) * 0.9);
 				font-weight: var(--font-weight-5);
+			}
+
+			> div {
+				display: flex;
+				align-items: center;
+			}
+
+			label {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.25rem;
+				margin: 0 0.5rem 0 0.5rem;
+				padding: 0;
+				font-size: calc(var(--font-size-0) * 0.9);
+
+				input[type='checkbox'] {
+					all: revert;
+					width: 0.75rem;
+					height: 0.75rem;
+					margin: 0;
+					vertical-align: middle;
+				}
 			}
 		}
 

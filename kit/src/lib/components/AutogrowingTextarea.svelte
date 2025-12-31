@@ -7,11 +7,13 @@
 		value = $bindable(),
 		oninput,
 		fullscreen = $bindable(),
+		wordwrap = $bindable(false),
 		children,
 		...props
 	}: HTMLTextareaAttributes & {
 		textareaElement?: HTMLTextAreaElement
 		fullscreen: boolean
+		wordwrap?: boolean
 	} = $props()
 
 	let growWrapElement: HTMLElement | undefined = $state()
@@ -35,6 +37,9 @@
 	$effect(() => {
 		// Prevent scrollbar when body is taller than textarea:
 		document.body.style.overflowY = fullscreen ? 'hidden' : 'auto'
+
+		// Track wordwrap to trigger recalculation when it changes
+		void wordwrap
 
 		adjustTextAreaHeight()
 	})
@@ -61,7 +66,7 @@
 	})
 </script>
 
-<grow-wrap bind:this={growWrapElement} class:fullscreen>
+<grow-wrap bind:this={growWrapElement} class:fullscreen class:wordwrap>
 	<textarea rows="1" bind:this={textareaElement} bind:value oninput={handleInput} {...props}
 	></textarea>
 	{@render children?.()}
@@ -93,6 +98,7 @@
 			margin: 0;
 			padding-block: 0;
 			padding-inline: var(--size-2);
+			padding-bottom: 1rem;
 
 			flex-grow: 1;
 
@@ -107,6 +113,11 @@
 				border: none;
 				box-shadow: none;
 			}
+		}
+
+		&.wordwrap textarea {
+			white-space: pre-wrap;
+			word-wrap: break-word;
 		}
 	}
 </style>
