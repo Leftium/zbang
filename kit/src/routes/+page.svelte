@@ -36,12 +36,12 @@
 
 	// When double-tapping the spacebar inserts period followed by a space.
 	let isPeriodShortcut = $state(false)
+	// Mobile sends '.' then ' ' separately instead of '. '
+	let isMobilePeriodShortcut = $state(false)
 
-	let debugInfo = $derived({
-		isPeriodShortcut,
-		doubleKeypress,
-		inputHistory,
-	})
+	// Saved value before Space-Space inserted '!' - for triple-tap submit
+	let pendingSubmitValue: string | null = $state(null)
+	let pendingSubmitTs: number = $state(0)
 
 	const includeTagKeys = $derived(value.includes('#'))
 	const includeUrlKeys = $derived(value.includes('//'))
@@ -284,14 +284,15 @@
 				inputType === inputHistory[1].inputType
 			) {
 				doubleKeypress = 'backspace'
-			} else if (inputType === 'insertLineBreak' && inputType === inputHistory[1].inputType) {
-				doubleKeypress = 'newline'
 			} else if (data?.toLowerCase() === inputHistory[1].data?.toLowerCase()) {
 				doubleKeypress = inputHistory[1].data
 			}
 		}
 
+		// Desktop sends '. ' as single event, mobile sends '.' then ' ' separately
 		isPeriodShortcut = inputType === 'insertText' && data === '. '
+		isMobilePeriodShortcut =
+			inputType === 'insertText' && data === ' ' && inputHistory[1]?.data === '.'
 	}
 
 	function oninput(this: HTMLInputElement) {
@@ -306,18 +307,43 @@
 			}
 		}
 
-		if (isPeriodShortcut || doubleKeypress === ' ') {
+		// Triple-tap Space: restore saved value and submit
+		// Check BEFORE the Space-Space → ! conversion
+		// Use timestamp instead of history check - more reliable across devices
+		const anyPeriodShortcut = isPeriodShortcut || isMobilePeriodShortcut
+		const currentIsSpace =
+			anyPeriodShortcut || inputHistory[0]?.data === ' ' || inputHistory[0]?.data === '. '
+		const timeSincePending = +new Date() - pendingSubmitTs
+		const isThirdSpace = currentIsSpace && timeSincePending < 500
+
+		if (pendingSubmitValue !== null && isThirdSpace) {
+			// Remove what was just inserted (space or '. ')
+			simulateBackspace()
+			if (anyPeriodShortcut) simulateBackspace() // extra backspace for '. '
+			simulateBackspace() // remove the '!'
+			value = pendingSubmitValue
+			pendingSubmitValue = null
+			syncTextareaElementValue()
+			handleSearch()
+			return
+		}
+
+		if (anyPeriodShortcut || doubleKeypress === ' ') {
+			// Save value BEFORE any modifications for potential triple-tap submit
+			pendingSubmitValue = value
+			pendingSubmitTs = +new Date()
+
 			cancelDoubleKeypress()
+			// Note: mobile period shortcut also only needs 2 backspaces ('. ')
 			simulateExclamation()
 			syncTextareaElementValue()
 
 			inputHistory[0].data = '!'
 		}
 
-		if (doubleKeypress === 'newline') {
-			cancelDoubleKeypress()
-			syncTextareaElementValue()
-			handleSearch()
+		// Clear pending submit if any other input
+		if (doubleKeypress !== ' ' && !anyPeriodShortcut && doubleKeypress !== '!') {
+			pendingSubmitValue = null
 		}
 
 		if (doubleKeypress === 'F') {
@@ -450,14 +476,20 @@
 						</div>
 					{/if}
 					<div class="name">{@html result[0].highlight() || resultProcessed.object.name}</div>
-					<div class="url">{@html (includeUrlKeys ? result.at(-1)?.highlight() : resultProcessed.object.urls.s)?.replace(/^https?:\/\//, '') ?? ''}</div>
+					<div class="url">
+						{@html (includeUrlKeys
+							? result.at(-1)?.highlight()
+							: resultProcessed.object.urls.s
+						)?.replace(/^https?:\/\//, '') ?? ''}
+					</div>
 				</div>
 
 				<div class="score">{resultProcessed.codeScoreMax?.toFixed(FIXED_DIGITS)}</div>
 				<div class="triggers-row">
 					<div class="triggers">
 						{#each resultProcessed.codeScores as codeScore}
-							<span title={codeScore.score?.toFixed(FIXED_DIGITS)}>{@html codeScore.html}</span>&nbsp;
+							<span title={codeScore.score?.toFixed(FIXED_DIGITS)}>{@html codeScore.html}</span
+							>&nbsp;
 						{/each}
 					</div>
 					<div class="score-and-rank">
@@ -488,16 +520,9 @@
 						<div {hidden}>{@html tagScore.html}</div>
 					{/each}
 				{/if}
-
-
 			</div>
 			<pre hidden>{JSON.stringify(resultProcessed, null, 4)}</pre>
 		{/each}
-
-		{#if dev && false}
-			<pre>{JSON.stringify({ debugInfo }, null, 4)}</pre>
-			<pre>{#each Array.from({ length: 99 }, (e, i) => i) as item}{item + '\n'}{/each}</pre>
-		{/if}
 	</content>
 </main>
 
