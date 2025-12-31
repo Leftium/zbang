@@ -4,4 +4,7 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
 	plugins: [sveltekit(), devtoolsJson()],
+	server: {
+		allowedHosts: ['.ngrok-free.app'],
+	},
 })
