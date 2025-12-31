@@ -39,9 +39,10 @@
 	// Mobile sends '.' then ' ' separately instead of '. '
 	let isMobilePeriodShortcut = $state(false)
 
-	// Saved value before Space-Space inserted '!' - for triple-tap submit
+	// Saved value before double-tap shortcut - for triple-tap submit
 	let pendingSubmitValue: string | null = $state(null)
 	let pendingSubmitTs: number = $state(0)
+	let pendingSubmitKey: string | null = $state(null) // the key that triggered the shortcut
 
 	const includeTagKeys = $derived(value.includes('#'))
 	const includeUrlKeys = $derived(value.includes('//'))
@@ -94,7 +95,16 @@
 	const fuzzysortThreshold = 0.7
 	const fuzzysortLimit = 20
 
-	const fuzzysortQuery = $derived(includeUrlKeys ? currentLine.replace('//', '') : currentLine)
+	const fuzzysortQuery = $derived.by(() => {
+		let query = currentLine
+		// Filter out bangs (e.g., "!g ", "!ddg ") so they don't affect search results
+		query = query.replace(/![^\s]*\s*/g, '')
+		// Handle URL search
+		if (includeUrlKeys) {
+			query = query.replace('//', '')
+		}
+		return query.trim()
+	})
 
 	const fuzzysortResults = $derived(
 		fuzzysort.go(fuzzysortQuery, zbangsPrepared, {
@@ -105,13 +115,21 @@
 		})
 	)
 
-	const adjustedFuzzySortResults = $derived(
-		_.orderBy(
+	// Extract bangs already used in the current line
+	const usedBangs = $derived((currentLine.match(/![^\s]+/g) || []) as string[])
+
+	const adjustedFuzzySortResults = $derived.by(() => {
+		const ordered = _.orderBy(
 			fuzzysortResults,
 			[(r) => r.score > 0.95, (r) => r.score > 0.6, 'obj.rank', 'score'],
 			['desc', 'desc', 'asc', 'desc']
 		)
-	)
+		// Filter out bangs that are already used in the current line
+		return ordered.filter((result) => {
+			const codes = result.obj.code.map((c) => c.target)
+			return !codes.some((code) => usedBangs.includes(code))
+		})
+	})
 
 	function process(result: (typeof fuzzysortResults)[0]) {
 		const object = {
@@ -193,16 +211,21 @@
 		}
 	}
 
-	// Simulate pressing '!'
-	function simulateExclamation() {
+	// Insert text at cursor position
+	function insertTextAtCursor(text: string) {
 		if (textareaElement) {
 			const start = textareaElement.selectionStart
 			const end = textareaElement.selectionEnd
 
 			textareaElement.value =
-				textareaElement.value.slice(0, start) + '!' + textareaElement.value.slice(end)
-			textareaElement.setSelectionRange(start + 1, start + 1)
+				textareaElement.value.slice(0, start) + text + textareaElement.value.slice(end)
+			textareaElement.setSelectionRange(start + text.length, start + text.length)
 		}
+	}
+
+	// Simulate pressing '!'
+	function simulateExclamation() {
+		insertTextAtCursor('!')
 	}
 
 	function getCurrentLineValue(value: string) {
@@ -307,22 +330,35 @@
 			}
 		}
 
-		// Triple-tap Space: restore saved value and submit
-		// Check BEFORE the Space-Space → ! conversion
+		// Triple-tap: restore saved value and submit
+		// Check BEFORE the double-tap → bang conversion
 		// Use timestamp instead of history check - more reliable across devices
 		const anyPeriodShortcut = isPeriodShortcut || isMobilePeriodShortcut
-		const currentIsSpace =
-			anyPeriodShortcut || inputHistory[0]?.data === ' ' || inputHistory[0]?.data === '. '
+		const currentData = inputHistory[0]?.data
+		const currentIsSpace = anyPeriodShortcut || currentData === ' ' || currentData === '. '
+		const currentMatchesPendingKey =
+			pendingSubmitKey && currentData?.toUpperCase() === pendingSubmitKey
 		const timeSincePending = +new Date() - pendingSubmitTs
-		const isThirdSpace = currentIsSpace && timeSincePending < 500
+		const isTripleTap = (currentIsSpace || currentMatchesPendingKey) && timeSincePending < 500
 
-		if (pendingSubmitValue !== null && isThirdSpace) {
-			// Remove what was just inserted (space or '. ')
-			simulateBackspace()
+		if (pendingSubmitValue !== null && isTripleTap) {
+			// Remove what was just inserted
+			simulateBackspace() // remove the triggering char (space or letter)
 			if (anyPeriodShortcut) simulateBackspace() // extra backspace for '. '
-			simulateBackspace() // remove the '!'
+			// Remove the bang that was inserted (varies by length)
+			const bangLength =
+				pendingSubmitKey === ' '
+					? 1
+					: (adjustedFuzzySortResults[
+							doubleKeypressToFuzzySortIndex[
+								pendingSubmitKey as keyof typeof doubleKeypressToFuzzySortIndex
+							]
+						]?.obj.code[0].target.length ?? 0) + 1 // +1 for trailing space
+			for (let i = 0; i < bangLength; i++) simulateBackspace()
+
 			value = pendingSubmitValue
 			pendingSubmitValue = null
+			pendingSubmitKey = null
 			syncTextareaElementValue()
 			handleSearch()
 			return
@@ -332,6 +368,7 @@
 			// Save value BEFORE any modifications for potential triple-tap submit
 			pendingSubmitValue = value
 			pendingSubmitTs = +new Date()
+			pendingSubmitKey = ' '
 
 			cancelDoubleKeypress()
 			// Note: mobile period shortcut also only needs 2 backspaces ('. ')
@@ -341,9 +378,18 @@
 			inputHistory[0].data = '!'
 		}
 
-		// Clear pending submit if any other input
-		if (doubleKeypress !== ' ' && !anyPeriodShortcut && doubleKeypress !== '!') {
+		// Clear pending submit if any other input (not a potential third tap)
+		const isDoubleTapKey = Object.keys(doubleKeypressToFuzzySortIndex).includes(
+			doubleKeypress?.toUpperCase() ?? ''
+		)
+		if (
+			doubleKeypress !== ' ' &&
+			!anyPeriodShortcut &&
+			!isDoubleTapKey &&
+			!currentMatchesPendingKey
+		) {
 			pendingSubmitValue = null
+			pendingSubmitKey = null
 		}
 
 		if (doubleKeypress === 'F') {
@@ -354,13 +400,22 @@
 
 		for (const [key, index] of Object.entries(doubleKeypressToFuzzySortIndex)) {
 			if (doubleKeypress === key) {
+				// Save for potential triple-tap submit (before any modifications)
+				pendingSubmitValue = value
+				pendingSubmitTs = +new Date()
+				pendingSubmitKey = key
+
+				// Remove the double-typed chars first, then sync so fuzzy results update
 				cancelDoubleKeypress()
 				syncTextareaElementValue()
-				const text = adjustedFuzzySortResults[index].obj.code[0].target
+
+				// Now get the bang text based on updated search results
+				const text = adjustedFuzzySortResults[index]?.obj.code[0].target
 				if (text) {
-					replaceCurrentLine(text + '\n')
+					insertTextAtCursor(text + ' ')
+					syncTextareaElementValue()
+					inputHistory[0].data = '!'
 				}
-				syncTextareaElementValue()
 			}
 		}
 	}
