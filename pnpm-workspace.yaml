@@ -1,7 +1,7 @@
 packages:
-  # PocketBase Server
   - pb
-  # SvelteKit FrontEnd
   - kit
-  # CLI commands to manage bangs
   - bang-tools
+
+onlyBuiltDependencies:
+  - ngrok
