@@ -24,7 +24,9 @@ function getLocalIP() {
 // Show QR code for a URL (indented to align with Vite output)
 function showQR(url, label) {
 	if (label) {
-		console.log(`  ➜  ${label}: ${url}`)
+		// Align with Vite's "Network:" label (7 chars + colon + space)
+		const padded = (label + ':').padEnd(9)
+		console.log(`  ➜  ${padded}${url}`)
 	}
 	qrcode.generate(url, { small: true }, (code) => {
 		console.log(
