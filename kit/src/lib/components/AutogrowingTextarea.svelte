@@ -63,26 +63,41 @@
 	}
 
 	onMount(() => {
+		const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+
+		if (!isIOS) return // Android handled by interactive-widget meta tag
+
+		let height = window.visualViewport?.height || 0
 		const viewport = window.visualViewport
+		let keyboardOpen = false
+
+		function preventScrollDown(e: Event) {
+			if (keyboardOpen && window.scrollY > 0) {
+				e.preventDefault()
+				window.scrollTo(0, 0)
+			}
+		}
 
 		function resizeHandler() {
-			if (!growWrapElement || !fullscreen) {
-				growWrapElement?.style.removeProperty('bottom')
-				return
-			}
+			if (growWrapElement && viewport) {
+				const offset = height - viewport.height
+				const wasKeyboardOpen = keyboardOpen
+				keyboardOpen = offset > 50
 
-			// Virtual keyboard: viewport height < window height (keyboard taking space)
-			// Use a threshold to ignore minor differences
-			const keyboardOffset = window.innerHeight - (viewport?.height || window.innerHeight)
-
-			if (keyboardOffset > 50) {
-				growWrapElement.style.bottom = `${keyboardOffset}px`
-			} else {
-				growWrapElement.style.removeProperty('bottom')
+				// Only update bottom when keyboard state changes, not on every resize
+				if (keyboardOpen !== wasKeyboardOpen) {
+					if (keyboardOpen) {
+						growWrapElement.style.bottom = `${offset}px`
+					} else {
+						growWrapElement.style.bottom = '0px'
+						height = viewport.height
+					}
+				}
 			}
 		}
 
 		window.visualViewport?.addEventListener('resize', resizeHandler)
+		window.addEventListener('scroll', preventScrollDown, { passive: false })
 	})
 </script>
 
@@ -107,9 +122,9 @@
 
 			position: fixed;
 			top: 0;
+			bottom: 0;
 			left: 0;
-			width: 100%;
-			height: 100dvh;
+			right: 0;
 
 			border: none;
 		}
