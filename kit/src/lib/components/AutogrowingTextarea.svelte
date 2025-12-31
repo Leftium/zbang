@@ -41,7 +41,10 @@
 		// Track wordwrap to trigger recalculation when it changes
 		void wordwrap
 
-		adjustTextAreaHeight()
+		// Use requestAnimationFrame to ensure CSS changes are applied before measuring
+		requestAnimationFrame(() => {
+			adjustTextAreaHeight()
+		})
 	})
 
 	function handleInput(event: Parameters<FormEventHandler<HTMLTextAreaElement>>[0]) {
@@ -98,11 +101,11 @@
 			margin: 0;
 			padding-block: 0;
 			padding-inline: var(--size-2);
-			padding-bottom: 1rem;
 
 			flex-grow: 1;
 
 			white-space: pre;
+			overflow-x: scroll;
 			font-family: monospace;
 
 			border: none;
@@ -115,9 +118,14 @@
 			}
 		}
 
+		&:not(.wordwrap) textarea {
+			padding-bottom: 0.75rem;
+		}
+
 		&.wordwrap textarea {
 			white-space: pre-wrap;
 			word-wrap: break-word;
+			overflow-x: hidden;
 		}
 	}
 </style>
