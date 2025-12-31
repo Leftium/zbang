@@ -7,4 +7,11 @@ export default defineConfig({
 	server: {
 		allowedHosts: ['.ngrok-free.app'],
 	},
+	css: {
+		preprocessorOptions: {
+			scss: {
+				silenceDeprecations: ['import', 'if-function'],
+			},
+		},
+	},
 })
