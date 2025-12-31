@@ -20,6 +20,13 @@
 
 	function adjustTextAreaHeight() {
 		if (textareaElement) {
+			// Skip height adjustment in fullscreen - flex layout handles it
+			if (fullscreen) {
+				textareaElement.style.height = ''
+				textareaElement.style.overflowY = 'auto'
+				return
+			}
+
 			const lineHeight = parseFloat(window.getComputedStyle(textareaElement).lineHeight)
 			const maxLines = 6
 
@@ -56,12 +63,22 @@
 	}
 
 	onMount(() => {
-		let height = window.visualViewport?.height || 0
 		const viewport = window.visualViewport
 
 		function resizeHandler() {
-			if (growWrapElement) {
-				growWrapElement.style.bottom = `${height - (viewport?.height || 0)}px`
+			if (!growWrapElement || !fullscreen) {
+				growWrapElement?.style.removeProperty('bottom')
+				return
+			}
+
+			// Virtual keyboard: viewport height < window height (keyboard taking space)
+			// Use a threshold to ignore minor differences
+			const keyboardOffset = window.innerHeight - (viewport?.height || window.innerHeight)
+
+			if (keyboardOffset > 50) {
+				growWrapElement.style.bottom = `${keyboardOffset}px`
+			} else {
+				growWrapElement.style.removeProperty('bottom')
 			}
 		}
 
@@ -90,9 +107,9 @@
 
 			position: fixed;
 			top: 0;
-			bottom: 0;
 			left: 0;
-			right: 0;
+			width: 100%;
+			height: 100dvh;
 
 			border: none;
 		}
