@@ -197,7 +197,7 @@
 
 	function focusInput() {
 		textareaElement?.focus()
-		if (false && !inputHasFocus) {
+		if (!inputHasFocus) {
 			textareaElement?.select()
 		}
 		inputHasFocus = true
@@ -715,7 +715,6 @@
 	}
 
 	main {
-		///border: 4px solid $violet-5;
 		padding: var(--size-1);
 
 		header {
@@ -730,13 +729,7 @@
 			}
 
 			.brand-primary {
-				color: var(--orange-8);
-
-				// Svelte logo color
-				color: #ff3e00;
-
-				// Svelte theme color
-				color: hsl(12, 94%, 62%);
+				color: hsl(15, 94%, 62%); // Svelte theme color
 			}
 
 			.brand-secondary {
@@ -744,10 +737,7 @@
 			}
 
 			.logo {
-				color: var(--gray-5);
-
-				// Svelte logo color
-				color: #ff3e00;
+				color: #ff3e00; // Svelte logo color
 			}
 		}
 

@@ -67,6 +67,9 @@
 
 		if (!isIOS) return // Android handled by interactive-widget meta tag
 
+		const controller = new AbortController()
+		const { signal } = controller
+
 		let height = window.visualViewport?.height || 0
 		const viewport = window.visualViewport
 		let keyboardOpen = false
@@ -96,8 +99,10 @@
 			}
 		}
 
-		window.visualViewport?.addEventListener('resize', resizeHandler)
-		window.addEventListener('scroll', preventScrollDown, { passive: false })
+		window.visualViewport?.addEventListener('resize', resizeHandler, { signal })
+		window.addEventListener('scroll', preventScrollDown, { passive: false, signal })
+
+		return () => controller.abort()
 	})
 </script>
 
