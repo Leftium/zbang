@@ -23,7 +23,7 @@
 	let lineCount = $derived(value.split('\n').length)
 
 	let fullscreen = $state(false)
-	let wordwrap = $state(false)
+	let wordwrap = $state(true)
 	let theme = $state('')
 
 	type InputFrame = {
@@ -415,6 +415,12 @@
 			fullscreen = !fullscreen
 		}
 
+		if (doubleKeypress === 'L') {
+			cancelDoubleKeypress()
+			syncTextareaElementValue()
+			wordwrap = !wordwrap
+		}
+
 		for (const [key, index] of Object.entries(doubleKeypressToFuzzySortIndex)) {
 			if (doubleKeypress === key) {
 				// Save for potential triple-tap submit (before any modifications)
@@ -530,13 +536,15 @@
 				<button class="outline" onclick={() => (fullscreen = !fullscreen)}>
 					{fullscreen ? 'Restore' : 'Fullscreen'}
 				</button>
-				<label><input type="checkbox" bind:checked={wordwrap} /> Wrap</label>
+				<label><input type="checkbox" bind:checked={wordwrap} /> Line Wrap</label>
 			</div>
 			<div>
 				{#if lineCount > 1}{lineCount}L{/if}
 				{wordCount}w {charCount}c
 			</div>
-			<button class="search" {onclick}>Search</button>
+			<div>
+				<button class="search" {onclick}>Search</button>
+			</div>
 		</status-bar>
 	</AutogrowingTextarea>
 
@@ -767,6 +775,15 @@
 			> div {
 				display: flex;
 				align-items: center;
+				flex: 1;
+
+				&:nth-child(2) {
+					justify-content: center;
+				}
+
+				&:last-child {
+					justify-content: flex-end;
+				}
 			}
 
 			label {
