@@ -14,7 +14,9 @@
 	let textareaElement = $state<HTMLTextAreaElement>()
 	let inputHasFocus = $state(false)
 	let value = $state('')
-	let currentLine = $derived(getCurrentLineValue(value))
+	let currentLineRaw = $derived(getCurrentLineValue(value))
+	// Normalize suffix bangs to prefix style: "g! " -> "!g ", "g!" -> "!g"
+	let currentLine = $derived(currentLineRaw.replace(/\b([^\s!]+)!/g, '!$1'))
 
 	let charCount = $derived(value.trim().length)
 	let wordCount = $derived(value.split(/\S+/).length - 1)
@@ -96,7 +98,8 @@
 	const fuzzysortLimit = 20
 
 	// Detect if user is typing a bang (e.g., "test query !g" or "test query !")
-	// Single ! = bang mode (search without !), double !! = include ! in search
+	// Single ! = no ! in query, double !! = include ! in query
+	// Suffix style (g!) is normalized to prefix style (!g) in currentLine
 	const bangSearchMatch = $derived(currentLine.match(/(!!?)([^\s]*)$/))
 
 	const fuzzysortQuery = $derived.by(() => {
@@ -110,7 +113,7 @@
 
 		let query = currentLine
 		// Filter out completed bangs (e.g., "!g ", "!ddg ") so they don't affect search results
-		query = query.replace(/![^\s]*\s+/g, '')
+		query = query.replace(/![^\s]+\s+/g, '')
 		// Handle URL search
 		if (includeUrlKeys) {
 			query = query.replace('//', '')
@@ -128,6 +131,7 @@
 	)
 
 	// Extract bangs already used (completed with trailing space) in the current line
+	// Suffix style (g!) is already normalized to prefix style (!g) in currentLine
 	const usedBangs = $derived((currentLine.match(/![^\s]+(?=\s)/g) || []) as string[])
 
 	const adjustedFuzzySortResults = $derived.by(() => {
