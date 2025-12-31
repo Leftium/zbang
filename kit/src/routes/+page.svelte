@@ -122,18 +122,21 @@
 		return query.trim()
 	})
 
+	// Extract bangs already used (completed with trailing space) in the current line
+	// Suffix style (g!) is already normalized to prefix style (!g) in currentLine
+	const usedBangs = $derived((currentLine.match(/![^\s]+(?=\s)/g) || []) as string[])
+
+	// Increase limit to account for bangs that will be filtered out
+	const adjustedFuzzysortLimit = $derived(fuzzysortLimit + usedBangs.length)
+
 	const fuzzysortResults = $derived(
 		fuzzysort.go(fuzzysortQuery, zbangsPrepared, {
-			limit: fuzzysortLimit,
+			limit: adjustedFuzzysortLimit,
 			threshold: fuzzysortThreshold,
 			all: true,
 			keys: fuzzysortKeys,
 		})
 	)
-
-	// Extract bangs already used (completed with trailing space) in the current line
-	// Suffix style (g!) is already normalized to prefix style (!g) in currentLine
-	const usedBangs = $derived((currentLine.match(/![^\s]+(?=\s)/g) || []) as string[])
 
 	const adjustedFuzzySortResults = $derived.by(() => {
 		const ordered = _.orderBy(
