@@ -577,7 +577,7 @@
 				<button class="outline" onclick={() => (fullscreen = !fullscreen)}>
 					{fullscreen ? 'Restore' : 'Fullscreen'}
 				</button>
-				<label><input type="checkbox" bind:checked={wordwrap} /> wrap</label>
+				<label title="wrap lines"><input type="checkbox" bind:checked={wordwrap} /> <b>⏎</b></label>
 			</div>
 			<div>
 				{#if lineCount > 1}{lineCount}L{/if}
@@ -585,20 +585,20 @@
 			</div>
 			<div>
 				{#if fullscreen}
-					<label
+					<label title="ENTER inserts newline (instead of submit)"
 						><input
 							type="checkbox"
 							bind:checked={enterNewlineFullscreen}
 							onmousedown={(e) => e.preventDefault()}
-						/> newlines</label
+						/> <b>↵</b></label
 					>
 				{:else}
-					<label
+					<label title="ENTER inserts newline (instead of submit)"
 						><input
 							type="checkbox"
 							bind:checked={enterNewlineRestored}
 							onmousedown={(e) => e.preventDefault()}
-						/> newlines</label
+						/> <b>↵</b></label
 					>
 				{/if}
 				<button class="search" {onclick}>Search</button>
