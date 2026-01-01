@@ -479,12 +479,15 @@
 	function autoTheme() {
 		theme = ''
 		document.documentElement.removeAttribute('data-theme')
+		const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches
+		document.documentElement.style.colorScheme = prefersDark ? 'dark' : 'light'
 		localStorage.setItem('theme', theme)
 	}
 
 	function toggleTheme() {
 		theme = theme === 'dark' ? 'light' : 'dark'
 		document.documentElement.dataset.theme = theme
+		document.documentElement.style.colorScheme = theme
 		localStorage.setItem('theme', theme)
 	}
 
