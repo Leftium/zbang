@@ -1,9 +1,0 @@
-{
-	"compilerOptions": {
-		"lib": ["ES2020"],
-		"resolveJsonModule": true,
-		"types": ["pocketbase-jsvm"],
-		"moduleResolution": "node"
-	},
-	"include": ["./src"]
-}
