@@ -18,8 +18,9 @@
 	// Committed value for search - delays update for potential shortcut keys
 	let committedValue = $state('')
 	let commitTimeout: ReturnType<typeof setTimeout> | null = null
+	let pendingShortcutKey: string | null = null // Track if we're waiting to see if it's a shortcut
 	const SHORTCUT_KEYS = new Set(['F', 'L', 'N', 'M', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', ' ', '.'])
-	const COMMIT_DELAY = 200
+	const COMMIT_DELAY = 250 // Match double-tap detection window
 
 	let currentLineRaw = $derived(getCurrentLineValue(committedValue))
 	// Normalize suffix bangs to prefix style: "g! " -> "!g ", "g!" -> "!g"
@@ -471,7 +472,13 @@
 		// Only uppercase letters trigger shortcuts (except space and period)
 		const lastKey = inputHistory[0]?.data
 		if (lastKey && SHORTCUT_KEYS.has(lastKey)) {
+			// First key of potential shortcut - delay commit
+			pendingShortcutKey = lastKey
 			scheduleCommit()
+		} else if (pendingShortcutKey) {
+			// Second key is different - not a shortcut, commit now
+			pendingShortcutKey = null
+			commitValue()
 		} else {
 			commitValue()
 		}
