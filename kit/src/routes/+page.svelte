@@ -520,11 +520,19 @@
 			<div>
 				{#if fullscreen}
 					<label
-						><input type="checkbox" bind:checked={enterNewlineFullscreen} /> Newlines</label
+						><input
+							type="checkbox"
+							bind:checked={enterNewlineFullscreen}
+							onmousedown={(e) => e.preventDefault()}
+						/> Newlines</label
 					>
 				{:else}
 					<label
-						><input type="checkbox" bind:checked={enterNewlineRestored} /> Newlines</label
+						><input
+							type="checkbox"
+							bind:checked={enterNewlineRestored}
+							onmousedown={(e) => e.preventDefault()}
+						/> Newlines</label
 					>
 				{/if}
 				<button class="search" {onclick}>Search</button>
