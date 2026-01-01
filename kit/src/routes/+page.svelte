@@ -388,10 +388,9 @@
 		}
 
 		// Handle shortcuts detected by global keydown handler
-		if (doubleKeypress) {
+		if (doubleKeypress && executeShortcut(doubleKeypress)) {
 			cancelDoubleKeypress()
 			syncTextareaElementValue()
-			executeShortcut(doubleKeypress)
 			commitValue()
 			return
 		}
