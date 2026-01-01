@@ -413,6 +413,12 @@
 			}
 		}
 
+		if (doubleKeypress === '.' || doubleKeypress === 'M') {
+			cancelDoubleKeypress()
+			syncTextareaElementValue()
+			handleSearch()
+		}
+
 		for (const [key, index] of Object.entries(doubleKeypressToFuzzySortIndex)) {
 			if (doubleKeypress === key) {
 				// Remove the double-typed chars first, then sync so fuzzy results update
