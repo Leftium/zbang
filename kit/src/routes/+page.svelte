@@ -399,6 +399,16 @@
 			wordwrap = !wordwrap
 		}
 
+		if (doubleKeypress === 'N') {
+			cancelDoubleKeypress()
+			syncTextareaElementValue()
+			if (fullscreen) {
+				enterNewlineFullscreen = !enterNewlineFullscreen
+			} else {
+				enterNewlineRestored = !enterNewlineRestored
+			}
+		}
+
 		for (const [key, index] of Object.entries(doubleKeypressToFuzzySortIndex)) {
 			if (doubleKeypress === key) {
 				// Remove the double-typed chars first, then sync so fuzzy results update
