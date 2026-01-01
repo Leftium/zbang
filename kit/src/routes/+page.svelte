@@ -341,31 +341,10 @@
 	function onbeforeinput(this: HTMLInputElement | HTMLTextAreaElement, event: InputEvent) {
 		const { data, inputType } = event
 
-		const ts = +new Date()
-		const interval = ts - inputHistory[0]?.ts
-		const inputFrame = {
-			data,
-			inputType,
-			ts,
-			interval,
-		}
-
-		inputHistory.unshift(inputFrame)
+		// Track input history for period shortcut detection
+		inputHistory.unshift({ data, inputType, ts: +new Date(), interval: 0 })
 		if (inputHistory.length > 2) {
 			inputHistory.pop()
-		}
-
-		doubleKeypress = null
-		if (interval < 250) {
-			if (
-				interval > 50 &&
-				inputType === 'deleteContentBackward' &&
-				inputType === inputHistory[1].inputType
-			) {
-				doubleKeypress = 'backspace'
-			} else if (data?.toLowerCase() === inputHistory[1].data?.toLowerCase()) {
-				doubleKeypress = inputHistory[1].data
-			}
 		}
 
 		// Desktop sends '. ' as single event, mobile sends '.' then ' ' separately
@@ -398,74 +377,23 @@
 
 		const anyPeriodShortcut = isPeriodShortcut || isMobilePeriodShortcut
 
-		if (anyPeriodShortcut || doubleKeypress === ' ') {
+		// Period shortcut (mobile double-space or ". ") - not detected by global handler
+		if (anyPeriodShortcut) {
 			cancelDoubleKeypress()
-			// Note: mobile period shortcut also only needs 2 backspaces ('. ')
 			simulateExclamation()
 			syncTextareaElementValue()
-
 			inputHistory[0].data = '!'
 			commitValue()
 			return
 		}
 
-		if (doubleKeypress === 'F') {
+		// Handle shortcuts detected by global keydown handler
+		if (doubleKeypress) {
 			cancelDoubleKeypress()
 			syncTextareaElementValue()
-			fullscreen = !fullscreen
+			executeShortcut(doubleKeypress)
 			commitValue()
 			return
-		}
-
-		if (doubleKeypress === 'L') {
-			cancelDoubleKeypress()
-			syncTextareaElementValue()
-			wordwrap = !wordwrap
-			commitValue()
-			return
-		}
-
-		if (doubleKeypress === 'N') {
-			cancelDoubleKeypress()
-			syncTextareaElementValue()
-			if (fullscreen) {
-				enterNewlineFullscreen = !enterNewlineFullscreen
-			} else {
-				enterNewlineRestored = !enterNewlineRestored
-			}
-			commitValue()
-			return
-		}
-
-		if (doubleKeypress === '.' || doubleKeypress === 'M') {
-			cancelDoubleKeypress()
-			syncTextareaElementValue()
-			handleSearch()
-			commitValue()
-			return
-		}
-
-		for (const [key, index] of Object.entries(doubleKeypressToFuzzySortIndex)) {
-			if (doubleKeypress === key) {
-				// Remove the double-typed chars first, then sync so fuzzy results update
-				cancelDoubleKeypress()
-				syncTextareaElementValue()
-
-				// Now get the bang text based on updated search results
-				const text = adjustedFuzzySortResults[index]?.obj.code[0].target
-				if (text) {
-					// Remove the search input that led to this result
-					// If in bang mode, remove the full match (e.g., "!!wire"), otherwise just the query
-					const charsToRemove = bangSearchMatch ? bangSearchMatch[0].length : fuzzysortQuery.length
-					for (let i = 0; i < charsToRemove; i++) simulateBackspace()
-
-					insertTextAtCursor(text + ' ')
-					syncTextareaElementValue()
-					inputHistory[0].data = '!'
-				}
-				commitValue()
-				return
-			}
 		}
 
 		// No shortcut triggered - check if this keystroke could be a shortcut
@@ -534,6 +462,88 @@
 		localStorage.setItem('theme', theme)
 	}
 
+	// Global keyboard shortcut handling (works even when textarea not focused)
+	type GlobalKeyFrame = { key: string; ts: number }
+	let globalKeyHistory: GlobalKeyFrame[] = []
+
+	function executeShortcut(shortcutKey: string): boolean {
+		if (shortcutKey === 'F') {
+			fullscreen = !fullscreen
+			return true
+		}
+
+		if (shortcutKey === 'L') {
+			wordwrap = !wordwrap
+			return true
+		}
+
+		if (shortcutKey === 'N') {
+			if (fullscreen) {
+				enterNewlineFullscreen = !enterNewlineFullscreen
+			} else {
+				enterNewlineRestored = !enterNewlineRestored
+			}
+			return true
+		}
+
+		if (shortcutKey === '.' || shortcutKey === 'M') {
+			handleSearch()
+			return true
+		}
+
+		// Bang selection shortcuts (Q, W, E, R, T, Y, U, I, O, P)
+		const index = doubleKeypressToFuzzySortIndex[shortcutKey as keyof typeof doubleKeypressToFuzzySortIndex]
+		if (index !== undefined) {
+			const text = adjustedFuzzySortResults[index]?.obj.code[0].target
+			if (text) {
+				focusInput()
+				const charsToRemove = bangSearchMatch ? bangSearchMatch[0].length : fuzzysortQuery.length
+				for (let i = 0; i < charsToRemove; i++) simulateBackspace()
+				insertTextAtCursor(text + ' ')
+				if (textareaElement) {
+					value = textareaElement.value
+					committedValue = value
+				}
+			}
+			return true
+		}
+
+		if (shortcutKey === ' ') {
+			focusInput()
+			simulateExclamation()
+			if (textareaElement) {
+				value = textareaElement.value
+				committedValue = value
+			}
+			return true
+		}
+
+		return false
+	}
+
+	function onGlobalKeydown(event: KeyboardEvent) {
+		const ts = +new Date()
+		const lastKey = globalKeyHistory[0]
+		const interval = lastKey ? ts - lastKey.ts : Infinity
+
+		globalKeyHistory.unshift({ key: event.key, ts })
+		if (globalKeyHistory.length > 2) globalKeyHistory.pop()
+
+		// Detect double keypress (same key within 250ms, case-insensitive, first must be uppercase)
+		doubleKeypress = null
+		if (interval < 250 && lastKey?.key.toLowerCase() === event.key.toLowerCase()) {
+			doubleKeypress = lastKey.key // First key determines the shortcut
+		}
+
+		// If not in textarea, execute shortcut directly
+		const target = event.target as HTMLElement
+		if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') {
+			if (doubleKeypress && executeShortcut(doubleKeypress)) {
+				event.preventDefault()
+			}
+		}
+	}
+
 	if (browser) {
 		// Dark/light mode:
 		theme = localStorage.getItem('theme') || ''
@@ -542,12 +552,10 @@
 			// svelte-ignore state_referenced_locally
 			document.documentElement.dataset.theme = theme
 		}
-
-
 	}
 </script>
 
-<svelte:document {onvisibilitychange} {onmousedown} />
+<svelte:document {onvisibilitychange} {onmousedown} onkeydown={onGlobalKeydown} />
 
 <main>
 	<header>
