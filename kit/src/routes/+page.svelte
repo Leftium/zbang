@@ -14,7 +14,14 @@
 	let textareaElement = $state<HTMLTextAreaElement>()
 	let inputHasFocus = $state(false)
 	let value = $state('')
-	let currentLineRaw = $derived(getCurrentLineValue(value))
+
+	// Committed value for search - delays update for potential shortcut keys
+	let committedValue = $state('')
+	let commitTimeout: ReturnType<typeof setTimeout> | null = null
+	const SHORTCUT_KEYS = new Set(['F', 'L', 'N', 'M', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', ' ', '.'])
+	const COMMIT_DELAY = 200
+
+	let currentLineRaw = $derived(getCurrentLineValue(committedValue))
 	// Normalize suffix bangs to prefix style: "g! " -> "!g ", "g!" -> "!g"
 	let currentLine = $derived(currentLineRaw.replace(/\b([^\s!]+)!/g, '!$1'))
 
@@ -43,8 +50,6 @@
 	let isPeriodShortcut = $state(false)
 	// Mobile sends '.' then ' ' separately instead of '. '
 	let isMobilePeriodShortcut = $state(false)
-
-
 
 	const includeTagKeys = $derived(value.includes('#'))
 	const includeUrlKeys = $derived(value.includes('//'))
@@ -380,6 +385,16 @@
 			}
 		}
 
+		function commitValue() {
+			if (commitTimeout) clearTimeout(commitTimeout)
+			committedValue = value
+		}
+
+		function scheduleCommit() {
+			if (commitTimeout) clearTimeout(commitTimeout)
+			commitTimeout = setTimeout(commitValue, COMMIT_DELAY)
+		}
+
 		const anyPeriodShortcut = isPeriodShortcut || isMobilePeriodShortcut
 
 		if (anyPeriodShortcut || doubleKeypress === ' ') {
@@ -389,18 +404,24 @@
 			syncTextareaElementValue()
 
 			inputHistory[0].data = '!'
+			commitValue()
+			return
 		}
 
 		if (doubleKeypress === 'F') {
 			cancelDoubleKeypress()
 			syncTextareaElementValue()
 			fullscreen = !fullscreen
+			commitValue()
+			return
 		}
 
 		if (doubleKeypress === 'L') {
 			cancelDoubleKeypress()
 			syncTextareaElementValue()
 			wordwrap = !wordwrap
+			commitValue()
+			return
 		}
 
 		if (doubleKeypress === 'N') {
@@ -411,12 +432,16 @@
 			} else {
 				enterNewlineRestored = !enterNewlineRestored
 			}
+			commitValue()
+			return
 		}
 
 		if (doubleKeypress === '.' || doubleKeypress === 'M') {
 			cancelDoubleKeypress()
 			syncTextareaElementValue()
 			handleSearch()
+			commitValue()
+			return
 		}
 
 		for (const [key, index] of Object.entries(doubleKeypressToFuzzySortIndex)) {
@@ -437,7 +462,18 @@
 					syncTextareaElementValue()
 					inputHistory[0].data = '!'
 				}
+				commitValue()
+				return
 			}
+		}
+
+		// No shortcut triggered - check if this keystroke could be a shortcut
+		// Only uppercase letters trigger shortcuts (except space and period)
+		const lastKey = inputHistory[0]?.data
+		if (lastKey && SHORTCUT_KEYS.has(lastKey)) {
+			scheduleCommit()
+		} else {
+			commitValue()
 		}
 	}
 
