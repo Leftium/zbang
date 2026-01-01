@@ -25,9 +25,9 @@
 	// Normalize suffix bangs to prefix style: "g! " -> "!g ", "g!" -> "!g"
 	let currentLine = $derived(currentLineRaw.replace(/\b([^\s!]+)!/g, '!$1'))
 
-	let charCount = $derived(value.trim().length)
-	let wordCount = $derived(value.split(/\S+/).length - 1)
-	let lineCount = $derived(value.split('\n').length)
+	let charCount = $derived(committedValue.trim().length)
+	let wordCount = $derived(committedValue.split(/\S+/).length - 1)
+	let lineCount = $derived(committedValue.split('\n').length)
 
 	let fullscreen = $state(false)
 	let wordwrap = $state(true)
