@@ -1,6 +1,13 @@
 <!doctype html>
 <html lang="en">
 	<head>
+		<script>
+			const theme = localStorage.getItem('theme') ?? '';
+			const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
+			const isDark = theme === 'dark' || (theme === '' && prefersDark);
+			if (theme) document.documentElement.dataset.theme = theme;
+			document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+		</script>
 		<meta charset="utf-8" />
 		<meta
 			name="viewport"
