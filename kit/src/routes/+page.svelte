@@ -25,6 +25,8 @@
 	let fullscreen = $state(false)
 	let wordwrap = $state(true)
 	let theme = $state('')
+	let enterNewlineRestored = $state(false)
+	let enterNewlineFullscreen = $state(true)
 
 	type InputFrame = {
 		data: string | null
@@ -42,10 +44,7 @@
 	// Mobile sends '.' then ' ' separately instead of '. '
 	let isMobilePeriodShortcut = $state(false)
 
-	// Saved value before double-tap shortcut - for triple-tap submit
-	let pendingSubmitValue: string | null = $state(null)
-	let pendingSubmitTs: number = $state(0)
-	let pendingSubmitKey: string | null = $state(null) // the key that triggered the shortcut
+
 
 	const includeTagKeys = $derived(value.includes('#'))
 	const includeUrlKeys = $derived(value.includes('//'))
@@ -317,9 +316,15 @@
 	}
 
 	function onkeydown(event: KeyboardEvent) {
-		if (event.key === 'Enter' && (event.shiftKey || event.altKey || event.ctrlKey)) {
-			handleSearch()
-			event.preventDefault()
+		if (event.key === 'Enter') {
+			const hasModifier = event.shiftKey || event.altKey || event.ctrlKey
+			const enterNewline = fullscreen ? enterNewlineFullscreen : enterNewlineRestored
+			const shouldSubmit = enterNewline ? hasModifier : !hasModifier
+
+			if (shouldSubmit) {
+				handleSearch()
+				event.preventDefault()
+			}
 		}
 	}
 
@@ -371,66 +376,15 @@
 			}
 		}
 
-		// Triple-tap: restore saved value and submit
-		// Check BEFORE the double-tap → bang conversion
-		// Use timestamp instead of history check - more reliable across devices
 		const anyPeriodShortcut = isPeriodShortcut || isMobilePeriodShortcut
-		const currentData = inputHistory[0]?.data
-		const currentIsSpace = anyPeriodShortcut || currentData === ' ' || currentData === '. '
-		const currentMatchesPendingKey =
-			pendingSubmitKey && currentData?.toUpperCase() === pendingSubmitKey
-		const timeSincePending = +new Date() - pendingSubmitTs
-		const isTripleTap = (currentIsSpace || currentMatchesPendingKey) && timeSincePending < 500
-
-		if (pendingSubmitValue !== null && isTripleTap) {
-			// Remove what was just inserted
-			simulateBackspace() // remove the triggering char (space or letter)
-			if (anyPeriodShortcut) simulateBackspace() // extra backspace for '. '
-			// Remove the bang that was inserted (varies by length)
-			const bangLength =
-				pendingSubmitKey === ' '
-					? 1
-					: (adjustedFuzzySortResults[
-							doubleKeypressToFuzzySortIndex[
-								pendingSubmitKey as keyof typeof doubleKeypressToFuzzySortIndex
-							]
-						]?.obj.code[0].target.length ?? 0) + 1 // +1 for trailing space
-			for (let i = 0; i < bangLength; i++) simulateBackspace()
-
-			value = pendingSubmitValue
-			pendingSubmitValue = null
-			pendingSubmitKey = null
-			syncTextareaElementValue()
-			handleSearch()
-			return
-		}
 
 		if (anyPeriodShortcut || doubleKeypress === ' ') {
-			// Save value BEFORE any modifications for potential triple-tap submit
-			pendingSubmitValue = value
-			pendingSubmitTs = +new Date()
-			pendingSubmitKey = ' '
-
 			cancelDoubleKeypress()
 			// Note: mobile period shortcut also only needs 2 backspaces ('. ')
 			simulateExclamation()
 			syncTextareaElementValue()
 
 			inputHistory[0].data = '!'
-		}
-
-		// Clear pending submit if any other input (not a potential third tap)
-		const isDoubleTapKey = Object.keys(doubleKeypressToFuzzySortIndex).includes(
-			doubleKeypress?.toUpperCase() ?? ''
-		)
-		if (
-			doubleKeypress !== ' ' &&
-			!anyPeriodShortcut &&
-			!isDoubleTapKey &&
-			!currentMatchesPendingKey
-		) {
-			pendingSubmitValue = null
-			pendingSubmitKey = null
 		}
 
 		if (doubleKeypress === 'F') {
@@ -447,11 +401,6 @@
 
 		for (const [key, index] of Object.entries(doubleKeypressToFuzzySortIndex)) {
 			if (doubleKeypress === key) {
-				// Save for potential triple-tap submit (before any modifications)
-				pendingSubmitValue = value
-				pendingSubmitTs = +new Date()
-				pendingSubmitKey = key
-
 				// Remove the double-typed chars first, then sync so fuzzy results update
 				cancelDoubleKeypress()
 				syncTextareaElementValue()
@@ -527,6 +476,8 @@
 			// svelte-ignore state_referenced_locally
 			document.documentElement.dataset.theme = theme
 		}
+
+
 	}
 </script>
 
@@ -567,6 +518,15 @@
 				{wordCount}w {charCount}c
 			</div>
 			<div>
+				{#if fullscreen}
+					<label
+						><input type="checkbox" bind:checked={enterNewlineFullscreen} /> Newlines</label
+					>
+				{:else}
+					<label
+						><input type="checkbox" bind:checked={enterNewlineRestored} /> Newlines</label
+					>
+				{/if}
 				<button class="search" {onclick}>Search</button>
 			</div>
 		</status-bar>
