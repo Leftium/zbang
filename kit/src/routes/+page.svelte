@@ -288,31 +288,35 @@
 		blurInput()
 		const trimmedValue = value.trimEnd()
 
-		// Normalize suffix bangs to prefix style: "g! " -> "!g ", "yt!" -> "!yt"
-		const normalized = trimmedValue.replace(/\b([^\s!]+)!/g, '!$1')
+		// Delay to let keyboard dismiss before opening new tab (Android fix)
+		setTimeout(() => {
+			// TODO: reduce delay after testing
+			// Normalize suffix bangs to prefix style: "g! " -> "!g ", "yt!" -> "!yt"
+			const normalized = trimmedValue.replace(/\b([^\s!]+)!/g, '!$1')
 
-		// Extract all bangs (e.g., !g, !k) and the remaining query text
-		const bangMatches = normalized.match(/![^\s]+/g) || []
-		const queryText = normalized.replace(/![^\s]+\s*/g, '').trim()
+			// Extract all bangs (e.g., !g, !k) and the remaining query text
+			const bangMatches = normalized.match(/![^\s]+/g) || []
+			const queryText = normalized.replace(/![^\s]+\s*/g, '').trim()
 
-		if (bangMatches.length > 1) {
-			// Multiple bangs: open a separate tab for each bang with the query
-			for (const bang of bangMatches) {
-				const searchQuery = queryText ? `${bang} ${queryText}` : bang
+			if (bangMatches.length > 1) {
+				// Multiple bangs: open a separate tab for each bang with the query
+				for (const bang of bangMatches) {
+					const searchQuery = queryText ? `${bang} ${queryText}` : bang
+					// Strip trailing newlines before submitting.
+					// Need to insert space after first newline so triggers are not joined with other text.
+					// Need to percent encode to preserve newlines.
+					const encoded = encodeURIComponent(searchQuery.replace('\n', ' \n'))
+					window.open(`https://kagi.com/search?q=${encoded}`, '_blank')
+				}
+			} else {
+				// Single or no bang: send the entire query as-is (current behavior)
 				// Strip trailing newlines before submitting.
 				// Need to insert space after first newline so triggers are not joined with other text.
 				// Need to percent encode to preserve newlines.
-				const encoded = encodeURIComponent(searchQuery.replace('\n', ' \n'))
-				window.open(`https://kagi.com/search?q=${encoded}`, '_blank')
+				const query = encodeURIComponent(trimmedValue.replace('\n', ' \n'))
+				window.open(`https://kagi.com/search?q=${query}`, '_blank')
 			}
-		} else {
-			// Single or no bang: send the entire query as-is (current behavior)
-			// Strip trailing newlines before submitting.
-			// Need to insert space after first newline so triggers are not joined with other text.
-			// Need to percent encode to preserve newlines.
-			const query = encodeURIComponent(trimmedValue.replace('\n', ' \n'))
-			window.open(`https://kagi.com/search?q=${query}`, '_blank')
-		}
+		}, 300)
 	}
 
 	function onkeydown(event: KeyboardEvent) {
