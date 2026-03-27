@@ -116,10 +116,10 @@
 	grow-wrap {
 		display: block;
 
-		background: var(--pico-background-color);
+		background: var(--nc-surface-1);
 
-		border: var(--pico-border-width) solid var(--pico-form-element-border-color);
-		border-radius: var(--pico-border-radius);
+		border: 1px solid var(--nc-border);
+		border-radius: var(--nc-radius);
 
 		&.fullscreen {
 			display: flex;

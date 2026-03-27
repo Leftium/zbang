@@ -563,7 +563,7 @@
 			<span class="logo">[z!]</span>
 			<span class="brand-secondary">whi</span><span class="brand-primary">zBang</span>
 		</div>
-		<button class="theme outline" onclick={toggleTheme} ondblclick={autoTheme}>
+		<button class="theme secondary outline" onclick={toggleTheme} ondblclick={autoTheme}>
 			colors: {theme || 'auto'}
 		</button>
 	</header>
@@ -582,7 +582,7 @@
 	>
 		<status-bar>
 			<div>
-				<button class="outline" onclick={() => (fullscreen = !fullscreen)}>
+				<button class="secondary outline" onclick={() => (fullscreen = !fullscreen)}>
 					{fullscreen ? 'Restore' : 'Fullscreen'}
 				</button>
 				<label title="wrap lines"><input type="checkbox" bind:checked={wordwrap} /> <b>⏎</b></label>
@@ -625,7 +625,7 @@
 				<div class="name-row">
 					{#if keys[resultNum]}
 						<div class="number-and-shortcut">
-							<button class="outline">{keys[resultNum]}{keys[resultNum]}</button>
+							<button class="secondary outline">{keys[resultNum]}{keys[resultNum]}</button>
 						</div>
 					{/if}
 					<div class="name">{@html result[0].highlight() || resultProcessed.object.name}</div>
@@ -690,7 +690,7 @@
 		overflow: hidden;
 		margin-bottom: var(--size-3);
 		justify-content: left;
-		border: 1px solid var(--pico-muted-border-color);
+		border: 1px solid var(--nc-border);
 
 		&.no-scores {
 			grid-template-columns: 1fr;
@@ -708,8 +708,8 @@
 			padding-inline: var(--size-1);
 
 			// Internal borders:
-			border-bottom: 1px solid var(--pico-muted-border-color);
-			border-left: 1px solid var(--pico-muted-border-color);
+			border-bottom: 1px solid var(--nc-border);
+			border-left: 1px solid var(--nc-border);
 			margin-left: -1px;
 			margin-bottom: -1px;
 
@@ -722,7 +722,7 @@
 			display: flex;
 			align-items: center;
 
-			background-color: var(--pico-code-background-color);
+			background-color: var(--nc-surface-2);
 
 			.number-and-shortcut {
 				button {
@@ -748,13 +748,13 @@
 				text-overflow: ellipsis;
 				white-space: nowrap;
 				text-align: right;
-				color: var(--pico-muted-color);
+				color: var(--nc-secondary);
 				margin-left: var(--size-2);
 				font-size: var(--font-size-0);
 				font-weight: var(--font-weight-3);
 
 				:global(b) {
-					color: var(--pico-color) !important;
+					color: var(--nc-text) !important;
 					font-weight: var(--font-weight-6) !important;
 				}
 			}
@@ -816,7 +816,7 @@
 
 			padding: 0.25rem var(--size-2);
 
-			border-top: 1px solid var(--pico-form-element-border-color);
+			border-top: 1px solid var(--nc-border);
 
 			button {
 				align-self: center;
@@ -852,6 +852,7 @@
 
 				input[type='checkbox'] {
 					all: revert;
+					accent-color: var(--nc-primary);
 					width: 0.75rem;
 					height: 0.75rem;
 					margin: 0;

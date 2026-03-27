@@ -9,6 +9,14 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-<main class="container">
+<main>
 	{@render children?.()}
 </main>
+
+<style>
+	:global(html) {
+		--nc-content-width: 768px;
+		--nc-primary: #546486;
+		--nc-primary-hover: #4a5876;
+	}
+</style>

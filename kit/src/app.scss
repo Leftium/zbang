@@ -1,8 +1,6 @@
-@use '@picocss/pico/scss/pico' with (
-	$theme-color: 'zinc'
-);
+@use '@leftium/nimble.css/scss';
 @use 'open-props/style';
 
 html {
-	transition: background-color var(--pico-transition);
+	transition: background-color 0.2s ease;
 }
