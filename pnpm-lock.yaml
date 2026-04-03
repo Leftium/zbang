@@ -96,8 +96,8 @@ importers:
         specifier: ^0.0.2
         version: 0.0.2(svelte@5.46.1)
       '@leftium/nimble.css':
-        specifier: ^0.16.0
-        version: 0.16.0
+        specifier: ^0.17.0
+        version: 0.17.0
       '@ngrok/ngrok':
         specifier: ^1.7.0
         version: 1.7.0
@@ -730,8 +730,8 @@ packages:
     peerDependencies:
       svelte: ^5.0.0
 
-  '@leftium/nimble.css@0.16.0':
-    resolution: {integrity: sha512-LoUPpUn773UNx1ti1wIY2m/lgCXmnmEtT2P6oa6m9vc9Aagm2qSqeQypz3uZpJH1v5eiuAXLVnn29ozuzj1b+g==}
+  '@leftium/nimble.css@0.17.0':
+    resolution: {integrity: sha512-nX5hcF4hr9EzgHeBMFhfwdE5ddqA8/1OVcbyGJOecsOxG8DqdaT36FoaUSjpCzAZ1xbE9pe83ZRDEd2rYJnHSw==}
 
   '@ngrok/ngrok-android-arm64@1.7.0':
     resolution: {integrity: sha512-8tco3ID6noSaNy+CMS7ewqPoIkIM6XO5COCzsUp3Wv3XEbMSyn65RN6cflX2JdqLfUCHcMyD0ahr9IEiHwqmbQ==}
@@ -4697,7 +4697,7 @@ snapshots:
     dependencies:
       svelte: 5.46.1
 
-  '@leftium/nimble.css@0.16.0': {}
+  '@leftium/nimble.css@0.17.0': {}
 
   '@ngrok/ngrok-android-arm64@1.7.0':
     optional: true

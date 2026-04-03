@@ -17,7 +17,7 @@
 		"@eslint/compat": "^2.0.0",
 		"@eslint/js": "^9.39.2",
 		"@leftium/logo": "^0.0.2",
-		"@leftium/nimble.css": "^0.16.0",
+		"@leftium/nimble.css": "^0.17.0",
 		"@ngrok/ngrok": "^1.7.0",
 		"@sveltejs/adapter-auto": "^7.0.0",
 		"@sveltejs/kit": "^2.49.2",
