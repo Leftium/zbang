@@ -110,6 +110,9 @@
 	let wordwrap = $state(true);
 	let enterNewlineRestored = $state(false);
 	let enterNewlineFullscreen = $state(true);
+	let iosKeyboardOpen = $state(false);
+	let visualViewportOffsetTop = $state(0);
+	let launcherInputHeight = $state(0);
 	let selectedPrimaryItemId = $state<string>();
 	let inputHistory = $state<InputFrame[]>([]);
 	let keyHistory: KeyFrame[] = [];
@@ -1132,48 +1135,61 @@
 		</div>
 	{/if}
 
-	<div class="launcher-input-shell">
-		<ExpandingTextarea
-			bind:textareaElement
-			bind:value
-			bind:fullscreen
-			bind:wordwrap
-			bind:enterNewlineRestored
-			bind:enterNewlineFullscreen
-			autofocus
-			spellcheck="false"
-			autocomplete="off"
-			autocapitalize="off"
-			placeholder="Type a query..."
-			onbeforeinput={handleLauncherBeforeInput}
-			onclick={handleLauncherCursorChange}
-			oninput={handleLauncherInput}
-			onkeydown={handleLauncherKeydown}
-			onkeyup={handleLauncherCursorChange}
-			onprimaryaction={runPrimaryAction}
+	<div
+		class:ios-keyboard-fixed={iosKeyboardOpen && !fullscreen}
+		class="launcher-input-slot"
+		style={`--launcher-input-height: ${launcherInputHeight}px;`}
+	>
+		<div
+			bind:clientHeight={launcherInputHeight}
+			class:ios-keyboard-fixed={iosKeyboardOpen && !fullscreen}
+			class="launcher-input-shell"
+			style={`--visual-viewport-top: ${visualViewportOffsetTop}px;`}
 		>
-			{#snippet primaryAction()}
-				{#if fullscreen && primaryLauncherItem}
-					<button class="launcher-item action-item primary" onclick={runPrimaryAction}>
-						<span class="item-text">
-							<span class="item-heading">
-								{#if getShortcutLabel(primaryLauncherItem)}
-									<span class="shortcut-label">{getShortcutLabel(primaryLauncherItem)}</span>
-								{/if}
-								<strong>{@render highlightedText(primaryLauncherItem.titleSegments, primaryLauncherItem.title)}</strong>
+			<ExpandingTextarea
+				bind:textareaElement
+				bind:value
+				bind:fullscreen
+				bind:wordwrap
+				bind:enterNewlineRestored
+				bind:enterNewlineFullscreen
+				bind:iosKeyboardOpen
+				bind:visualViewportOffsetTop
+				autofocus
+				spellcheck="false"
+				autocomplete="off"
+				autocapitalize="off"
+				placeholder="Type a query..."
+				onbeforeinput={handleLauncherBeforeInput}
+				onclick={handleLauncherCursorChange}
+				oninput={handleLauncherInput}
+				onkeydown={handleLauncherKeydown}
+				onkeyup={handleLauncherCursorChange}
+				onprimaryaction={runPrimaryAction}
+			>
+				{#snippet primaryAction()}
+					{#if fullscreen && primaryLauncherItem}
+						<button class="launcher-item action-item primary" onclick={runPrimaryAction}>
+							<span class="item-text">
+								<span class="item-heading">
+									{#if getShortcutLabel(primaryLauncherItem)}
+										<span class="shortcut-label">{getShortcutLabel(primaryLauncherItem)}</span>
+									{/if}
+									<strong>{@render highlightedText(primaryLauncherItem.titleSegments, primaryLauncherItem.title)}</strong>
+								</span>
+								{#if primaryLauncherItem.description}<small
+										>{@render highlightedText(
+											primaryLauncherItem.descriptionSegments,
+											primaryLauncherItem.description
+										)}</small
+									>{/if}
 							</span>
-							{#if primaryLauncherItem.description}<small
-									>{@render highlightedText(
-										primaryLauncherItem.descriptionSegments,
-										primaryLauncherItem.description
-									)}</small
-								>{/if}
-						</span>
-						<span class="meta">{formatItemMeta(primaryLauncherItem)}</span>
-					</button>
-				{/if}
-			{/snippet}
-		</ExpandingTextarea>
+							<span class="meta">{formatItemMeta(primaryLauncherItem)}</span>
+						</button>
+					{/if}
+				{/snippet}
+			</ExpandingTextarea>
+		</div>
 	</div>
 
 	{#if bangComposition.hasTargets}
@@ -1241,10 +1257,18 @@
 		padding-block-end: var(--size-4);
 	}
 
-	.launcher-input-shell {
+	.launcher-input-slot {
 		position: sticky;
 		top: 0;
 		z-index: 2;
+	}
+
+	.launcher-input-slot.ios-keyboard-fixed {
+		position: static;
+		min-height: var(--launcher-input-height);
+	}
+
+	.launcher-input-shell {
 		isolation: isolate;
 		margin-inline: calc(-1 * var(--nc-spacing));
 		padding-block-start: var(--size-1);
@@ -1260,6 +1284,15 @@
 		height: var(--size-1);
 		z-index: -1;
 		background: var(--nc-surface-1);
+	}
+
+	.launcher-input-shell.ios-keyboard-fixed {
+		position: fixed;
+		top: var(--visual-viewport-top, 0px);
+		left: 50%;
+		z-index: 2;
+		width: min(calc(var(--nc-content-width) + 2 * var(--nc-spacing)), 100%);
+		transform: translateX(-50%);
 	}
 
 	.launcher-list {
