@@ -366,6 +366,8 @@
 			{
 				id: 'compromise',
 				getItems(context) {
+					if (mode !== 'compromise') return [];
+
 					return getCompromiseItems(context);
 				}
 			}
