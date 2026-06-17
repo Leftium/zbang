@@ -303,6 +303,87 @@ Views should receive standardized input where practical:
 
 This keeps views from becoming unrelated mini-apps and lets them participate in the same launcher model as actions and plugins.
 
+## Compromise/NLP Debug Composition
+
+The compromise expression evaluator is a useful prototype for composition because it introduces a second editable input: the
+sample text is the subject, and the expression is a lens or tool applied to that subject.
+
+Current model:
+
+```txt
+sample text (`q`) + expression (`expr`) -> inspected result
+```
+
+This is useful, but it raises a broader UX question: when a mode needs its own input, should that input live in a separate
+panel, become another shared editor layer, or be folded into one editable artifact?
+
+### Layered Editor Option
+
+One option is a cascade of shared editor layers. The app owns the textarea affordances, while the focused mode contributes
+layer definitions, presets, and output rendering.
+
+Example layers:
+
+```txt
+Text: I met Barack yesterday at Starbucks.
+Expression: doc.people().json()
+Result: [...]
+```
+
+Useful behavior:
+
+- Show inactive layers as compact previews with edit affordances.
+- Use one high-quality editor surface for the active layer.
+- Make preset chips apply to the active layer.
+- Keep both source text and expression visible enough that users do not lose context.
+- Let layer values map cleanly to URL params such as `q` and `expr`.
+
+This preserves the difference between source text and tool input while still letting every layer reuse shared textarea features.
+
+### Single Scratchpad Option
+
+Another option is to make the compromise editor a small JS scratchpad containing both the sample text and the expression.
+
+Example:
+
+```js
+const text = `I met Barack yesterday at Starbucks.`;
+const doc = nlp(text);
+
+doc.people().json();
+```
+
+The result view would display the value of the final expression, or possibly a returned value if the script uses `return`.
+
+Useful behavior:
+
+- One editable artifact contains the full repro.
+- Preset chips can set complete scripts instead of only API expressions.
+- Shared URLs can use a script-like param containing the whole repro.
+- The scratchpad can scale from one-liners to multi-step debugging examples.
+
+Tradeoffs:
+
+- It is more programmer-oriented than separate labeled inputs.
+- It duplicates or replaces the main `q` input, so URL semantics need a clear decision.
+- Last-expression evaluation is ergonomic but requires compilation/parsing if multiline scripts should behave like a real console.
+- Arbitrary JS remains a prototype-only safety tradeoff unless sandboxing is added later.
+
+If this direction is explored, prefer a new script-like URL param over silently overloading `q`. Existing `q` plus `expr`
+URLs can remain the simpler expression mode or be converted into a default scratchpad template.
+
+### Preset Implications
+
+Preset chips should stay conceptually simple: they set or insert the value of the current editable surface.
+
+Depending on the chosen model, a compromise preset may set:
+
+- Only the expression layer, such as `doc.dates().get()`.
+- Only the sample text layer, such as a curated ambiguity example.
+- A complete scratchpad script containing both sample text and expression.
+
+This keeps presets compatible with both layered and scratchpad composition without committing to either implementation yet.
+
 ## Markers, Bangs, And Tags
 
 Bangs and TaskPaper-style tags are similar because both are compact text tokens that add meaning to nearby text.

@@ -181,6 +181,11 @@ Modes may limit plugins, boost plugins, or adjust scoring criteria. Modes and te
 
 A mode may choose a specialized view when a focused UI is more useful than the default action list. For example, notes mode may use a notes search/editing view, history mode may use a history list, and compromise mode may use an NLP visualization.
 
+Compromise/NLP mode should remain a development-friendly place to explore composition. Its expression evaluator may evolve
+into either layered mode-specific inputs or a single shareable scratchpad that contains both sample text and evaluator code.
+The product requirement is not the specific implementation; it is that editable mode-specific inputs should reuse shared
+launcher affordances where practical and should be URL-addressable for reproducible debugging.
+
 ## Inline Triggers
 
 The launcher should eventually support inline triggers that open completion menus while typing.
