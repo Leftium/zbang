@@ -69,6 +69,27 @@
 		expression: string;
 	};
 
+	type CompromiseTerm = {
+		text: string;
+		pre?: string;
+		post?: string;
+		tags?: string[];
+		normal?: string;
+		index?: number[];
+		id?: string;
+		chunk?: string;
+	};
+
+	type CompromiseTermPhrase = {
+		terms?: CompromiseTerm[];
+	};
+
+	type TokenViewTerm = CompromiseTerm & {
+		key: string;
+		score?: number;
+		scoreWeight: number;
+	};
+
 	let {
 		text,
 		inspect = 'doc-json',
@@ -240,6 +261,49 @@
 	let draftExpression = $derived(evaluatedExpression);
 	const activePreset = $derived(panels.find((panel) => panel.expression === evaluatedExpression));
 	const inspectedValue = $derived(evaluateExpression(evaluatedExpression, text.trim(), doc));
+	const tokens = $derived.by<TokenViewTerm[]>(() => {
+		const phrases = doc.terms().json() as CompromiseTermPhrase[];
+		const scoreEntries = doc.tfidf({ form: 'normal' });
+		const scores = new Map(scoreEntries.map(([word, score]) => [word, score]));
+		const maxScore = Math.max(...scoreEntries.map(([, score]) => score), 0);
+
+		return phrases.flatMap((phrase, phraseIndex) =>
+			(phrase.terms ?? []).map((term, termIndex) => {
+				const score = scores.get(term.normal ?? term.text.toLowerCase());
+
+				return {
+					...term,
+					key: term.id ?? `${phraseIndex}.${termIndex}.${term.text}`,
+					score,
+					scoreWeight: score !== undefined && maxScore > 0 ? score / maxScore : 0
+				};
+			})
+		);
+	});
+
+	function getScoreStyle(term: TokenViewTerm) {
+		if (term.score === undefined) return '';
+
+		const bluePercent = Math.round((1 - term.scoreWeight) * 100);
+
+		return `--token-fg: color-mix(in srgb, #2563eb ${bluePercent}%, #dc2626);`;
+	}
+
+	function formatScore(score: number) {
+		return Number.isInteger(score) ? String(score) : score.toFixed(3);
+	}
+
+	function describeToken(term: TokenViewTerm) {
+		return [
+			term.text,
+			term.score !== undefined ? `score ${formatScore(term.score)}` : undefined,
+			term.tags?.length ? `tags ${term.tags.join(', ')}` : undefined,
+			term.chunk ? `chunk ${term.chunk}` : undefined,
+			term.index ? `index ${term.index.join(', ')}` : undefined
+		]
+			.filter(Boolean)
+			.join('; ');
+	}
 
 	function runExpression(expression = draftExpression) {
 		const nextExpression = expression.trim() || panels[0].expression;
@@ -283,6 +347,37 @@
 </script>
 
 <section class="inspector" aria-label="Compromise expression evaluator">
+	<section class="token-view" aria-label="Compromise token view">
+		<header>
+			<div>
+				<h2>Token View</h2>
+				<p>Input text rendered with compromise tags. Hover or focus a token for details.</p>
+			</div>
+		</header>
+
+		<div class="token-text">
+			{#each tokens as term (term.key)}
+				{term.pre}<button
+					type="button"
+					class={['token', term.score === undefined && 'token-unscored']}
+					style={getScoreStyle(term)}
+					aria-label={describeToken(term)}
+				>
+					<span>{term.text}</span>
+					<span class="token-card" aria-hidden="true">
+						<strong>{term.text}</strong>
+						{#if term.score !== undefined}<small>score: {formatScore(term.score)}</small>{/if}
+						{#if term.tags?.length}<small>tags: {term.tags.join(', ')}</small>{/if}
+						{#if term.chunk}<small>chunk: {term.chunk}</small>{/if}
+						{#if term.index}<small>index: {term.index.join(', ')}</small>{/if}
+					</span>
+				</button>{term.post}
+			{:else}
+				<span class="empty-token-view">Enter text to inspect compromise tokens.</span>
+			{/each}
+		</div>
+	</section>
+
 	<header>
 		<div>
 			<h2>Compromise Expression</h2>
@@ -360,6 +455,86 @@
 	p {
 		color: var(--nc-tx-2);
 		font-size: var(--font-size-0);
+	}
+
+	.token-view {
+		display: grid;
+		gap: var(--size-2);
+	}
+
+	.token-text {
+		padding: var(--size-3);
+		background:
+			linear-gradient(color-mix(in srgb, var(--nc-surface-1) 88%, transparent), transparent),
+			var(--nc-bg-1);
+		border: 1px solid var(--nc-border);
+		border-radius: var(--nc-radius);
+		font-size: var(--font-size-1);
+		line-height: 1.75;
+		white-space: pre-wrap;
+	}
+
+	.token {
+		position: relative;
+		margin: 0;
+		padding: 0 0.0625rem;
+		color: var(--token-fg, var(--nc-tx-1));
+		background: transparent;
+		border: 0;
+		border-radius: 0.2rem;
+		font: inherit;
+		line-height: inherit;
+		white-space: normal;
+		vertical-align: baseline;
+	}
+
+	.token:hover,
+	.token:focus-visible {
+		z-index: 2;
+		outline: none;
+	}
+
+	.token-unscored {
+		--token-fg: var(--nc-tx-2);
+	}
+
+	.token-card {
+		display: none;
+		position: absolute;
+		inset-block-start: calc(100% + 0.35rem);
+		inset-inline-start: 50%;
+		width: max-content;
+		max-width: min(20rem, calc(100vw - 2rem));
+		padding: var(--size-2);
+		translate: -50% 0;
+		white-space: normal;
+		text-align: left;
+		background: var(--nc-surface-1);
+		border: 1px solid var(--token-fg, var(--nc-border));
+		border-radius: var(--nc-radius);
+		box-shadow: var(--shadow-3);
+		color: var(--nc-tx-1);
+	}
+
+	.token:hover .token-card,
+	.token:focus-visible .token-card {
+		display: grid;
+		gap: 0.125rem;
+	}
+
+	.token-card strong {
+		color: var(--nc-tx-1);
+	}
+
+	.token-card small {
+		color: var(--nc-tx-2);
+		font-family: var(--font-mono), monospace;
+		font-size: 0.72rem;
+		line-height: 1.35;
+	}
+
+	.empty-token-view {
+		color: var(--nc-tx-2);
 	}
 
 	nav {
