@@ -2,7 +2,9 @@
 	import { page } from '$app/state';
 
 	import { createCompromiseDoc } from '$lib/compromise';
-	import CompromiseInspector, { getInspectPanelId } from '$lib/components/CompromiseInspector.svelte';
+	import CompromiseInspector, {
+		getInspectPanelId
+	} from '$lib/components/CompromiseInspector.svelte';
 	import ExpandingTextarea from '$lib/components/ExpandingTextarea.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { settings, type SearchProvider } from '$lib/settings.svelte';
@@ -42,6 +44,21 @@
 		places: string[];
 		organizations: string[];
 		questions: string[];
+		urls: string[];
+		emails: string[];
+		phoneNumbers: string[];
+		hashTags: string[];
+		atMentions: string[];
+		emojis: string[];
+		emoticons: string[];
+		money: string[];
+		percentages: string[];
+		fractions: string[];
+		acronyms: string[];
+		hyphenated: string[];
+		quotations: string[];
+		parentheses: string[];
+		keywords: string[];
 		dates: string[];
 		times: string[];
 		durations: string[];
@@ -67,14 +84,18 @@
 		nlp: compromiseSignals
 	});
 	const plugins = $derived(createPlugins());
-	const launcherItems = $derived(rankItems(plugins.flatMap((plugin) => plugin.getItems(launcherContext))));
+	const launcherItems = $derived(
+		rankItems(plugins.flatMap((plugin) => plugin.getItems(launcherContext)))
+	);
 	const visibleLauncherItems = $derived(
 		mode === 'compromise'
 			? launcherItems.filter((item) => item.pluginId === 'compromise')
 			: launcherItems
 	);
 	const primaryLauncherItem = $derived(
-		mode === 'compromise' ? undefined : visibleLauncherItems.find((item) => item.safeForEnter && item.run)
+		mode === 'compromise'
+			? undefined
+			: visibleLauncherItems.find((item) => item.safeForEnter && item.run)
 	);
 	const secondaryLauncherItems = $derived(
 		visibleLauncherItems.filter((item) => item.id !== primaryLauncherItem?.id)
@@ -132,6 +153,21 @@
 				places: [],
 				organizations: [],
 				questions: [],
+				urls: [],
+				emails: [],
+				phoneNumbers: [],
+				hashTags: [],
+				atMentions: [],
+				emojis: [],
+				emoticons: [],
+				money: [],
+				percentages: [],
+				fractions: [],
+				acronyms: [],
+				hyphenated: [],
+				quotations: [],
+				parentheses: [],
+				keywords: [],
 				dates: [],
 				times: [],
 				durations: [],
@@ -150,6 +186,26 @@
 			places: unique(doc.places().out('array')),
 			organizations: unique(doc.organizations().out('array')),
 			questions: unique(doc.questions().out('array')),
+			urls: unique(doc.urls().out('array')),
+			emails: unique(doc.emails().out('array')),
+			phoneNumbers: unique(doc.phoneNumbers().out('array')),
+			hashTags: unique(doc.hashTags().out('array')),
+			atMentions: unique(doc.atMentions().out('array')),
+			emojis: unique(doc.emojis().out('array')),
+			emoticons: unique(doc.emoticons().out('array')),
+			money: unique(doc.money().out('array')),
+			percentages: unique(doc.percentages().out('array')),
+			fractions: unique(doc.fractions().out('array')),
+			acronyms: unique(doc.acronyms().out('array')),
+			hyphenated: unique(doc.hyphenated().out('array')),
+			quotations: unique(doc.quotations().out('array')),
+			parentheses: unique(doc.parentheses().out('array')),
+			keywords: unique(
+				doc
+					.tfidf({ form: 'normal' })
+					.slice(0, 8)
+					.map(([word]) => word)
+			),
 			dates: unique(doc.dates().out('array')),
 			times: unique(doc.times().out('array')),
 			durations: unique(doc.durations().out('array')),
@@ -239,6 +295,14 @@
 
 		return [
 			createInsightItem('summary', 'NLP summary', getSummaryDescription(signals), 60),
+			createInsightItem('urls', 'URLs', formatList(signals.urls), 59),
+			createInsightItem(
+				'contacts',
+				'Contacts',
+				formatList([...signals.emails, ...signals.phoneNumbers]),
+				58
+			),
+			createInsightItem('keywords', 'Keywords', formatList(signals.keywords), 57),
 			createInsightItem('topics', 'Topics', formatList(signals.topics), 55),
 			createInsightItem('people', 'People', formatList(signals.people), 54),
 			createInsightItem('places', 'Places', formatList(signals.places), 53),
@@ -247,13 +311,40 @@
 			createInsightItem('dates', 'Dates', formatList(signals.dates), 50),
 			createInsightItem('times', 'Times', formatList(signals.times), 49),
 			createInsightItem('durations', 'Durations', formatList(signals.durations), 48),
+			createInsightItem(
+				'values',
+				'Values',
+				formatList([...signals.money, ...signals.percentages, ...signals.fractions]),
+				47
+			),
+			createInsightItem(
+				'social',
+				'Social',
+				formatList([...signals.hashTags, ...signals.atMentions]),
+				46
+			),
+			createInsightItem('quoted', 'Quoted text', formatList(signals.quotations), 45),
 			createInsightItem('verbs', 'Verbs', formatList(signals.verbs), 47),
 			createInsightItem('nouns', 'Nouns', formatList(signals.nouns), 46),
-			createInsightItem('terms', 'Terms', formatList(signals.terms), 45)
+			createInsightItem('acronyms', 'Acronyms', formatList(signals.acronyms), 44),
+			createInsightItem('hyphenated', 'Hyphenated', formatList(signals.hyphenated), 43),
+			createInsightItem('parentheses', 'Parentheses', formatList(signals.parentheses), 42),
+			createInsightItem(
+				'emoji',
+				'Emoji',
+				formatList([...signals.emojis, ...signals.emoticons]),
+				41
+			),
+			createInsightItem('terms', 'Terms', formatList(signals.terms), 40)
 		];
 	}
 
-	function createInsightItem(id: string, title: string, description: string, score: number): LauncherItem {
+	function createInsightItem(
+		id: string,
+		title: string,
+		description: string,
+		score: number
+	): LauncherItem {
 		return {
 			id: `compromise.${id}`,
 			pluginId: 'compromise',
@@ -272,8 +363,11 @@
 			`${signals.places.length} places`,
 			`${signals.organizations.length} orgs`,
 			`${signals.questions.length} questions`,
+			`${signals.urls.length} urls`,
+			`${signals.emails.length + signals.phoneNumbers.length} contacts`,
 			`${signals.dates.length} dates`,
-			`${signals.durations.length} durations`
+			`${signals.durations.length} durations`,
+			`${signals.keywords.length} keywords`
 		];
 
 		return counts.join(' | ');
@@ -309,7 +403,8 @@
 				<button class="launcher-item action-item primary" onclick={runPrimaryAction}>
 					<span>
 						<strong>{primaryLauncherItem.title}</strong>
-						{#if primaryLauncherItem.description}<small>{primaryLauncherItem.description}</small>{/if}
+						{#if primaryLauncherItem.description}<small>{primaryLauncherItem.description}</small
+							>{/if}
 					</span>
 					<span class="meta">{primaryLauncherItem.pluginId} · {primaryLauncherItem.score}</span>
 				</button>

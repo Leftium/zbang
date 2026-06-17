@@ -12,6 +12,12 @@
 		| 'time-values'
 		| 'durations'
 		| 'numbers'
+		| 'urls'
+		| 'contacts'
+		| 'social'
+		| 'values'
+		| 'phrases'
+		| 'keywords'
 		| 'stats'
 		| 'ngrams'
 		| 'tfidf'
@@ -30,6 +36,12 @@
 		'time-values',
 		'durations',
 		'numbers',
+		'urls',
+		'contacts',
+		'social',
+		'values',
+		'phrases',
+		'keywords',
 		'stats',
 		'ngrams',
 		'tfidf',
@@ -37,7 +49,9 @@
 	] as const;
 
 	export function getInspectPanelId(value: string | null): InspectPanelId {
-		return inspectPanelIds.includes(value as InspectPanelId) ? (value as InspectPanelId) : 'doc-json';
+		return inspectPanelIds.includes(value as InspectPanelId)
+			? (value as InspectPanelId)
+			: 'doc-json';
 	}
 </script>
 
@@ -60,7 +74,6 @@
 		inspect = 'doc-json',
 		expression: expressionParam
 	}: { text: string; inspect?: InspectPanelId; expression?: string } = $props();
-	let draftExpression = $state('');
 
 	const doc = $derived(createCompromiseDoc(text.trim()));
 	const panels = $derived<InspectPanel[]>([
@@ -137,6 +150,62 @@
 			expression: 'doc.numbers().json()'
 		},
 		{
+			id: 'urls',
+			label: 'urls().json()',
+			description: 'Detected URLs and domains.',
+			expression: 'doc.urls().json()'
+		},
+		{
+			id: 'contacts',
+			label: 'contact selectors',
+			description: 'Detected emails and phone numbers.',
+			expression: `({
+				emails: doc.emails().out('array'),
+				phoneNumbers: doc.phoneNumbers().out('array')
+			})`
+		},
+		{
+			id: 'social',
+			label: 'social selectors',
+			description: 'Detected hashtags, @mentions, emoji, and emoticons.',
+			expression: `({
+				hashTags: doc.hashTags().out('array'),
+				atMentions: doc.atMentions().out('array'),
+				emojis: doc.emojis().out('array'),
+				emoticons: doc.emoticons().out('array')
+			})`
+		},
+		{
+			id: 'values',
+			label: 'value selectors',
+			description: 'Detected money, percentages, and fractions.',
+			expression: `({
+				money: doc.money().json(),
+				moneyValues: doc.money().get(),
+				percentages: doc.percentages().json(),
+				percentageValues: doc.percentages().get(),
+				fractions: doc.fractions().json(),
+				fractionValues: doc.fractions().get()
+			})`
+		},
+		{
+			id: 'phrases',
+			label: 'phrase selectors',
+			description: 'Quoted, parenthesized, hyphenated, and acronym text.',
+			expression: `({
+				quotations: doc.quotations().out('array'),
+				parentheses: doc.parentheses().out('array'),
+				hyphenated: doc.hyphenated().out('array'),
+				acronyms: doc.acronyms().out('array')
+			})`
+		},
+		{
+			id: 'keywords',
+			label: 'tfidf keywords',
+			description: 'Top keyword candidates for launcher ranking.',
+			expression: "doc.tfidf({ form: 'normal' }).slice(0, 8)"
+		},
+		{
 			id: 'stats',
 			label: 'stats summary',
 			description: 'Common frequency outputs from compromise-stats.',
@@ -168,12 +237,9 @@
 	]);
 	const selectedPanel = $derived(panels.find((panel) => panel.id === inspect) ?? panels[0]);
 	const evaluatedExpression = $derived(expressionParam ?? selectedPanel.expression);
+	let draftExpression = $derived(evaluatedExpression);
 	const activePreset = $derived(panels.find((panel) => panel.expression === evaluatedExpression));
 	const inspectedValue = $derived(evaluateExpression(evaluatedExpression, text.trim(), doc));
-
-	$effect(() => {
-		draftExpression = evaluatedExpression;
-	});
 
 	function runExpression(expression = draftExpression) {
 		const nextExpression = expression.trim() || panels[0].expression;
@@ -189,10 +255,19 @@
 		}
 	}
 
-	function evaluateExpression(expression: string, text: string, doc: ReturnType<typeof createCompromiseDoc>) {
+	function evaluateExpression(
+		expression: string,
+		text: string,
+		doc: ReturnType<typeof createCompromiseDoc>
+	) {
 		try {
 			try {
-				return Function('text', 'nlp', 'doc', `"use strict"; return (${expression});`)(text, nlp, doc);
+				return Function(
+					'text',
+					'nlp',
+					'doc',
+					`"use strict"; return (${expression});`
+				)(text, nlp, doc);
 			} catch (error) {
 				if (!(error instanceof SyntaxError)) throw error;
 
@@ -211,7 +286,10 @@
 	<header>
 		<div>
 			<h2>Compromise Expression</h2>
-			<p>{activePreset?.description ?? 'Evaluate arbitrary JS with scoped text, nlp, and doc variables.'}</p>
+			<p>
+				{activePreset?.description ??
+					'Evaluate arbitrary JS with scoped text, nlp, and doc variables.'}
+			</p>
 		</div>
 	</header>
 
@@ -224,14 +302,16 @@
 			rows="3"
 			spellcheck="false"
 			autocomplete="off"
-			autocapitalize="off"
-		></textarea>
+			autocapitalize="off"></textarea>
 		<button type="submit">Evaluate</button>
 	</form>
 
 	<nav aria-label="Expression presets">
 		{#each panels as panel (panel.id)}
-			<button class:active={panel.expression === evaluatedExpression} onclick={() => runExpression(panel.expression)}>
+			<button
+				class:active={panel.expression === evaluatedExpression}
+				onclick={() => runExpression(panel.expression)}
+			>
 				{panel.label}
 			</button>
 		{/each}
