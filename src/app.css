@@ -1,1 +1,5 @@
 @import '@leftium/nimble.css';
+
+:root {
+	--nc-content-width: 64ch;
+}
