@@ -1132,47 +1132,49 @@
 		</div>
 	{/if}
 
-	<ExpandingTextarea
-		bind:textareaElement
-		bind:value
-		bind:fullscreen
-		bind:wordwrap
-		bind:enterNewlineRestored
-		bind:enterNewlineFullscreen
-		autofocus
-		spellcheck="false"
-		autocomplete="off"
-		autocapitalize="off"
-		placeholder="Type a query..."
-		onbeforeinput={handleLauncherBeforeInput}
-		onclick={handleLauncherCursorChange}
-		oninput={handleLauncherInput}
-		onkeydown={handleLauncherKeydown}
-		onkeyup={handleLauncherCursorChange}
-		onprimaryaction={runPrimaryAction}
-	>
-		{#snippet primaryAction()}
-			{#if fullscreen && primaryLauncherItem}
-				<button class="launcher-item action-item primary" onclick={runPrimaryAction}>
-					<span class="item-text">
-						<span class="item-heading">
-							{#if getShortcutLabel(primaryLauncherItem)}
-								<span class="shortcut-label">{getShortcutLabel(primaryLauncherItem)}</span>
-							{/if}
-							<strong>{@render highlightedText(primaryLauncherItem.titleSegments, primaryLauncherItem.title)}</strong>
+	<div class="launcher-input-shell">
+		<ExpandingTextarea
+			bind:textareaElement
+			bind:value
+			bind:fullscreen
+			bind:wordwrap
+			bind:enterNewlineRestored
+			bind:enterNewlineFullscreen
+			autofocus
+			spellcheck="false"
+			autocomplete="off"
+			autocapitalize="off"
+			placeholder="Type a query..."
+			onbeforeinput={handleLauncherBeforeInput}
+			onclick={handleLauncherCursorChange}
+			oninput={handleLauncherInput}
+			onkeydown={handleLauncherKeydown}
+			onkeyup={handleLauncherCursorChange}
+			onprimaryaction={runPrimaryAction}
+		>
+			{#snippet primaryAction()}
+				{#if fullscreen && primaryLauncherItem}
+					<button class="launcher-item action-item primary" onclick={runPrimaryAction}>
+						<span class="item-text">
+							<span class="item-heading">
+								{#if getShortcutLabel(primaryLauncherItem)}
+									<span class="shortcut-label">{getShortcutLabel(primaryLauncherItem)}</span>
+								{/if}
+								<strong>{@render highlightedText(primaryLauncherItem.titleSegments, primaryLauncherItem.title)}</strong>
+							</span>
+							{#if primaryLauncherItem.description}<small
+									>{@render highlightedText(
+										primaryLauncherItem.descriptionSegments,
+										primaryLauncherItem.description
+									)}</small
+								>{/if}
 						</span>
-						{#if primaryLauncherItem.description}<small
-								>{@render highlightedText(
-									primaryLauncherItem.descriptionSegments,
-									primaryLauncherItem.description
-								)}</small
-							>{/if}
-					</span>
-					<span class="meta">{formatItemMeta(primaryLauncherItem)}</span>
-				</button>
-			{/if}
-		{/snippet}
-	</ExpandingTextarea>
+						<span class="meta">{formatItemMeta(primaryLauncherItem)}</span>
+					</button>
+				{/if}
+			{/snippet}
+		</ExpandingTextarea>
+	</div>
 
 	{#if bangComposition.hasTargets}
 		<div class="bang-composition" aria-label="Bang composition preview">
@@ -1236,6 +1238,15 @@
 		width: min(calc(var(--nc-content-width) + 2 * var(--nc-spacing)), 100%);
 		margin-inline: auto;
 		padding-inline: var(--nc-spacing);
+		padding-block-end: var(--size-4);
+	}
+
+	.launcher-input-shell {
+		position: sticky;
+		top: 0;
+		z-index: 2;
+		padding-block-start: var(--size-1);
+		background: var(--nc-bg-1);
 	}
 
 	.launcher-list {
