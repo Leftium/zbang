@@ -1245,20 +1245,7 @@
 		position: sticky;
 		top: 0;
 		z-index: 2;
-		isolation: isolate;
-		margin-inline: calc(-1 * var(--nc-spacing));
 		padding-block-start: var(--size-1);
-		padding-inline: var(--nc-spacing);
-		background: var(--nc-surface-1);
-	}
-
-	.launcher-input-shell::before {
-		content: '';
-		position: absolute;
-		inset-block: calc(-1 * var(--size-1)) auto;
-		inset-inline: 0;
-		height: var(--size-1);
-		z-index: -1;
 		background: var(--nc-surface-1);
 	}
 
