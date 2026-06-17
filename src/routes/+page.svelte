@@ -36,6 +36,7 @@
 
 	type LauncherMode = 'all' | 'compromise';
 	type KeywordSignal = { word: string; score: number };
+	type MoneyJson = { text?: string; number?: { prefix?: string; unit?: string } };
 
 	type CompromiseSignals = {
 		text: string;
@@ -53,6 +54,7 @@
 		emojis: string[];
 		emoticons: string[];
 		money: string[];
+		currencies: string[];
 		percentages: string[];
 		fractions: string[];
 		acronyms: string[];
@@ -162,6 +164,7 @@
 				emojis: [],
 				emoticons: [],
 				money: [],
+				currencies: [],
 				percentages: [],
 				fractions: [],
 				acronyms: [],
@@ -178,6 +181,7 @@
 		}
 
 		const doc = createCompromiseDoc(text);
+		const money = doc.money();
 
 		return {
 			text,
@@ -194,7 +198,8 @@
 			atMentions: unique(doc.atMentions().out('array')),
 			emojis: unique(doc.emojis().out('array')),
 			emoticons: unique(doc.emoticons().out('array')),
-			money: unique(doc.money().out('array')),
+			money: getMoneyAmounts(money.json() as MoneyJson[]),
+			currencies: getCurrencies(money.json() as MoneyJson[]),
 			percentages: unique(doc.percentages().out('array')),
 			fractions: unique(doc.fractions().out('array')),
 			acronyms: unique(doc.acronyms().out('array')),
@@ -221,6 +226,24 @@
 			keywords.push({ word, score });
 			return keywords;
 		}, []);
+	}
+
+	function getCurrencies(values: MoneyJson[]) {
+		return unique(
+			values.flatMap(({ number }) =>
+				[number?.prefix, number?.unit].filter((value): value is string => Boolean(value?.trim()))
+			)
+		);
+	}
+
+	function getMoneyAmounts(values: MoneyJson[]) {
+		return unique(
+			values.flatMap(({ text, number }) => (hasCurrency(number) && text ? [text] : []))
+		);
+	}
+
+	function hasCurrency(number: MoneyJson['number']) {
+		return Boolean(number?.prefix?.trim() || number?.unit?.trim());
 	}
 
 	function createPlugins(): LauncherPlugin[] {
@@ -285,7 +308,9 @@
 	function getCompromiseItems(context: LauncherContext): LauncherItem[] {
 		const { nlp: signals } = context;
 		const contacts = [...signals.emails, ...signals.phoneNumbers];
-		const values = [...signals.money, ...signals.percentages, ...signals.fractions];
+		const values = unique([...signals.percentages, ...signals.fractions]).filter(
+			(value) => !signals.money.includes(value)
+		);
 		const social = [...signals.hashTags, ...signals.atMentions];
 		const emoji = [...signals.emojis, ...signals.emoticons];
 		const keywords = signals.keywords.map(({ word }) => word);
@@ -307,6 +332,18 @@
 			createInsightItem('summary', 'NLP summary', getSummaryDescription(signals), 64),
 			createInsightItem('urls', 'URLs', formatList(signals.urls), scoreInsight(59, signals.urls)),
 			createInsightItem('contacts', 'Contacts', formatList(contacts), scoreInsight(58, contacts)),
+			createInsightItem(
+				'currencies',
+				'Currencies',
+				formatList(signals.currencies),
+				scoreInsight(57, signals.currencies)
+			),
+			createInsightItem(
+				'money',
+				'Money',
+				formatList(signals.money),
+				scoreInsight(58, signals.money)
+			),
 			createInsightItem(
 				'keywords',
 				'Keywords',
@@ -447,6 +484,8 @@
 			`${signals.questions.length} questions`,
 			`${signals.urls.length} urls`,
 			`${signals.emails.length + signals.phoneNumbers.length} contacts`,
+			`${signals.money.length} money`,
+			`${signals.currencies.length} currencies`,
 			`${signals.dates.length} dates`,
 			`${signals.durations.length} durations`,
 			`${signals.keywords.length} keywords`
