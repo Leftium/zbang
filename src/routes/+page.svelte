@@ -97,13 +97,25 @@
 		google: 'Google'
 	};
 	const searchProviders = Object.keys(searchProviderLabels) as SearchProvider[];
+	const shortcutLabels = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'] as const;
+	const shortcutKeys = new Set(['F', 'L', 'N', 'M', '.', ' ', ...shortcutLabels]);
+	const shortcutDelay = 250;
+	type InputFrame = { data: string | null; inputType: string; ts: number };
+	type KeyFrame = { key: string; ts: number };
 	let bangCatalog = $state<ZbangCatalog>();
 	let loadedBangProvider = $state<BangProviderId>();
 	let textareaElement = $state<HTMLTextAreaElement>();
 	let bangEntry = $state<{ triggerIndex: number; fragment: string }>();
 	let fullscreen = $state(false);
+	let wordwrap = $state(true);
 	let enterNewlineRestored = $state(false);
+	let enterNewlineFullscreen = $state(true);
 	let selectedPrimaryItemId = $state<string>();
+	let inputHistory = $state<InputFrame[]>([]);
+	let keyHistory: KeyFrame[] = [];
+	let doubleKeypress = $state<string>();
+	let isPeriodShortcut = $state(false);
+	let isMobilePeriodShortcut = $state(false);
 
 	const mode = $derived(getMode(page.url.searchParams.get('mode')));
 	const inspect = $derived(getInspectPanelId(page.url.searchParams.get('inspect')));
@@ -138,6 +150,10 @@
 	const selectablePrimaryItems = $derived(
 		mode === 'compromise' ? [] : visibleLauncherItems.filter((item) => item.kind === 'action' && item.run)
 	);
+	const shortcutLauncherItems = $derived(
+		visibleLauncherItems.filter((item) => item.kind === 'action' && item.run).slice(0, shortcutLabels.length)
+	);
+	const shortcutItemIds = $derived(new Map(shortcutLauncherItems.map((item, index) => [item.id, index])));
 	const primaryLauncherItem = $derived(
 		selectablePrimaryItems.find((item) => item.id === selectedPrimaryItemId) ??
 		selectablePrimaryItems.find((item) => item.safeForEnter)
@@ -277,8 +293,63 @@
 		value = applyBang(value, code);
 	}
 
+	function removeTextBeforeCursor(length: number) {
+		if (!textareaElement || length <= 0) return;
+
+		const { selectionStart, selectionEnd } = textareaElement;
+		const start = Math.max(0, selectionStart - length);
+		value = value.slice(0, start) + value.slice(selectionEnd);
+		textareaElement.setSelectionRange(start, start);
+		updateBangEntry(textareaElement);
+
+		requestAnimationFrame(() => {
+			textareaElement?.setSelectionRange(start, start);
+			if (textareaElement) updateBangEntry(textareaElement);
+		});
+	}
+
+	function replaceTextBeforeCursorWithBang(length: number) {
+		if (!textareaElement) return;
+
+		const { selectionStart, selectionEnd } = textareaElement;
+		const start = Math.max(0, selectionStart - length);
+		const replacement = isBangTrigger(value, start) ? '!' : ' !';
+		const triggerIndex = start + replacement.indexOf('!');
+		const cursor = triggerIndex + 1;
+
+		value = value.slice(0, start) + replacement + value.slice(selectionEnd);
+		textareaElement.value = value;
+		bangEntry = { triggerIndex, fragment: '' };
+		textareaElement.setSelectionRange(cursor, cursor);
+
+		requestAnimationFrame(() => textareaElement?.setSelectionRange(cursor, cursor));
+	}
+
+	function handleLauncherBeforeInput(event: InputEvent) {
+		const { data, inputType } = event;
+		const ts = Date.now();
+		const lastInput = inputHistory[0];
+		const interval = lastInput ? ts - lastInput.ts : Infinity;
+
+		doubleKeypress = undefined;
+		if (
+			inputType === 'insertText' &&
+			data &&
+			interval < shortcutDelay &&
+			lastInput?.data?.toLowerCase() === data.toLowerCase()
+		) {
+			doubleKeypress = lastInput.data;
+		}
+
+		inputHistory = [{ data, inputType, ts }, ...inputHistory].slice(0, 2);
+		isPeriodShortcut = inputType === 'insertText' && data === '. ';
+		isMobilePeriodShortcut = inputType === 'insertText' && data === ' ' && inputHistory[1]?.data === '.';
+	}
+
 	function handleLauncherKeydown(event: KeyboardEvent) {
 		const textarea = event.currentTarget as HTMLTextAreaElement;
+
+		if (handleShortcutKeydown(event)) return;
 
 		if (handlePrimaryNavigation(event)) return;
 
@@ -301,7 +372,109 @@
 	}
 
 	function handleLauncherInput(event: Event) {
-		updateBangEntry(event.currentTarget as HTMLTextAreaElement);
+		const textarea = event.currentTarget as HTMLTextAreaElement;
+
+		if (handleShortcutInput()) return;
+
+		updateBangEntry(textarea);
+	}
+
+	function handleShortcutInput() {
+		const periodShortcutLength = isPeriodShortcut ? 2 : isMobilePeriodShortcut ? 2 : 0;
+
+		if (periodShortcutLength) {
+			replaceTextBeforeCursorWithBang(periodShortcutLength);
+			resetShortcutState();
+			return true;
+		}
+
+		if (doubleKeypress && shortcutKeys.has(doubleKeypress)) {
+			if (doubleKeypress === ' ') {
+				replaceTextBeforeCursorWithBang(2);
+				resetShortcutState();
+				return true;
+			}
+
+			removeTextBeforeCursor(2);
+			executeShortcut(doubleKeypress);
+			resetShortcutState();
+			return true;
+		}
+
+		return false;
+	}
+
+	function handleShortcutKeydown(event: KeyboardEvent) {
+		if (event.key === ' ') return false;
+
+		const ts = Date.now();
+		const lastKey = keyHistory[0];
+		const interval = lastKey ? ts - lastKey.ts : Infinity;
+
+		keyHistory = [{ key: event.key, ts }, ...keyHistory].slice(0, 2);
+		doubleKeypress = undefined;
+
+		if (interval >= shortcutDelay || lastKey?.key.toLowerCase() !== event.key.toLowerCase()) {
+			return false;
+		}
+
+		doubleKeypress = lastKey.key;
+
+		if (!shortcutKeys.has(doubleKeypress)) return false;
+
+		event.preventDefault();
+		removeTextBeforeCursor(1);
+		executeShortcut(doubleKeypress);
+		resetShortcutState();
+
+		return true;
+	}
+
+	function executeShortcut(shortcutKey: string) {
+		if (shortcutKey === 'F') {
+			fullscreen = !fullscreen;
+			return;
+		}
+
+		if (shortcutKey === 'L') {
+			wordwrap = !wordwrap;
+			return;
+		}
+
+		if (shortcutKey === 'N') {
+			if (fullscreen) {
+				enterNewlineFullscreen = !enterNewlineFullscreen;
+			} else {
+				enterNewlineRestored = !enterNewlineRestored;
+			}
+
+			return;
+		}
+
+		if (shortcutKey === '.' || shortcutKey === 'M') {
+			runPrimaryAction();
+			return;
+		}
+
+		const index = shortcutLabels.findIndex((label) => label === shortcutKey);
+		const item = shortcutLauncherItems[index];
+
+		if (item) void item.run?.();
+	}
+
+	function resetShortcutState() {
+		doubleKeypress = undefined;
+		inputHistory = [];
+		keyHistory = [];
+		isPeriodShortcut = false;
+		isMobilePeriodShortcut = false;
+	}
+
+	function getShortcutLabel(item: LauncherItem) {
+		const index = shortcutItemIds.get(item.id);
+		const label = index === undefined ? undefined : shortcutLabels[index];
+
+		return label ? `${label}${label}` : undefined;
 	}
 
 	function handleLauncherCursorChange(event: Event) {
@@ -925,12 +1098,15 @@
 		bind:textareaElement
 		bind:value
 		bind:fullscreen
+		bind:wordwrap
 		bind:enterNewlineRestored
+		bind:enterNewlineFullscreen
 		autofocus
 		spellcheck="false"
 		autocomplete="off"
 		autocapitalize="off"
 		placeholder="Type a query..."
+		onbeforeinput={handleLauncherBeforeInput}
 		onclick={handleLauncherCursorChange}
 		oninput={handleLauncherInput}
 		onkeydown={handleLauncherKeydown}
@@ -940,7 +1116,10 @@
 		{#snippet primaryAction()}
 			{#if fullscreen && primaryLauncherItem}
 				<button class="launcher-item action-item primary" onclick={runPrimaryAction}>
-					<span>
+					{#if getShortcutLabel(primaryLauncherItem)}
+						<span class="shortcut-label">{getShortcutLabel(primaryLauncherItem)}</span>
+					{/if}
+					<span class="item-text">
 						<strong>{@render highlightedText(primaryLauncherItem.titleSegments, primaryLauncherItem.title)}</strong>
 						{#if primaryLauncherItem.description}<small
 								>{@render highlightedText(
@@ -974,12 +1153,14 @@
 	<section class="launcher-list" aria-label="Launcher actions and insights">
 		{#each secondaryLauncherItems as item (item.id)}
 			{#if item.kind === 'action'}
+				{@const shortcutLabel = getShortcutLabel(item)}
 				<button
 					class:primary={item.id === primaryLauncherItem?.id}
 					class="launcher-item action-item"
 					onclick={() => item.run?.()}
 				>
-					<span>
+					{#if shortcutLabel}<span class="shortcut-label">{shortcutLabel}</span>{/if}
+					<span class="item-text">
 						<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
 						{#if item.description}<small
 								>{@render highlightedText(item.descriptionSegments, item.description)}</small
@@ -989,7 +1170,7 @@
 				</button>
 			{:else}
 				<article class="launcher-item insight-item">
-					<span>
+					<span class="item-text">
 						<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
 						{#if item.description}<small
 								>{@render highlightedText(item.descriptionSegments, item.description)}</small
@@ -1108,10 +1289,31 @@
 		color: var(--nc-tx-2);
 	}
 
-	.launcher-item > span:first-child {
+	.item-text {
+		flex: 1 1 auto;
 		display: grid;
 		gap: 0.125rem;
 		min-width: 0;
+	}
+
+	.shortcut-label {
+		flex: 0 0 auto;
+		min-width: 2.75rem;
+		padding: 0.125rem 0.375rem;
+		text-align: center;
+		font-family: monospace;
+		font-size: var(--font-size-0);
+		font-weight: 700;
+		line-height: 1.4;
+		color: var(--nc-tx-2);
+		background: var(--nc-surface-2);
+		border: 1px solid var(--nc-border);
+		border-radius: calc(var(--nc-radius) * 0.75);
+	}
+
+	.action-item.primary .shortcut-label {
+		color: var(--nc-primary);
+		border-color: color-mix(in srgb, var(--nc-primary) 55%, var(--nc-border));
 	}
 
 	.launcher-item strong,
