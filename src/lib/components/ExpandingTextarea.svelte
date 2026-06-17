@@ -305,12 +305,39 @@
 
 	@media (max-width: 520px) {
 		.status-bar {
-			align-items: stretch;
+			align-items: center;
 			gap: var(--size-1);
+			padding: 0.125rem var(--size-1);
+		}
+
+		.status-bar > div {
+			flex: 0 1 auto;
+		}
+
+		.counts {
+			flex: 1 0 auto;
+		}
+
+		.primary-action,
+		.secondary-actions {
+			gap: var(--size-1);
+			padding: var(--size-1);
+		}
+
+		button {
+			padding-inline: 0.375rem;
+			font-size: calc(var(--font-size-0) * 0.8);
 		}
 
 		label {
-			margin-inline: 0.25rem;
+			gap: 0.125rem;
+			margin-inline: 0.125rem;
+			font-size: calc(var(--font-size-0) * 0.8);
+		}
+
+		input[type='checkbox'] {
+			width: 0.7rem;
+			height: 0.7rem;
 		}
 	}
 </style>

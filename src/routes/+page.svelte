@@ -1154,11 +1154,13 @@
 		{#snippet primaryAction()}
 			{#if fullscreen && primaryLauncherItem}
 				<button class="launcher-item action-item primary" onclick={runPrimaryAction}>
-					{#if getShortcutLabel(primaryLauncherItem)}
-						<span class="shortcut-label">{getShortcutLabel(primaryLauncherItem)}</span>
-					{/if}
 					<span class="item-text">
-						<strong>{@render highlightedText(primaryLauncherItem.titleSegments, primaryLauncherItem.title)}</strong>
+						<span class="item-heading">
+							{#if getShortcutLabel(primaryLauncherItem)}
+								<span class="shortcut-label">{getShortcutLabel(primaryLauncherItem)}</span>
+							{/if}
+							<strong>{@render highlightedText(primaryLauncherItem.titleSegments, primaryLauncherItem.title)}</strong>
+						</span>
 						{#if primaryLauncherItem.description}<small
 								>{@render highlightedText(
 									primaryLauncherItem.descriptionSegments,
@@ -1197,9 +1199,11 @@
 					class="launcher-item action-item"
 					onclick={() => item.run?.()}
 				>
-					{#if shortcutLabel}<span class="shortcut-label">{shortcutLabel}</span>{/if}
 					<span class="item-text">
-						<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
+						<span class="item-heading">
+							{#if shortcutLabel}<span class="shortcut-label">{shortcutLabel}</span>{/if}
+							<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
+						</span>
 						{#if item.description}<small
 								>{@render highlightedText(item.descriptionSegments, item.description)}</small
 							>{/if}
@@ -1209,7 +1213,9 @@
 			{:else}
 				<article class="launcher-item insight-item">
 					<span class="item-text">
-						<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
+						<span class="item-heading">
+							<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
+						</span>
 						{#if item.description}<small
 								>{@render highlightedText(item.descriptionSegments, item.description)}</small
 							>{/if}
@@ -1334,6 +1340,19 @@
 		min-width: 0;
 	}
 
+	.item-heading {
+		display: flex;
+		align-items: center;
+		gap: var(--size-2);
+		min-width: 0;
+	}
+
+	.item-heading strong {
+		flex: 1 1 auto;
+		display: block;
+		min-width: 0;
+	}
+
 	.shortcut-label {
 		flex: 0 0 auto;
 		min-width: 2.75rem;
@@ -1356,6 +1375,7 @@
 
 	.launcher-item strong,
 	.launcher-item small {
+		display: block;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
@@ -1381,10 +1401,28 @@
 	}
 
 	@media (max-width: 520px) {
-		.launcher-item {
-			align-items: stretch;
-			flex-direction: column;
+		.launcher-list {
 			gap: var(--size-1);
+			margin-block-start: var(--size-2);
+		}
+
+		.launcher-item {
+			gap: var(--size-2);
+			padding: var(--size-1) var(--size-2);
+			min-height: 0;
+		}
+
+		.item-heading {
+			gap: var(--size-1);
+		}
+
+		.shortcut-label {
+			min-width: 2rem;
+			padding: 0 0.25rem;
+		}
+
+		.meta {
+			display: none;
 		}
 	}
 </style>
