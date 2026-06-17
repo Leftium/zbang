@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import type { Snippet } from 'svelte';
 	import type { HTMLTextareaAttributes, FormEventHandler, KeyboardEventHandler } from 'svelte/elements';
 
@@ -31,6 +32,7 @@
 	let wordCount = $derived(value.trim() ? value.trim().split(/\s+/).length : 0);
 	let charCount = $derived(value.trim().length);
 	let enterNewline = $derived(fullscreen ? enterNewlineFullscreen : enterNewlineRestored);
+	let growWrapElement = $state<HTMLElement>();
 
 	function adjustHeight() {
 		if (!textareaElement) return;
@@ -93,9 +95,50 @@
 			document.body.style.overflowY = 'auto';
 		};
 	});
+
+	onMount(() => {
+		const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+		if (!isIOS) return;
+
+		const controller = new AbortController();
+		const { signal } = controller;
+		const viewport = window.visualViewport;
+		let height = viewport?.height || 0;
+		let keyboardOpen = false;
+
+		function preventScrollDown(event: Event) {
+			if (keyboardOpen && window.scrollY > 0) {
+				event.preventDefault();
+				window.scrollTo(0, 0);
+			}
+		}
+
+		function resizeHandler() {
+			if (!growWrapElement || !viewport) return;
+
+			const offset = height - viewport.height;
+			const wasKeyboardOpen = keyboardOpen;
+			keyboardOpen = offset > 50;
+
+			if (keyboardOpen === wasKeyboardOpen) return;
+
+			if (keyboardOpen) {
+				growWrapElement.style.bottom = `${offset}px`;
+			} else {
+				growWrapElement.style.bottom = '0px';
+				height = viewport.height;
+			}
+		}
+
+		window.visualViewport?.addEventListener('resize', resizeHandler, { signal });
+		window.addEventListener('scroll', preventScrollDown, { passive: false, signal });
+
+		return () => controller.abort();
+	});
 </script>
 
-<div class:fullscreen class:wordwrap class="grow-wrap">
+<div bind:this={growWrapElement} class:fullscreen class:wordwrap class="grow-wrap">
 	<textarea
 		rows="1"
 		bind:this={textareaElement}

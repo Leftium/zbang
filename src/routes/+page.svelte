@@ -113,6 +113,8 @@
 	let selectedPrimaryItemId = $state<string>();
 	let inputHistory = $state<InputFrame[]>([]);
 	let keyHistory: KeyFrame[] = [];
+	let pendingShortcutLauncherItems: LauncherItem[] = [];
+	let pendingShortcutPrimaryItem: LauncherItem | undefined;
 	let doubleKeypress = $state<string>();
 	let isPeriodShortcut = $state(false);
 	let isMobilePeriodShortcut = $state(false);
@@ -341,6 +343,10 @@
 			doubleKeypress = lastInput.data;
 		}
 
+		if (!doubleKeypress && inputType === 'insertText' && data) {
+			captureShortcutSnapshot(data);
+		}
+
 		inputHistory = [{ data, inputType, ts }, ...inputHistory].slice(0, 2);
 		isPeriodShortcut = inputType === 'insertText' && data === '. ';
 		isMobilePeriodShortcut = inputType === 'insertText' && data === ' ' && inputHistory[1]?.data === '.';
@@ -415,6 +421,7 @@
 		doubleKeypress = undefined;
 
 		if (interval >= shortcutDelay || lastKey?.key.toLowerCase() !== event.key.toLowerCase()) {
+			captureShortcutSnapshot(event.key);
 			return false;
 		}
 
@@ -452,22 +459,51 @@
 		}
 
 		if (shortcutKey === '.' || shortcutKey === 'M') {
-			runPrimaryAction();
+			void (pendingShortcutPrimaryItem ?? primaryLauncherItem)?.run?.();
 			return;
 		}
 
 		const index = shortcutLabels.findIndex((label) => label === shortcutKey);
-		const item = shortcutLauncherItems[index];
+		const item = (pendingShortcutLauncherItems.length ? pendingShortcutLauncherItems : shortcutLauncherItems)[
+			index
+		];
 
 		if (item) void item.run?.();
+	}
+
+	function captureShortcutSnapshot(shortcutKey: string) {
+		if (!shortcutKeys.has(shortcutKey)) return;
+
+		pendingShortcutLauncherItems = shortcutLauncherItems;
+		pendingShortcutPrimaryItem = primaryLauncherItem;
 	}
 
 	function resetShortcutState() {
 		doubleKeypress = undefined;
 		inputHistory = [];
 		keyHistory = [];
+		pendingShortcutLauncherItems = [];
+		pendingShortcutPrimaryItem = undefined;
 		isPeriodShortcut = false;
 		isMobilePeriodShortcut = false;
+	}
+
+	function focusInput() {
+		textareaElement?.focus();
+	}
+
+	function handleDocumentMouseDown(event: MouseEvent) {
+		if (!(event.target instanceof HTMLElement)) return;
+
+		const target = event.target;
+
+		if (target.tagName === 'TEXTAREA' || target.closest('a')) return;
+
+		requestAnimationFrame(focusInput);
+	}
+
+	function handleVisibilityChange() {
+		if (document.visibilityState === 'visible') focusInput();
 	}
 
 	function getShortcutLabel(item: LauncherItem) {
@@ -1070,6 +1106,8 @@
 		);
 	}
 </script>
+
+<svelte:document onmousedown={handleDocumentMouseDown} onvisibilitychange={handleVisibilityChange} />
 
 {#snippet highlightedText(segments: BangHighlightSegment[] | undefined, fallback: string)}
 	{#if segments}
