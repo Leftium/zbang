@@ -207,6 +207,12 @@ The launcher should eventually support inline triggers that open completion menu
 
 The first trigger should be `!` for bang/action completion. It should activate only when the previous character does not exist or is whitespace.
 
+Inline trigger state should be based on the keypress that opens the trigger, not on continuously scanning the cursor position. Moving the cursor to an existing `!` should not reopen bang completion by itself.
+
+While `!` bang completion is active, bang results should be the primary result group. Generic search provider buttons and unrelated plugin actions should be hidden or strongly suppressed so the user can complete the bang token without compromise noise.
+
+Bang completion should close when the user exits the active token, selects a different range, types whitespace, presses Escape, or otherwise returns to normal payload editing.
+
 Selecting a completion should queue the corresponding action as a visible chip rather than leaving raw trigger text as normal query text.
 
 The trigger system should be extensible. Future triggers may support launcher commands, scopes, tags, or targets, but they should share a common trigger model instead of becoming unrelated command systems.

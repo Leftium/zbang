@@ -553,6 +553,10 @@ Inline triggers can help users discover and queue actions without leaving the te
 
 The first likely trigger is `!` for bang/action completion. It should activate only when the previous character does not exist or is whitespace.
 
+Bang completion should behave more like a slash menu than cursor-location search. The menu opens because the user typed a trigger at a valid boundary; it should not reopen merely because the cursor later moves to an existing `!` token. This keeps prose punctuation such as `Hello!` from summoning bang suggestions and makes completion feel intentional.
+
+For the initial implementation, using the main launcher list as the bang picker is acceptable and keeps keyboard navigation, ranking, and mobile layout simple. While bang picking is active, the main list should show bang catalog/install items prominently or exclusively, with ordinary search provider buttons suppressed. A slash-style popup may become worthwhile later if inline composition needs stronger visual anchoring, multiple trigger grammars, or independent main-list results.
+
 Future triggers may have separate meanings:
 
 - `!` queues delivery actions, especially bangs and external tools.

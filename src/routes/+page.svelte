@@ -82,6 +82,8 @@
 	const searchProviders = Object.keys(searchProviderLabels) as SearchProvider[];
 	let bangCatalog = $state<ZbangCatalog>();
 	let loadedBangProvider = $state<BangProviderId>();
+	let textareaElement = $state<HTMLTextAreaElement>();
+	let bangEntry = $state<{ triggerIndex: number; fragment: string }>();
 
 	const mode = $derived(getMode(page.url.searchParams.get('mode')));
 	const inspect = $derived(getInspectPanelId(page.url.searchParams.get('inspect')));
@@ -89,7 +91,9 @@
 	const hasValue = $derived(Boolean(value.trim()));
 	const compromiseSignals = $derived(getCompromiseSignals(value));
 	const preparedBangs = $derived(prepareBangCatalog(bangCatalog));
-	const bangResults = $derived(filterBangs(value, preparedBangs));
+	const bangPickerActive = $derived(mode === 'bangs' || Boolean(bangEntry));
+	const bangFilterInput = $derived(bangEntry ? `!${bangEntry.fragment}` : value);
+	const bangResults = $derived(filterBangs(bangFilterInput, preparedBangs));
 	const bangTotalCount = $derived(bangCatalog?.items.length ?? 0);
 	const launcherContext = $derived({
 		value,
@@ -169,7 +173,76 @@
 	}
 
 	function insertBang(code: string) {
+		if (bangEntry) {
+			const bang = code.startsWith('!') ? code : `!${code}`;
+			const cursor = bangEntry.triggerIndex + bang.length + 1;
+			value = `${value.slice(0, bangEntry.triggerIndex)}${bang} ${value.slice(
+				bangEntry.triggerIndex + bangEntry.fragment.length + 1
+			)}`;
+			bangEntry = undefined;
+
+			requestAnimationFrame(() => textareaElement?.setSelectionRange(cursor, cursor));
+			return;
+		}
+
 		value = applyBang(value, code);
+	}
+
+	function handleLauncherKeydown(event: KeyboardEvent) {
+		const textarea = event.currentTarget as HTMLTextAreaElement;
+
+		if (event.key === 'Escape') {
+			bangEntry = undefined;
+			return;
+		}
+
+		if (event.key === '!' && isBangTrigger(value, textarea.selectionStart)) {
+			bangEntry = { triggerIndex: textarea.selectionStart, fragment: '' };
+			return;
+		}
+
+		if (event.key.length === 1 && /\s/.test(event.key)) {
+			bangEntry = undefined;
+			return;
+		}
+
+		requestAnimationFrame(() => updateBangEntry(textarea));
+	}
+
+	function handleLauncherInput(event: Event) {
+		updateBangEntry(event.currentTarget as HTMLTextAreaElement);
+	}
+
+	function handleLauncherCursorChange(event: Event) {
+		updateBangEntry(event.currentTarget as HTMLTextAreaElement);
+	}
+
+	function isBangTrigger(input: string, index: number) {
+		const previous = input[index - 1];
+
+		return previous === undefined || /\s/.test(previous);
+	}
+
+	function updateBangEntry(textarea: HTMLTextAreaElement) {
+		if (!bangEntry) return;
+
+		const cursor = textarea.selectionStart;
+		const selectionEnd = textarea.selectionEnd;
+		const fragmentStart = bangEntry.triggerIndex + 1;
+
+		if (cursor !== selectionEnd || cursor < fragmentStart) {
+			bangEntry = undefined;
+			return;
+		}
+
+		const token = value.slice(bangEntry.triggerIndex, cursor);
+
+		if (!token.startsWith('!') || /\s/.test(token)) {
+			bangEntry = undefined;
+			return;
+		}
+
+		bangEntry = { ...bangEntry, fragment: token.slice(1) };
 	}
 
 	async function pasteFromClipboard() {
@@ -299,7 +372,7 @@
 			{
 				id: 'bangs',
 				getItems() {
-					if (mode !== 'bangs') return [];
+					if (!bangPickerActive) return [];
 
 					return bangResults.items.map(({ item, score }, index) => ({
 						id: `bangs.${item.rank}`,
@@ -318,6 +391,8 @@
 			{
 				id: 'clipboard',
 				getItems(context) {
+					if (bangEntry) return [];
+
 					if (context.hasValue) {
 						return [
 							{
@@ -349,7 +424,7 @@
 			{
 				id: 'search',
 				getItems(context) {
-					if (!context.hasValue) return [];
+					if (!context.hasValue || bangEntry) return [];
 
 					return searchProviders.map((provider) => ({
 						id: `search.${provider}`,
@@ -608,12 +683,17 @@
 	{/if}
 
 	<ExpandingTextarea
+		bind:textareaElement
 		bind:value
 		autofocus
 		spellcheck="false"
 		autocomplete="off"
 		autocapitalize="off"
 		placeholder="Type a query..."
+		onclick={handleLauncherCursorChange}
+		oninput={handleLauncherInput}
+		onkeydown={handleLauncherKeydown}
+		onkeyup={handleLauncherCursorChange}
 		onprimaryaction={runPrimaryAction}
 	>
 		{#snippet primaryAction()}
