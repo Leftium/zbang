@@ -4,7 +4,13 @@
 	import { SvelteMap } from 'svelte/reactivity';
 
 	import { readBangCatalog, type BangProviderId, type Zbang, type ZbangCatalog } from '$lib/bang-data';
-	import { applyBang, filterBangs, prepareBangCatalog } from '$lib/bang-filter';
+	import {
+		applyBang,
+		filterBangs,
+		prepareBangCatalog,
+		type BangFilterResult,
+		type BangHighlightSegment
+	} from '$lib/bang-filter';
 	import { createCompromiseDoc } from '$lib/compromise';
 	import CompromiseInspector, {
 		getInspectPanelId
@@ -21,6 +27,8 @@
 		kind: 'action' | 'insight';
 		title: string;
 		description?: string;
+		titleSegments?: BangHighlightSegment[];
+		descriptionSegments?: BangHighlightSegment[];
 		rank?: number;
 		score: number;
 		sortOrder?: number;
@@ -522,12 +530,14 @@
 				getItems() {
 					if (!bangPickerActive) return [];
 
-					return bangResults.items.map(({ item, score }, index) => ({
+					return bangResults.items.map(({ item, score, highlights }, index) => ({
 						id: `bangs.${item.rank}`,
 						pluginId: 'bangs',
 						kind: 'action',
 						title: item.name,
 						description: `${item.code.join(' ')} | ${formatBangUrl(item.urls.s)}`,
+						titleSegments: highlights.name,
+						descriptionSegments: getBangDescriptionSegments(highlights),
 						rank: item.rank,
 						score,
 						sortOrder: index,
@@ -798,6 +808,41 @@
 		return url.replace(/^https?:\/\//, '').replace(/^www\./, '');
 	}
 
+	function getBangDescriptionSegments({ code, url }: BangFilterResult['highlights']) {
+		const segments: BangHighlightSegment[] = [];
+
+		for (const [index, codeHighlight] of code.entries()) {
+			if (index) segments.push({ text: ' ', matched: false });
+			segments.push(...codeHighlight.segments);
+		}
+
+		segments.push({ text: ' | ', matched: false });
+		segments.push(...stripUrlPrefixSegments(url));
+
+		return segments;
+	}
+
+	function stripUrlPrefixSegments(segments: BangHighlightSegment[]) {
+		const visibleSegments: BangHighlightSegment[] = [];
+		let charsToStrip = getUrlPrefixLength(segments.map(({ text }) => text).join(''));
+
+		for (const segment of segments) {
+			if (charsToStrip >= segment.text.length) {
+				charsToStrip -= segment.text.length;
+				continue;
+			}
+
+			visibleSegments.push({ ...segment, text: segment.text.slice(charsToStrip) });
+			charsToStrip = 0;
+		}
+
+		return visibleSegments;
+	}
+
+	function getUrlPrefixLength(url: string) {
+		return /^https?:\/\/www\./.exec(url)?.[0].length ?? /^https?:\/\//.exec(url)?.[0].length ?? 0;
+	}
+
 	function formatItemMeta(item: LauncherItem) {
 		return [item.pluginId, item.rank ? `rank ${formatCount(item.rank)}` : undefined, item.score]
 			.filter(Boolean)
@@ -816,6 +861,16 @@
 		);
 	}
 </script>
+
+{#snippet highlightedText(segments: BangHighlightSegment[] | undefined, fallback: string)}
+	{#if segments}
+		{#each segments as segment, index (`${index}-${segment.text}-${segment.matched}`)}
+			<span class={segment.matched ? 'match-highlight' : undefined}>{segment.text}</span>
+		{/each}
+	{:else}
+		{fallback}
+	{/if}
+{/snippet}
 
 <main>
 	<Header />
@@ -848,8 +903,12 @@
 			{#if primaryLauncherItem}
 				<button class="launcher-item action-item primary" onclick={runPrimaryAction}>
 					<span>
-						<strong>{primaryLauncherItem.title}</strong>
-						{#if primaryLauncherItem.description}<small>{primaryLauncherItem.description}</small
+						<strong>{@render highlightedText(primaryLauncherItem.titleSegments, primaryLauncherItem.title)}</strong>
+						{#if primaryLauncherItem.description}<small
+								>{@render highlightedText(
+									primaryLauncherItem.descriptionSegments,
+									primaryLauncherItem.description
+								)}</small
 							>{/if}
 					</span>
 					<span class="meta">{formatItemMeta(primaryLauncherItem)}</span>
@@ -883,16 +942,20 @@
 					onclick={() => item.run?.()}
 				>
 					<span>
-						<strong>{item.title}</strong>
-						{#if item.description}<small>{item.description}</small>{/if}
+						<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
+						{#if item.description}<small
+								>{@render highlightedText(item.descriptionSegments, item.description)}</small
+							>{/if}
 					</span>
 					<span class="meta">{formatItemMeta(item)}</span>
 				</button>
 			{:else}
 				<article class="launcher-item insight-item">
 					<span>
-						<strong>{item.title}</strong>
-						{#if item.description}<small>{item.description}</small>{/if}
+						<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
+						{#if item.description}<small
+								>{@render highlightedText(item.descriptionSegments, item.description)}</small
+							>{/if}
 					</span>
 					<span class="meta">{formatItemMeta(item)}</span>
 				</article>
@@ -1015,6 +1078,14 @@
 
 	.launcher-item small {
 		color: var(--nc-tx-2);
+	}
+
+	.match-highlight {
+		color: hsl(15 94% 45%);
+		background: hsl(15 94% 62% / 0.18);
+		border-radius: 0.2em;
+		font-weight: 700;
+		padding-inline: 0.08em;
 	}
 
 	.meta {

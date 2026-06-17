@@ -5,6 +5,22 @@ import type { Zbang, ZbangCatalog } from '$lib/bang-data';
 export type BangFilterResult = {
 	item: Zbang;
 	score: number;
+	highlights: BangFilterHighlights;
+};
+
+export type BangHighlightSegment = {
+	text: string;
+	matched: boolean;
+};
+
+export type BangHighlightedValue = {
+	segments: BangHighlightSegment[];
+};
+
+export type BangFilterHighlights = {
+	name: BangHighlightSegment[];
+	code: BangHighlightedValue[];
+	url: BangHighlightSegment[];
 };
 
 export type BangFilterResults = {
@@ -21,6 +37,19 @@ export type PreparedZbang = Omit<Zbang, 'name' | 'code' | 'tags' | 'urls'> & {
 
 const FUZZYSORT_THRESHOLD = 0.7;
 const FUZZYSORT_LIMIT = 20;
+const FUZZYSORT_BASE_KEYS = [
+	'name',
+	'code.0',
+	'code.1',
+	'code.2',
+	'code.3',
+	'code.4',
+	'code.5',
+	'code.6',
+	'code.7',
+	'code.8',
+	'code.9'
+];
 
 export function prepareBangCatalog(catalog: ZbangCatalog | undefined): PreparedZbang[] {
 	return (catalog?.items ?? []).map((item) => ({
@@ -36,10 +65,12 @@ export function filterBangs(input: string, preparedItems: PreparedZbang[]): Bang
 	const line = normalizeBangSuffixes(getLastLine(input));
 	const query = getBangQuery(line);
 	const usedBangs = getUsedBangs(line);
+	const keys = getFuzzysortKeys(line);
+	const isUrlQuery = line.includes('//');
 
 	const results = fuzzysort.go(query, preparedItems, {
 		all: true,
-		keys: getFuzzysortKeys(line),
+		keys,
 		limit: FUZZYSORT_LIMIT + usedBangs.length,
 		threshold: FUZZYSORT_THRESHOLD
 	});
@@ -51,7 +82,13 @@ export function filterBangs(input: string, preparedItems: PreparedZbang[]): Bang
 
 			return item.code.some((code) => usedBangs.includes(code))
 				? []
-				: [{ item, score: getBangResultScore(result) }];
+				: [
+						{
+							item,
+							score: getBangResultScore(result),
+							highlights: getBangHighlights(result, keys, isUrlQuery ? query : '')
+						}
+					];
 		})
 		.slice(0, FUZZYSORT_LIMIT);
 
@@ -89,12 +126,16 @@ function getBangQuery(line: string) {
 
 	if (bangSearchMatch) {
 		const prefix = bangSearchMatch[1];
-		const bangQuery = bangSearchMatch[2];
+		const bangQuery = cleanBangFilterQuery(bangSearchMatch[2]);
 
 		return prefix === '!!' ? `!${bangQuery}` : bangQuery;
 	}
 
-	return line.replace(/![^\s]+\s+/g, '').replace('//', '').trim();
+	return cleanBangFilterQuery(line.replace(/![^\s]+\s+/g, ''));
+}
+
+function cleanBangFilterQuery(query: string) {
+	return query.replace('//', '').trim();
 }
 
 function getUsedBangs(line: string) {
@@ -102,19 +143,7 @@ function getUsedBangs(line: string) {
 }
 
 function getFuzzysortKeys(line: string) {
-	const keys = [
-		'name',
-		'code.0',
-		'code.1',
-		'code.2',
-		'code.3',
-		'code.4',
-		'code.5',
-		'code.6',
-		'code.7',
-		'code.8',
-		'code.9'
-	];
+	const keys = [...FUZZYSORT_BASE_KEYS];
 
 	if (line.includes('#')) {
 		keys.push(
@@ -152,6 +181,70 @@ function sortBangResults(
 
 function getBangResultScore(result: Fuzzysort.KeysResult<PreparedZbang>) {
 	return Math.round(result.score * 100);
+}
+
+function getBangHighlights(
+	result: Fuzzysort.KeysResult<PreparedZbang>,
+	keys: string[],
+	urlQuery: string
+): BangFilterHighlights {
+	const codeStart = keys.indexOf('code.0');
+	const urlIndex = keys.indexOf('urls.s');
+	const urlResult = urlIndex === -1 ? undefined : result[urlIndex];
+
+	return {
+		name: getHighlightSegments(result.obj.name.target, result[0]),
+		code: result.obj.code.map((code, offset) => {
+			const codeResult = offset < 10 && codeStart !== -1 ? result[codeStart + offset] : undefined;
+
+			return {
+				segments: getHighlightSegments(code.target, codeResult)
+			};
+		}),
+		url: getHighlightSegments(result.obj.urls.s.target, urlResult, urlQuery)
+	};
+}
+
+function getHighlightSegments(target: string, result: Fuzzysort.Result | undefined, urlQuery = '') {
+	const substringSegments = urlQuery ? getSubstringHighlightSegments(target, urlQuery) : undefined;
+
+	if (substringSegments?.some(({ matched }) => matched)) return substringSegments;
+	if (!result?.indexes.length) return [{ text: target, matched: false }];
+
+	const matchedIndexes = new Set(result.indexes);
+	const segments: BangHighlightSegment[] = [];
+	let current = '';
+	let currentMatched = matchedIndexes.has(0);
+
+	for (let index = 0; index < target.length; index += 1) {
+		const matched = matchedIndexes.has(index);
+
+		if (matched !== currentMatched) {
+			if (current) segments.push({ text: current, matched: currentMatched });
+			current = '';
+			currentMatched = matched;
+		}
+
+		current += target[index];
+	}
+
+	if (current) segments.push({ text: current, matched: currentMatched });
+
+	return segments;
+}
+
+function getSubstringHighlightSegments(target: string, query: string) {
+	const normalizedTarget = target.toLocaleLowerCase();
+	const normalizedQuery = query.toLocaleLowerCase();
+	const matchIndex = normalizedTarget.indexOf(normalizedQuery);
+
+	if (!normalizedQuery || matchIndex === -1) return [{ text: target, matched: false }];
+
+	return [
+		{ text: target.slice(0, matchIndex), matched: false },
+		{ text: target.slice(matchIndex, matchIndex + query.length), matched: true },
+		{ text: target.slice(matchIndex + query.length), matched: false }
+	].filter(({ text }) => text);
 }
 
 function unprepareZbang(item: PreparedZbang): Zbang {
