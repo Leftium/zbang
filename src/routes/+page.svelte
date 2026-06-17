@@ -57,6 +57,7 @@
 	const searchProviders = Object.keys(searchProviderLabels) as SearchProvider[];
 	const mode = $derived(getMode(page.url.searchParams.get('mode')));
 	const inspect = $derived(getInspectPanelId(page.url.searchParams.get('inspect')));
+	const expression = $derived(page.url.searchParams.get('expr') ?? undefined);
 	const hasValue = $derived(Boolean(value.trim()));
 	const compromiseSignals = $derived(getCompromiseSignals(value));
 	const launcherContext = $derived({
@@ -343,7 +344,7 @@
 	</section>
 
 	{#if mode === 'compromise'}
-		<CompromiseInspector text={value} {inspect} />
+		<CompromiseInspector text={value} {inspect} {expression} />
 	{/if}
 </main>
 

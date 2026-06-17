@@ -46,16 +46,21 @@
 	import { resolve } from '$app/paths';
 	import Inspect from 'svelte-inspect-value';
 
-	import { createCompromiseDoc } from '$lib/compromise';
+	import { createCompromiseDoc, nlp } from '$lib/compromise';
 
 	type InspectPanel = {
 		id: InspectPanelId;
 		label: string;
 		description: string;
-		getValue: () => unknown;
+		expression: string;
 	};
 
-	let { text, inspect = 'doc-json' }: { text: string; inspect?: InspectPanelId } = $props();
+	let {
+		text,
+		inspect = 'doc-json',
+		expression: expressionParam
+	}: { text: string; inspect?: InspectPanelId; expression?: string } = $props();
+	let draftExpression = $state('');
 
 	const doc = $derived(createCompromiseDoc(text.trim()));
 	const panels = $derived<InspectPanel[]>([
@@ -63,125 +68,170 @@
 			id: 'doc-json',
 			label: 'doc.json()',
 			description: 'Full compromise document JSON.',
-			getValue: () => doc.json()
+			expression: 'doc.json()'
 		},
 		{
 			id: 'terms',
 			label: 'terms().json()',
 			description: 'Token-level terms and tags.',
-			getValue: () => doc.terms().json()
+			expression: 'doc.terms().json()'
 		},
 		{
 			id: 'topics',
 			label: 'topics().json()',
 			description: 'Detected topics and named entities.',
-			getValue: () => doc.topics().json()
+			expression: 'doc.topics().json()'
 		},
 		{
 			id: 'people',
 			label: 'people().json()',
 			description: 'Detected people.',
-			getValue: () => doc.people().json()
+			expression: 'doc.people().json()'
 		},
 		{
 			id: 'places',
 			label: 'places().json()',
 			description: 'Detected places.',
-			getValue: () => doc.places().json()
+			expression: 'doc.places().json()'
 		},
 		{
 			id: 'organizations',
 			label: 'organizations().json()',
 			description: 'Detected organizations.',
-			getValue: () => doc.organizations().json()
+			expression: 'doc.organizations().json()'
 		},
 		{
 			id: 'dates',
 			label: 'dates().json()',
 			description: 'Detected date phrases from compromise-dates.',
-			getValue: () => doc.dates().json()
+			expression: 'doc.dates().json()'
 		},
 		{
 			id: 'date-values',
 			label: 'dates().get()',
 			description: 'Parsed date metadata from compromise-dates.',
-			getValue: () => doc.dates().get()
+			expression: 'doc.dates().get()'
 		},
 		{
 			id: 'times',
 			label: 'times().json()',
 			description: 'Detected time phrases from compromise-dates.',
-			getValue: () => doc.times().json()
+			expression: 'doc.times().json()'
 		},
 		{
 			id: 'time-values',
 			label: 'times().get()',
 			description: 'Parsed time metadata from compromise-dates.',
-			getValue: () => doc.times().get()
+			expression: 'doc.times().get()'
 		},
 		{
 			id: 'durations',
 			label: 'durations().json()',
 			description: 'Detected duration phrases from compromise-dates.',
-			getValue: () => doc.durations().json()
+			expression: 'doc.durations().json()'
 		},
 		{
 			id: 'numbers',
 			label: 'numbers().json()',
 			description: 'Detected numeric values.',
-			getValue: () => doc.numbers().json()
+			expression: 'doc.numbers().json()'
 		},
 		{
 			id: 'stats',
 			label: 'stats summary',
 			description: 'Common frequency outputs from compromise-stats.',
-			getValue: () => ({
+			expression: `({
 				unigrams: doc.unigrams(),
 				bigrams: doc.bigrams(),
 				trigrams: doc.trigrams(),
 				tfidf: doc.tfidf()
-			})
+			})`
 		},
 		{
 			id: 'ngrams',
 			label: 'ngrams({ min: 1, max: 3 })',
 			description: 'Repeating sub-phrases from compromise-stats.',
-			getValue: () => doc.ngrams({ min: 1, max: 3 })
+			expression: 'doc.ngrams({ min: 1, max: 3 })'
 		},
 		{
 			id: 'tfidf',
 			label: 'tfidf()',
 			description: 'Word importance from compromise-stats.',
-			getValue: () => doc.tfidf()
+			expression: 'doc.tfidf()'
 		},
 		{
 			id: 'tags',
 			label: "out('tags')",
 			description: 'Readable tag output from compromise.',
-			getValue: () => doc.out('tags')
+			expression: "doc.out('tags')"
 		}
 	]);
 	const selectedPanel = $derived(panels.find((panel) => panel.id === inspect) ?? panels[0]);
-	const inspectedValue = $derived(selectedPanel.getValue());
+	const evaluatedExpression = $derived(expressionParam ?? selectedPanel.expression);
+	const activePreset = $derived(panels.find((panel) => panel.expression === evaluatedExpression));
+	const inspectedValue = $derived(evaluateExpression(evaluatedExpression, text.trim(), doc));
 
-	function setInspect(inspect: InspectPanelId) {
-		const params = new URLSearchParams({ mode: 'compromise', q: text, inspect });
+	$effect(() => {
+		draftExpression = evaluatedExpression;
+	});
 
-		void goto(resolve(`/?${params}`));
+	function runExpression(expression = draftExpression) {
+		const nextExpression = expression.trim() || panels[0].expression;
+		const params = new URLSearchParams({ mode: 'compromise', q: text, expr: nextExpression });
+
+		void goto(resolve(`/?${params}`), { replaceState: true, noScroll: true, keepFocus: true });
+	}
+
+	function runExpressionShortcut(event: KeyboardEvent) {
+		if ((event.metaKey || event.ctrlKey) && event.key === 'Enter') {
+			event.preventDefault();
+			runExpression();
+		}
+	}
+
+	function evaluateExpression(expression: string, text: string, doc: ReturnType<typeof createCompromiseDoc>) {
+		try {
+			try {
+				return Function('text', 'nlp', 'doc', `"use strict"; return (${expression});`)(text, nlp, doc);
+			} catch (error) {
+				if (!(error instanceof SyntaxError)) throw error;
+
+				return Function('text', 'nlp', 'doc', `"use strict";\n${expression}`)(text, nlp, doc);
+			}
+		} catch (error) {
+			return {
+				name: error instanceof Error ? error.name : 'Error',
+				message: error instanceof Error ? error.message : String(error)
+			};
+		}
 	}
 </script>
 
-<section class="inspector" aria-label="Compromise JSON inspector">
+<section class="inspector" aria-label="Compromise expression evaluator">
 	<header>
 		<div>
-			<h2>Compromise Inspector</h2>
-			<p>{selectedPanel.description}</p>
+			<h2>Compromise Expression</h2>
+			<p>{activePreset?.description ?? 'Evaluate arbitrary JS with scoped text, nlp, and doc variables.'}</p>
 		</div>
 	</header>
 
-	<nav aria-label="Inspector views">
+	<form onsubmit={(event) => (event.preventDefault(), runExpression())}>
+		<label for="compromise-expression">Expression</label>
+		<textarea
+			id="compromise-expression"
+			bind:value={draftExpression}
+			onkeydown={runExpressionShortcut}
+			rows="3"
+			spellcheck="false"
+			autocomplete="off"
+			autocapitalize="off"
+		></textarea>
+		<button type="submit">Evaluate</button>
+	</form>
+
+	<nav aria-label="Expression presets">
 		{#each panels as panel (panel.id)}
-			<button class:active={panel.id === selectedPanel.id} onclick={() => setInspect(panel.id)}>
+			<button class:active={panel.expression === evaluatedExpression} onclick={() => runExpression(panel.expression)}>
 				{panel.label}
 			</button>
 		{/each}
@@ -190,7 +240,7 @@
 	<div class="inspect-value">
 		<Inspect
 			value={inspectedValue}
-			name={selectedPanel.label}
+			name={evaluatedExpression}
 			borderless
 			expandLevel={2}
 			noanimate
@@ -235,21 +285,54 @@
 	nav {
 		display: flex;
 		flex-wrap: wrap;
-		gap: var(--size-1);
+		gap: 0.25rem;
+	}
+
+	form {
+		display: grid;
+		gap: 0.125rem;
+	}
+
+	label {
+		grid-column: 1 / -1;
+		color: var(--nc-tx-2);
+		font-size: var(--font-size-0);
+	}
+
+	textarea {
+		width: 100%;
+		min-height: 4.5rem;
+		margin: 0;
+		resize: vertical;
+		font-family: var(--font-mono), monospace;
+		font-size: var(--font-size-0);
 	}
 
 	button {
-		padding: 0.125rem 0.5rem;
+		padding: 0.0625rem 0.375rem;
 		color: var(--nc-tx-2);
 		background: transparent;
 		text-decoration: none;
 		border: 1px solid var(--nc-border);
 		border-radius: 999px;
+		font-size: 0.75rem;
+		line-height: 1.4;
 	}
 
 	button.active {
 		color: var(--nc-tx-1);
 		border-color: var(--nc-primary);
+	}
+
+	button[type='submit'] {
+		justify-self: stretch;
+		margin: 0;
+		padding: 0.375rem 0.875rem;
+		color: white;
+		background: var(--nc-primary);
+		border-color: var(--nc-primary);
+		border-radius: var(--nc-radius);
+		font-weight: 600;
 	}
 
 	.inspect-value {

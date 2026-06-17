@@ -1,6 +1,8 @@
-import nlp from 'compromise';
+import compromise from 'compromise';
 import dates from 'compromise-dates';
 import stats from 'compromise-stats';
+
+export const nlp = compromise;
 
 nlp.extend(dates);
 nlp.extend(stats);
