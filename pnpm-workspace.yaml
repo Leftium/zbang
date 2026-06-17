@@ -1,8 +1,0 @@
-packages:
-  - pb
-  - kit
-  - bang-tools
-
-onlyBuiltDependencies:
-  - esbuild
-  - ngrok
