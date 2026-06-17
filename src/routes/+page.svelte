@@ -35,6 +35,7 @@
 	};
 
 	type LauncherMode = 'all' | 'compromise';
+	type KeywordSignal = { word: string; score: number };
 
 	type CompromiseSignals = {
 		text: string;
@@ -58,7 +59,7 @@
 		hyphenated: string[];
 		quotations: string[];
 		parentheses: string[];
-		keywords: string[];
+		keywords: KeywordSignal[];
 		dates: string[];
 		times: string[];
 		durations: string[];
@@ -200,12 +201,7 @@
 			hyphenated: unique(doc.hyphenated().out('array')),
 			quotations: unique(doc.quotations().out('array')),
 			parentheses: unique(doc.parentheses().out('array')),
-			keywords: unique(
-				doc
-					.tfidf({ form: 'normal' })
-					.slice(0, 8)
-					.map(([word]) => word)
-			),
+			keywords: uniqueKeywords(doc.tfidf({ form: 'normal' }).slice(0, 8)),
 			dates: unique(doc.dates().out('array')),
 			times: unique(doc.times().out('array')),
 			durations: unique(doc.durations().out('array')),
@@ -216,6 +212,15 @@
 
 	function unique(values: string[]) {
 		return [...new Set(values.filter(Boolean))];
+	}
+
+	function uniqueKeywords(values: [word: string, score: number][]) {
+		return values.reduce<KeywordSignal[]>((keywords, [word, score]) => {
+			if (!word || keywords.some((keyword) => keyword.word === word)) return keywords;
+
+			keywords.push({ word, score });
+			return keywords;
+		}, []);
 	}
 
 	function createPlugins(): LauncherPlugin[] {
@@ -279,6 +284,11 @@
 
 	function getCompromiseItems(context: LauncherContext): LauncherItem[] {
 		const { nlp: signals } = context;
+		const contacts = [...signals.emails, ...signals.phoneNumbers];
+		const values = [...signals.money, ...signals.percentages, ...signals.fractions];
+		const social = [...signals.hashTags, ...signals.atMentions];
+		const emoji = [...signals.emojis, ...signals.emoticons];
+		const keywords = signals.keywords.map(({ word }) => word);
 
 		if (!context.hasValue) {
 			return [
@@ -294,49 +304,121 @@
 		}
 
 		return [
-			createInsightItem('summary', 'NLP summary', getSummaryDescription(signals), 60),
-			createInsightItem('urls', 'URLs', formatList(signals.urls), 59),
+			createInsightItem('summary', 'NLP summary', getSummaryDescription(signals), 64),
+			createInsightItem('urls', 'URLs', formatList(signals.urls), scoreInsight(59, signals.urls)),
+			createInsightItem('contacts', 'Contacts', formatList(contacts), scoreInsight(58, contacts)),
 			createInsightItem(
-				'contacts',
-				'Contacts',
-				formatList([...signals.emails, ...signals.phoneNumbers]),
-				58
-			),
-			createInsightItem('keywords', 'Keywords', formatList(signals.keywords), 57),
-			createInsightItem('topics', 'Topics', formatList(signals.topics), 55),
-			createInsightItem('people', 'People', formatList(signals.people), 54),
-			createInsightItem('places', 'Places', formatList(signals.places), 53),
-			createInsightItem('organizations', 'Organizations', formatList(signals.organizations), 52),
-			createInsightItem('questions', 'Questions', formatList(signals.questions), 51),
-			createInsightItem('dates', 'Dates', formatList(signals.dates), 50),
-			createInsightItem('times', 'Times', formatList(signals.times), 49),
-			createInsightItem('durations', 'Durations', formatList(signals.durations), 48),
-			createInsightItem(
-				'values',
-				'Values',
-				formatList([...signals.money, ...signals.percentages, ...signals.fractions]),
-				47
+				'keywords',
+				'Keywords',
+				formatList(keywords),
+				scoreInsight(49, keywords, getKeywordScoreBoost(signals.keywords))
 			),
 			createInsightItem(
-				'social',
-				'Social',
-				formatList([...signals.hashTags, ...signals.atMentions]),
-				46
+				'topics',
+				'Topics',
+				formatList(signals.topics),
+				scoreInsight(48, signals.topics)
 			),
-			createInsightItem('quoted', 'Quoted text', formatList(signals.quotations), 45),
-			createInsightItem('verbs', 'Verbs', formatList(signals.verbs), 47),
-			createInsightItem('nouns', 'Nouns', formatList(signals.nouns), 46),
-			createInsightItem('acronyms', 'Acronyms', formatList(signals.acronyms), 44),
-			createInsightItem('hyphenated', 'Hyphenated', formatList(signals.hyphenated), 43),
-			createInsightItem('parentheses', 'Parentheses', formatList(signals.parentheses), 42),
 			createInsightItem(
-				'emoji',
-				'Emoji',
-				formatList([...signals.emojis, ...signals.emoticons]),
-				41
+				'people',
+				'People',
+				formatList(signals.people),
+				scoreInsight(54, signals.people)
 			),
-			createInsightItem('terms', 'Terms', formatList(signals.terms), 40)
+			createInsightItem(
+				'places',
+				'Places',
+				formatList(signals.places),
+				scoreInsight(52, signals.places)
+			),
+			createInsightItem(
+				'organizations',
+				'Organizations',
+				formatList(signals.organizations),
+				scoreInsight(53, signals.organizations)
+			),
+			createInsightItem(
+				'questions',
+				'Questions',
+				formatList(signals.questions),
+				scoreInsight(56, signals.questions)
+			),
+			createInsightItem(
+				'dates',
+				'Dates',
+				formatList(signals.dates),
+				scoreInsight(55, signals.dates)
+			),
+			createInsightItem(
+				'times',
+				'Times',
+				formatList(signals.times),
+				scoreInsight(54, signals.times)
+			),
+			createInsightItem(
+				'durations',
+				'Durations',
+				formatList(signals.durations),
+				scoreInsight(53, signals.durations)
+			),
+			createInsightItem('values', 'Values', formatList(values), scoreInsight(57, values)),
+			createInsightItem('social', 'Social', formatList(social), scoreInsight(47, social)),
+			createInsightItem(
+				'quoted',
+				'Quoted text',
+				formatList(signals.quotations),
+				scoreInsight(55, signals.quotations)
+			),
+			createInsightItem(
+				'verbs',
+				'Verbs',
+				formatList(signals.verbs),
+				scoreInsight(40, signals.verbs)
+			),
+			createInsightItem(
+				'nouns',
+				'Nouns',
+				formatList(signals.nouns),
+				scoreInsight(41, signals.nouns)
+			),
+			createInsightItem(
+				'acronyms',
+				'Acronyms',
+				formatList(signals.acronyms),
+				scoreInsight(46, signals.acronyms)
+			),
+			createInsightItem(
+				'hyphenated',
+				'Hyphenated',
+				formatList(signals.hyphenated),
+				scoreInsight(44, signals.hyphenated)
+			),
+			createInsightItem(
+				'parentheses',
+				'Parentheses',
+				formatList(signals.parentheses),
+				scoreInsight(43, signals.parentheses)
+			),
+			createInsightItem('emoji', 'Emoji', formatList(emoji), scoreInsight(42, emoji)),
+			createInsightItem(
+				'terms',
+				'Terms',
+				formatList(signals.terms),
+				scoreInsight(40, signals.terms)
+			)
 		];
+	}
+
+	function scoreInsight(base: number, matches: string[], extraBoost = 0) {
+		if (!matches.length) return 10;
+
+		return base + Math.min(matches.length, 5) + extraBoost;
+	}
+
+	function getKeywordScoreBoost(keywords: KeywordSignal[]) {
+		const topScore = keywords[0]?.score ?? 0;
+
+		return Math.min(Math.round(topScore), 5);
 	}
 
 	function createInsightItem(
