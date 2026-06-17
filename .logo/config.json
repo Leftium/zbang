@@ -1,0 +1,15 @@
+{
+	"logo": {
+		"size": 800,
+		"squircle": true,
+		"boundingBox": "encircled",
+		"background": "transparent"
+	},
+	"favicon": {
+		"size": 256,
+		"squircle": true,
+		"ligatureScale": 0.99,
+		"ligatureOffsetX": 0,
+		"ligatureOffsetY": 0.005
+	}
+}
