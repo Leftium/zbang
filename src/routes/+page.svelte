@@ -1,9 +1,53 @@
 <script lang="ts">
+	import { page } from '$app/state';
+
+	import { createCompromiseDoc } from '$lib/compromise';
+	import CompromiseInspector, { getInspectPanelId } from '$lib/components/CompromiseInspector.svelte';
 	import ExpandingTextarea from '$lib/components/ExpandingTextarea.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { settings, type SearchProvider } from '$lib/settings.svelte';
 
-	let value = $state('');
+	let value = $derived(page.url.searchParams.get('q') ?? '');
+
+	type LauncherItem = {
+		id: string;
+		pluginId: string;
+		kind: 'action' | 'insight';
+		title: string;
+		description?: string;
+		score: number;
+		safeForEnter?: boolean;
+		run?: () => void | Promise<void>;
+	};
+
+	type LauncherContext = {
+		value: string;
+		text: string;
+		hasValue: boolean;
+		nlp: CompromiseSignals;
+	};
+
+	type LauncherPlugin = {
+		id: string;
+		getItems: (context: LauncherContext) => LauncherItem[];
+	};
+
+	type LauncherMode = 'all' | 'compromise';
+
+	type CompromiseSignals = {
+		text: string;
+		terms: string[];
+		topics: string[];
+		people: string[];
+		places: string[];
+		organizations: string[];
+		questions: string[];
+		dates: string[];
+		times: string[];
+		durations: string[];
+		verbs: string[];
+		nouns: string[];
+	};
 
 	const searchProviderLabels: Record<SearchProvider, string> = {
 		kagi: 'Kagi',
@@ -11,10 +55,29 @@
 		google: 'Google'
 	};
 	const searchProviders = Object.keys(searchProviderLabels) as SearchProvider[];
-	const otherSearchProviders = $derived(
-		searchProviders.filter((provider) => provider !== settings.searchProvider)
-	);
+	const mode = $derived(getMode(page.url.searchParams.get('mode')));
+	const inspect = $derived(getInspectPanelId(page.url.searchParams.get('inspect')));
 	const hasValue = $derived(Boolean(value.trim()));
+	const compromiseSignals = $derived(getCompromiseSignals(value));
+	const launcherContext = $derived({
+		value,
+		text: value.trim(),
+		hasValue,
+		nlp: compromiseSignals
+	});
+	const plugins = $derived(createPlugins());
+	const launcherItems = $derived(rankItems(plugins.flatMap((plugin) => plugin.getItems(launcherContext))));
+	const visibleLauncherItems = $derived(
+		mode === 'compromise'
+			? launcherItems.filter((item) => item.pluginId === 'compromise')
+			: launcherItems
+	);
+	const primaryLauncherItem = $derived(
+		mode === 'compromise' ? undefined : visibleLauncherItems.find((item) => item.safeForEnter && item.run)
+	);
+	const secondaryLauncherItems = $derived(
+		visibleLauncherItems.filter((item) => item.id !== primaryLauncherItem?.id)
+	);
 
 	function getSearchUrl(provider: SearchProvider, query: string) {
 		const trimmedQuery = query.trim();
@@ -49,16 +112,187 @@
 	}
 
 	function runPrimaryAction() {
-		if (hasValue) {
-			search();
-		} else {
-			void pasteFromClipboard();
+		void primaryLauncherItem?.run?.();
+	}
+
+	function getMode(mode: string | null): LauncherMode {
+		return mode === 'compromise' ? 'compromise' : 'all';
+	}
+
+	function getCompromiseSignals(input: string): CompromiseSignals {
+		const text = input.trim();
+
+		if (!text) {
+			return {
+				text,
+				terms: [],
+				topics: [],
+				people: [],
+				places: [],
+				organizations: [],
+				questions: [],
+				dates: [],
+				times: [],
+				durations: [],
+				verbs: [],
+				nouns: []
+			};
 		}
+
+		const doc = createCompromiseDoc(text);
+
+		return {
+			text,
+			terms: unique(doc.terms().out('array')),
+			topics: unique(doc.topics().out('array')),
+			people: unique(doc.people().out('array')),
+			places: unique(doc.places().out('array')),
+			organizations: unique(doc.organizations().out('array')),
+			questions: unique(doc.questions().out('array')),
+			dates: unique(doc.dates().out('array')),
+			times: unique(doc.times().out('array')),
+			durations: unique(doc.durations().out('array')),
+			verbs: unique(doc.verbs().out('array')),
+			nouns: unique(doc.nouns().out('array'))
+		};
+	}
+
+	function unique(values: string[]) {
+		return [...new Set(values.filter(Boolean))];
+	}
+
+	function createPlugins(): LauncherPlugin[] {
+		return [
+			{
+				id: 'clipboard',
+				getItems(context) {
+					if (context.hasValue) {
+						return [
+							{
+								id: 'clipboard.copy',
+								pluginId: 'clipboard',
+								kind: 'action',
+								title: 'Copy to clipboard',
+								description: 'Copy the current launcher text.',
+								score: 70,
+								run: copyToClipboard
+							}
+						];
+					}
+
+					return [
+						{
+							id: 'clipboard.paste',
+							pluginId: 'clipboard',
+							kind: 'action',
+							title: 'Paste from clipboard',
+							description: 'Use clipboard text as the launcher subject.',
+							score: 100,
+							safeForEnter: true,
+							run: pasteFromClipboard
+						}
+					];
+				}
+			},
+			{
+				id: 'search',
+				getItems(context) {
+					if (!context.hasValue) return [];
+
+					return searchProviders.map((provider) => ({
+						id: `search.${provider}`,
+						pluginId: 'search',
+						kind: 'action',
+						title: `${searchProviderLabels[provider]} Search`,
+						description: `Search for "${context.text}".`,
+						score: provider === settings.searchProvider ? 100 : 65,
+						safeForEnter: provider === settings.searchProvider,
+						run: () => search(provider)
+					}));
+				}
+			},
+			{
+				id: 'compromise',
+				getItems(context) {
+					return getCompromiseItems(context);
+				}
+			}
+		];
+	}
+
+	function getCompromiseItems(context: LauncherContext): LauncherItem[] {
+		const { nlp: signals } = context;
+
+		if (!context.hasValue) {
+			return [
+				{
+					id: 'compromise.empty',
+					pluginId: 'compromise',
+					kind: 'insight',
+					title: 'Compromise inspector',
+					description: 'Enter text to inspect NLP signals for launcher ranking.',
+					score: 50
+				}
+			];
+		}
+
+		return [
+			createInsightItem('summary', 'NLP summary', getSummaryDescription(signals), 60),
+			createInsightItem('topics', 'Topics', formatList(signals.topics), 55),
+			createInsightItem('people', 'People', formatList(signals.people), 54),
+			createInsightItem('places', 'Places', formatList(signals.places), 53),
+			createInsightItem('organizations', 'Organizations', formatList(signals.organizations), 52),
+			createInsightItem('questions', 'Questions', formatList(signals.questions), 51),
+			createInsightItem('dates', 'Dates', formatList(signals.dates), 50),
+			createInsightItem('times', 'Times', formatList(signals.times), 49),
+			createInsightItem('durations', 'Durations', formatList(signals.durations), 48),
+			createInsightItem('verbs', 'Verbs', formatList(signals.verbs), 47),
+			createInsightItem('nouns', 'Nouns', formatList(signals.nouns), 46),
+			createInsightItem('terms', 'Terms', formatList(signals.terms), 45)
+		];
+	}
+
+	function createInsightItem(id: string, title: string, description: string, score: number): LauncherItem {
+		return {
+			id: `compromise.${id}`,
+			pluginId: 'compromise',
+			kind: 'insight',
+			title,
+			description,
+			score
+		};
+	}
+
+	function getSummaryDescription(signals: CompromiseSignals) {
+		const counts = [
+			`${signals.terms.length} terms`,
+			`${signals.topics.length} topics`,
+			`${signals.people.length} people`,
+			`${signals.places.length} places`,
+			`${signals.organizations.length} orgs`,
+			`${signals.questions.length} questions`,
+			`${signals.dates.length} dates`,
+			`${signals.durations.length} durations`
+		];
+
+		return counts.join(' | ');
+	}
+
+	function formatList(values: string[]) {
+		return values.length ? values.join(', ') : 'None detected';
+	}
+
+	function rankItems(items: LauncherItem[]) {
+		return [...items].sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
 	}
 </script>
 
 <main>
 	<Header />
+
+	{#if mode !== 'all'}
+		<div class="mode-chip">Mode: {mode}</div>
+	{/if}
 
 	<ExpandingTextarea
 		bind:value
@@ -70,27 +304,47 @@
 		onprimaryaction={runPrimaryAction}
 	>
 		{#snippet primaryAction()}
-			<button class="action-button" onclick={runPrimaryAction}>
-				{#if hasValue}
-					{searchProviderLabels[settings.searchProvider]} Search
-				{:else}
-					Paste from clipboard
-				{/if}
-			</button>
-		{/snippet}
-
-		{#snippet secondaryActions()}
-			{#if hasValue}
-				<button class="action-button secondary outline" onclick={copyToClipboard}>Copy to clipboard</button>
-
-				{#each otherSearchProviders as provider (provider)}
-					<button class="action-button secondary outline" onclick={() => search(provider)}>
-						{searchProviderLabels[provider]} Search
-					</button>
-				{/each}
+			{#if primaryLauncherItem}
+				<button class="launcher-item action-item primary" onclick={runPrimaryAction}>
+					<span>
+						<strong>{primaryLauncherItem.title}</strong>
+						{#if primaryLauncherItem.description}<small>{primaryLauncherItem.description}</small>{/if}
+					</span>
+					<span class="meta">{primaryLauncherItem.pluginId} · {primaryLauncherItem.score}</span>
+				</button>
 			{/if}
 		{/snippet}
 	</ExpandingTextarea>
+
+	<section class="launcher-list" aria-label="Launcher actions and insights">
+		{#each secondaryLauncherItems as item (item.id)}
+			{#if item.kind === 'action'}
+				<button
+					class:primary={item.id === primaryLauncherItem?.id}
+					class="launcher-item action-item"
+					onclick={() => item.run?.()}
+				>
+					<span>
+						<strong>{item.title}</strong>
+						{#if item.description}<small>{item.description}</small>{/if}
+					</span>
+					<span class="meta">{item.pluginId} · {item.score}</span>
+				</button>
+			{:else}
+				<article class="launcher-item insight-item">
+					<span>
+						<strong>{item.title}</strong>
+						{#if item.description}<small>{item.description}</small>{/if}
+					</span>
+					<span class="meta">{item.pluginId} · {item.score}</span>
+				</article>
+			{/if}
+		{/each}
+	</section>
+
+	{#if mode === 'compromise'}
+		<CompromiseInspector text={value} {inspect} />
+	{/if}
 </main>
 
 <style>
@@ -100,8 +354,82 @@
 		padding-inline: var(--nc-spacing);
 	}
 
-	.action-button {
+	.launcher-list {
+		display: grid;
+		gap: var(--size-2);
+		margin-block-start: var(--size-3);
+	}
+
+	.mode-chip {
+		display: inline-flex;
+		margin-block-end: var(--size-2);
+		padding: 0.125rem 0.5rem;
+		color: var(--nc-tx-2);
+		background: var(--nc-surface-1);
+		border: 1px solid var(--nc-border);
+		border-radius: 999px;
+		font-size: var(--font-size-0);
+	}
+
+	.launcher-item {
+		--buttonBg: var(--nc-surface-1);
+		--buttonText: var(--nc-tx-1);
+
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--size-3);
 		width: 100%;
 		margin: 0;
+		padding: var(--size-2) var(--size-3);
+		text-align: left;
+		background: var(--nc-surface-1);
+		border: 1px solid var(--nc-border);
+		border-radius: var(--nc-radius);
+		color: var(--nc-tx-1);
+	}
+
+	.action-item.primary {
+		--buttonBg: color-mix(in srgb, var(--nc-primary) 14%, var(--nc-surface-1));
+		--buttonText: var(--nc-tx-1);
+
+		background: color-mix(in srgb, var(--nc-primary) 14%, var(--nc-surface-1));
+		border-color: var(--nc-primary);
+	}
+
+	.insight-item {
+		color: var(--nc-tx-2);
+	}
+
+	.launcher-item > span:first-child {
+		display: grid;
+		gap: 0.125rem;
+		min-width: 0;
+	}
+
+	.launcher-item strong,
+	.launcher-item small {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.launcher-item small {
+		color: var(--nc-tx-2);
+	}
+
+	.meta {
+		flex: 0 0 auto;
+		color: var(--nc-tx-2);
+		font-size: var(--font-size-0);
+		white-space: nowrap;
+	}
+
+	@media (max-width: 520px) {
+		.launcher-item {
+			align-items: stretch;
+			flex-direction: column;
+			gap: var(--size-1);
+		}
 	}
 </style>

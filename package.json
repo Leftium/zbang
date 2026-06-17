@@ -32,5 +32,11 @@
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.60.1",
 		"vite": "^8.0.16"
+	},
+	"dependencies": {
+		"compromise": "^14.15.1",
+		"compromise-dates": "^3.8.0",
+		"compromise-stats": "^0.1.1",
+		"svelte-inspect-value": "^0.11.3"
 	}
 }

@@ -15,8 +15,9 @@
 		oninput,
 		onkeydown,
 		...props
-	}: HTMLTextareaAttributes & {
+	}: Omit<HTMLTextareaAttributes, 'value'> & {
 		textareaElement?: HTMLTextAreaElement;
+		value?: string;
 		fullscreen?: boolean;
 		wordwrap?: boolean;
 		enterNewlineRestored?: boolean;
