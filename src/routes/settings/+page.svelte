@@ -1,4 +1,14 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
+	import {
+		BANG_SOURCES,
+		downloadBangSources,
+		readBangSourceStatuses,
+		type BangSourceDownloadResult,
+		type BangSourceId,
+		type BangSourceStatus
+	} from '$lib/bang-data';
 	import Header from '$lib/components/Header.svelte';
 	import {
 		resetColorScheme,
@@ -14,6 +24,91 @@
 		{ value: 'duckduckgo', label: 'DuckDuckGo' },
 		{ value: 'google', label: 'Google' }
 	];
+
+	let bangSourceStatuses = $state<BangSourceStatus[]>([]);
+	let bangSourceErrors = $state<Partial<Record<BangSourceId, string>>>({});
+	let bangSourceMessage = $state('');
+	let isRefreshingBangSources = $state(false);
+
+	onMount(() => {
+		void loadBangSourceStatuses();
+	});
+
+	async function loadBangSourceStatuses() {
+		bangSourceStatuses = await readBangSourceStatuses();
+	}
+
+	async function refreshBangSources() {
+		isRefreshingBangSources = true;
+		bangSourceErrors = {};
+		bangSourceMessage = 'Downloading bang sources...';
+
+		const results = await downloadBangSources();
+		const failed = results.filter(
+			(result): result is Extract<BangSourceDownloadResult, { ok: false }> => !result.ok
+		);
+
+		bangSourceStatuses = getSuccessfulStatuses(results, bangSourceStatuses);
+		bangSourceErrors = getBangSourceErrors(failed);
+		bangSourceMessage = failed.length
+			? `Saved ${results.length - failed.length} of ${results.length} bang sources.`
+			: `Saved ${results.length} bang sources.`;
+		isRefreshingBangSources = false;
+	}
+
+	function getSuccessfulStatuses(
+		results: BangSourceDownloadResult[],
+		currentStatuses: BangSourceStatus[]
+	) {
+		const statuses = [...currentStatuses];
+
+		for (const result of results) {
+			if (result.ok) {
+				const index = statuses.findIndex((status) => status.id === result.source.id);
+
+				if (index === -1) {
+					statuses.push(result.source);
+				} else {
+					statuses[index] = result.source;
+				}
+			}
+		}
+
+		return BANG_SOURCES.flatMap((source) => {
+			const status = statuses.find((status) => status.id === source.id);
+			return status ? [status] : [];
+		});
+	}
+
+	function getBangSourceErrors(
+		results: Extract<BangSourceDownloadResult, { ok: false }>[]
+	): Partial<Record<BangSourceId, string>> {
+		return Object.fromEntries(results.map((result) => [result.id, result.error]));
+	}
+
+	function getBangSourceStatus(id: BangSourceId) {
+		return bangSourceStatuses.find((status) => status.id === id);
+	}
+
+	function formatByteLength(byteLength: number) {
+		return new Intl.NumberFormat(undefined, {
+			maximumFractionDigits: 1,
+			style: 'unit',
+			unit: byteLength >= 1_000_000 ? 'megabyte' : 'kilobyte',
+			unitDisplay: 'short'
+		}).format(byteLength / (byteLength >= 1_000_000 ? 1_000_000 : 1_000));
+	}
+
+	function formatBangCount(bangCount: number | undefined) {
+		return bangCount === undefined ? 'Unknown' : new Intl.NumberFormat().format(bangCount);
+	}
+
+	function formatFetchedAt(fetchedAt: string) {
+		return new Intl.DateTimeFormat(undefined, {
+			dateStyle: 'medium',
+			timeStyle: 'short'
+		}).format(new Date(fetchedAt));
+	}
 </script>
 
 <main>
@@ -51,6 +146,66 @@
 				{/each}
 			</div>
 		</fieldset>
+
+		<section class="bang-sources" aria-labelledby="bang-sources-heading">
+			<div class="setting bang-source-actions">
+				<div>
+					<h2 id="bang-sources-heading">Bang sources</h2>
+					<p>Download and persist raw Kagi and DuckDuckGo bang source files locally.</p>
+				</div>
+
+				<button
+					class="secondary outline"
+					disabled={isRefreshingBangSources}
+					onclick={refreshBangSources}
+				>
+					{isRefreshingBangSources ? 'Downloading...' : 'Download bang sources'}
+				</button>
+			</div>
+
+			{#if bangSourceMessage}
+				<p class="refresh-message" aria-live="polite">{bangSourceMessage}</p>
+			{/if}
+
+			<div class="source-list">
+				{#each BANG_SOURCES as source (source.id)}
+					{@const status = getBangSourceStatus(source.id)}
+					<article class="source-card">
+						<div>
+							<h3>{source.label}</h3>
+							<p class="source-url">{source.url}</p>
+						</div>
+
+						{#if status}
+							<dl>
+								<div>
+									<dt>Fetched</dt>
+									<dd>{formatFetchedAt(status.fetchedAt)}</dd>
+								</div>
+								<div>
+									<dt>Size</dt>
+									<dd>{formatByteLength(status.byteLength)}</dd>
+								</div>
+								<div>
+									<dt>Bangs</dt>
+									<dd>{formatBangCount(status.bangCount)}</dd>
+								</div>
+								<div>
+									<dt>SHA-256</dt>
+									<dd><code>{status.hash.slice(0, 16)}</code></dd>
+								</div>
+							</dl>
+						{:else}
+							<p class="muted">Not downloaded yet.</p>
+						{/if}
+
+						{#if bangSourceErrors[source.id]}
+							<p class="source-error">{bangSourceErrors[source.id]}</p>
+						{/if}
+					</article>
+				{/each}
+			</div>
+		</section>
 	</section>
 </main>
 
@@ -61,7 +216,8 @@
 		padding-inline: var(--nc-spacing);
 	}
 
-	section {
+	main > section,
+	.bang-sources {
 		display: grid;
 		gap: var(--size-5);
 		margin-block-start: var(--size-6);
@@ -69,6 +225,7 @@
 
 	h1,
 	h2,
+	h3,
 	p {
 		margin: 0;
 	}
@@ -103,6 +260,10 @@
 		margin: 0;
 	}
 
+	.bang-source-actions {
+		margin: 0;
+	}
+
 	.providers {
 		display: grid;
 		gap: var(--size-2);
@@ -118,10 +279,61 @@
 		white-space: nowrap;
 	}
 
+	.source-list {
+		display: grid;
+		gap: var(--size-3);
+	}
+
+	.source-card {
+		display: grid;
+		gap: var(--size-3);
+		padding: var(--size-4);
+		border: var(--border-size-1) solid var(--gray-7);
+		border-radius: var(--radius-2);
+	}
+
+	.source-card h3 {
+		font-size: var(--font-size-1);
+	}
+
+	dl {
+		display: grid;
+		gap: var(--size-2);
+		margin: 0;
+	}
+
+	dl div {
+		display: grid;
+		grid-template-columns: 6rem 1fr;
+		gap: var(--size-3);
+	}
+
+	dt {
+		color: var(--gray-6);
+	}
+
+	dd {
+		margin: 0;
+	}
+
+	.refresh-message,
+	.muted {
+		color: var(--gray-6);
+	}
+
+	.source-error {
+		color: var(--red-7);
+	}
+
 	@media (max-width: 40rem) {
 		.setting {
 			align-items: flex-start;
 			flex-direction: column;
+		}
+
+		dl div {
+			grid-template-columns: 1fr;
+			gap: 0;
 		}
 	}
 </style>

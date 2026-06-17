@@ -52,7 +52,7 @@ Source URLs:
 - Kagi shared data: `https://github.com/kagisearch/bangs/raw/refs/heads/main/data/bangs.json`
 - Kagi Kagi-specific data: `https://github.com/kagisearch/bangs/raw/refs/heads/main/data/kagi_bangs.json`
 
-The first implementation should try downloading these directly from the browser. If any source fails because of CORS, add a SvelteKit server route that fetches the source and returns it same-origin to the client.
+The first implementation attempted direct browser downloads, but browser testing showed CORS failures for the source URLs. Source downloads now go through a SvelteKit same-origin route that fetches the upstream files server-side and returns them to the client.
 
 Generate separate provider-native catalogs:
 
@@ -311,6 +311,7 @@ Persist enough metadata to decide when to refresh:
 - Source URL
 - Fetch timestamp
 - Source content hash if available
+- Source bang record count when the source shape supports it
 - Generator version
 - Catalog provider
 - Record count
@@ -350,6 +351,7 @@ type Zbang = {
 
 - Do not keep a compatibility `zbangs.json` file during migration. The implementation is expected to start from a fresh SvelteKit template.
 - The special bootstrap route is only needed during development.
+- Source downloads use the same-origin SvelteKit route because direct browser fetches hit CORS errors for the initial DDG and Kagi source URLs.
 - Kagi inherits DDG rank using the compatibility rules described above.
 - Generated catalogs are sorted by `rank`.
 - Refresh is manual, with optional stale-data notification later.
