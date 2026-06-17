@@ -1,49 +1,14 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-
-	let theme = $state('');
-
-	function applyTheme(nextTheme: string) {
-		theme = nextTheme;
-
-		if (!theme) {
-			document.documentElement.removeAttribute('data-theme');
-			document.documentElement.style.removeProperty('color-scheme');
-			localStorage.removeItem('theme');
-			return;
-		}
-
-		document.documentElement.dataset.theme = theme;
-		document.documentElement.style.colorScheme = theme;
-		localStorage.setItem('theme', theme);
-	}
-
-	function toggleTheme() {
-		applyTheme(theme === 'dark' ? 'light' : 'dark');
-	}
-
-	function autoTheme() {
-		applyTheme('');
-	}
-
-	onMount(() => {
-		const storedTheme = localStorage.getItem('theme') || '';
-
-		if (storedTheme) {
-			applyTheme(storedTheme);
-		}
-	});
+	import { resolve } from '$app/paths';
 </script>
 
 <header>
-	<div>
+	<a class="brand" href={resolve('/')}>
 		<span class="logo">[z!]</span>
 		<span class="brand-secondary">whi</span><span class="brand-primary">zBang</span>
-	</div>
+	</a>
 
-	<button class="secondary outline theme" onclick={toggleTheme} ondblclick={autoTheme}>
-		colors: {theme || 'auto'}
-	</button>
+	<a class="secondary outline settings" href={resolve('/settings')}>settings</a>
 </header>
 
 <style>
@@ -72,7 +37,15 @@
 		color: var(--gray-5);
 	}
 
-	.theme {
+	a {
+		text-decoration: none;
+	}
+
+	.brand {
+		line-height: var(--font-lineheight-1);
+	}
+
+	.settings {
 		align-self: center;
 		padding: var(--size-1);
 		font-size: var(--font-size-0);

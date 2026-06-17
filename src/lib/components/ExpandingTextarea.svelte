@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import type { HTMLTextareaAttributes, FormEventHandler, KeyboardEventHandler } from 'svelte/elements';
 
 	let {
@@ -8,6 +9,9 @@
 		wordwrap = $bindable(true),
 		enterNewlineRestored = $bindable(false),
 		enterNewlineFullscreen = $bindable(true),
+		primaryAction,
+		secondaryActions,
+		onprimaryaction,
 		oninput,
 		onkeydown,
 		...props
@@ -17,6 +21,9 @@
 		wordwrap?: boolean;
 		enterNewlineRestored?: boolean;
 		enterNewlineFullscreen?: boolean;
+		primaryAction?: Snippet;
+		secondaryActions?: Snippet;
+		onprimaryaction?: () => void;
 	} = $props();
 
 	let lineCount = $derived(value ? value.split('\n').length : 1);
@@ -60,9 +67,15 @@
 	}
 
 	function handleKeydown(event: Parameters<KeyboardEventHandler<HTMLTextAreaElement>>[0]) {
-		if (event.key === 'Enter' && enterNewline) {
+		if (event.key === 'Enter') {
 			event.preventDefault();
-			insertText('\n');
+
+			if (enterNewline) {
+				insertText('\n');
+			} else {
+				onprimaryaction?.();
+			}
+
 			return;
 		}
 
@@ -122,6 +135,18 @@
 			</label>
 		</div>
 	</div>
+
+	{#if primaryAction}
+		<div class="primary-action">
+			{@render primaryAction()}
+		</div>
+	{/if}
+
+	{#if secondaryActions}
+		<div class="secondary-actions">
+			{@render secondaryActions()}
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -194,6 +219,18 @@
 	.counts {
 		justify-content: center;
 		white-space: nowrap;
+	}
+
+	.primary-action,
+	.secondary-actions {
+		display: grid;
+		gap: var(--size-2);
+		padding: var(--size-2);
+		border-top: 1px solid var(--nc-border);
+	}
+
+	.grow-wrap.fullscreen .secondary-actions {
+		display: none;
 	}
 
 	button {
