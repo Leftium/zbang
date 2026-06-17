@@ -1,21 +1,21 @@
 {
   "provider": "kagi",
-  "generatedAt": "2026-06-17T19:12:48.907Z",
+  "generatedAt": "2026-06-17T19:29:31.099Z",
   "generatorVersion": 1,
   "sources": [
     {
       "url": "https://github.com/kagisearch/bangs/raw/refs/heads/main/data/bangs.json",
-      "fetchedAt": "2026-06-17T19:12:48.623Z",
+      "fetchedAt": "2026-06-17T19:29:31.078Z",
       "hash": "3d43b6f2e5a4a8ae05f31f63a9e4e66b6318cf6286cf3d407b2fc42d581820c2"
     },
     {
       "url": "https://github.com/kagisearch/bangs/raw/refs/heads/main/data/kagi_bangs.json",
-      "fetchedAt": "2026-06-17T19:12:48.901Z",
+      "fetchedAt": "2026-06-17T19:29:30.872Z",
       "hash": "ad791dbabbabfd24174e8e192142ed1e494836d8c36882f4c5b841f0a7b2c7db"
     },
     {
       "url": "https://duckduckgo.com/bang.js",
-      "fetchedAt": "2026-06-17T19:12:48.870Z",
+      "fetchedAt": "2026-06-17T19:29:30.841Z",
       "hash": "e69536d51e6f306f3e0063af0d88862713bf8d7075aefc8ec85db88779355768"
     }
   ],
@@ -42,10 +42,10 @@
       "code": [
         "!w",
         "!wikipedia",
+        "!encyclopedia",
         "!wiki",
         "!wk",
-        "!wi",
-        "!encyclopedia"
+        "!wi"
       ],
       "tags": [
         "Research/Reference"
@@ -65,9 +65,9 @@
         "!ty",
         "!ytb",
         "!watch",
+        "!υτ",
         "!ют",
-        "!ютуб",
-        "!υτ"
+        "!ютуб"
       ],
       "tags": [
         "Multimedia/Video"
@@ -136,10 +136,10 @@
       "name": "Wikipedia (English)",
       "code": [
         "!we",
-        "!wikien",
         "!wen",
-        "!w.en",
-        "!enwiki"
+        "!enwiki",
+        "!wikien",
+        "!w.en"
       ],
       "tags": [
         "Research/Reference"
@@ -154,8 +154,8 @@
       "name": "IMDB",
       "code": [
         "!tv",
-        "!imbd",
-        "!imdb"
+        "!imdb",
+        "!imbd"
       ],
       "tags": [
         "Entertainment/Movies",
@@ -171,8 +171,8 @@
       "name": "Kagi Images",
       "code": [
         "!i",
-        "!pictures",
         "!image",
+        "!pictures",
         "!img",
         "!images",
         "!pics",
@@ -223,8 +223,8 @@
       "name": "Old School RuneScape Wiki",
       "code": [
         "!osrs",
-        "!rs07",
-        "!wosrs"
+        "!wosrs",
+        "!rs07"
       ],
       "tags": [
         "Entertainment/Games (specific)"
@@ -271,14 +271,14 @@
       "name": "Kagi Assistant",
       "code": [
         "!ai",
-        "!expert",
-        "!as",
         "!assistant",
-        "!answer",
-        "!discuss",
+        "!as",
+        "!expert",
         "!llm",
+        "!asst",
+        "!answer",
         "!custom",
-        "!asst"
+        "!discuss"
       ],
       "tags": [],
       "urls": {
@@ -438,8 +438,8 @@
       "name": "Old Reddit (subreddit)",
       "code": [
         "!ors",
-        "!srold",
         "!osr",
+        "!srold",
         "!sro"
       ],
       "tags": [
@@ -618,8 +618,8 @@
       "name": "Urban Dictionary",
       "code": [
         "!u",
-        "!urbandictionary",
         "!ud",
+        "!urbandictionary",
         "!urban"
       ],
       "tags": [
@@ -881,13 +881,13 @@
       "name": "Scryfall",
       "code": [
         "!mtg",
-        "!scryfall",
         "!scry",
+        "!magiccards",
+        "!scryfall",
         "!sfa",
         "!sfl",
-        "!magiccard",
-        "!magiccards",
-        "!mc.info"
+        "!mc.info",
+        "!magiccard"
       ],
       "tags": [
         "Entertainment/Games (offline)"
@@ -998,8 +998,8 @@
       "name": "Google Calendar",
       "code": [
         "!gcal",
-        "!calendar",
         "!календарь",
+        "!calendar",
         "!гкал"
       ],
       "tags": [
@@ -1194,8 +1194,8 @@
       "name": "Spanish Wikipedia",
       "code": [
         "!wes",
-        "!wikies",
-        "!eswiki"
+        "!eswiki",
+        "!wikies"
       ],
       "tags": [
         "Research/Reference"
@@ -1269,8 +1269,8 @@
       "name": "Google Scholar",
       "code": [
         "!gsc",
-        "!googlescholar",
         "!scholar",
+        "!googlescholar",
         "!gsch",
         "!gscholar",
         "!gschol",
@@ -1305,9 +1305,9 @@
       "name": "Italian Wikipedia",
       "code": [
         "!wit",
+        "!wikipediait",
         "!itwiki",
-        "!wikiit",
-        "!wikipediait"
+        "!wikiit"
       ],
       "tags": [
         "Research/Reference"
@@ -1431,16 +1431,16 @@
       "code": [
         "!ddi",
         "!ddgi",
+        "!ddg-pictures",
         "!dgi",
         "!dggi",
         "!dim",
         "!ddg-i",
-        "!ddg-image",
-        "!ddg-images",
         "!ddg-img",
         "!ddg-imgs",
         "!ddg-pics",
-        "!ddg-pictures"
+        "!ddg-image",
+        "!ddg-images"
       ],
       "tags": [
         "Online Services/Search (DDG)"
@@ -1498,8 +1498,8 @@
         "!aca",
         "!amazonca",
         "!amca",
-        "!am.ca",
-        "!azca"
+        "!azca",
+        "!am.ca"
       ],
       "tags": [
         "Shopping/Online (intl)"
@@ -1531,8 +1531,8 @@
       "name": "Bulbapedia",
       "code": [
         "!bu",
-        "!bulbapedia",
         "!bulba",
+        "!bulbapedia",
         "!bpa",
         "!bpedia"
       ],
@@ -1549,9 +1549,9 @@
       "name": "Dutch Wikipedia",
       "code": [
         "!wnl",
+        "!nlwiki",
         "!wikinl",
-        "!nlwi",
-        "!nlwiki"
+        "!nlwi"
       ],
       "tags": [
         "Research/Reference"
@@ -1580,8 +1580,8 @@
       "name": "アマゾン (Amazon Japan)",
       "code": [
         "!aj",
-        "!amazonjp",
         "!ajp",
+        "!amazonjp",
         "!amjp",
         "!ajl"
       ],
@@ -1628,8 +1628,8 @@
       "name": "Docker Hub",
       "code": [
         "!dh",
-        "!dockerhub",
         "!docker",
+        "!dockerhub",
         "!dhub"
       ],
       "tags": [
@@ -2067,8 +2067,8 @@
       "name": "AliExpress",
       "code": [
         "!ae",
-        "!aliexpress",
         "!ali",
+        "!aliexpress",
         "!aliexp"
       ],
       "tags": [
@@ -2112,12 +2112,12 @@
       "name": "The Free Dictionary",
       "code": [
         "!d",
-        "!dictionary",
+        "!thefreedictionary",
         "!define",
         "!tfd",
         "!def",
-        "!idioms",
-        "!thefreedictionary"
+        "!dictionary",
+        "!idioms"
       ],
       "tags": [
         "Research/Reference (words)"
@@ -2174,8 +2174,8 @@
       "name": "Polish Wikipedia",
       "code": [
         "!wpl",
-        "!plw",
         "!plwiki",
+        "!plw",
         "!wikipl"
       ],
       "tags": [
@@ -2206,8 +2206,8 @@
       "code": [
         "!spy",
         "!spotify",
-        "!spt",
-        "!spotifysearch"
+        "!spotifysearch",
+        "!spt"
       ],
       "tags": [
         "Multimedia/Music"
@@ -2353,8 +2353,8 @@
       "name": "SpanishDict",
       "code": [
         "!sdict",
-        "!spanishdict",
         "!spanish",
+        "!spanishdict",
         "!spandict",
         "!spanishd"
       ],
@@ -2371,8 +2371,8 @@
       "name": "Arch Linux Packages",
       "code": [
         "!alp",
-        "!pacman",
-        "!pkg"
+        "!pkg",
+        "!pacman"
       ],
       "tags": [
         "Tech/Sysadmin (Arch)"
@@ -2530,8 +2530,8 @@
       "name": "Kagi Search (no JS)",
       "code": [
         "!html",
-        "!nojs",
-        "!noscript"
+        "!noscript",
+        "!nojs"
       ],
       "tags": [
         "Online Services/Search (DDG)"
@@ -2546,8 +2546,8 @@
       "name": "YouTube Music",
       "code": [
         "!myt",
-        "!ytmusic",
         "!ytm",
+        "!ytmusic",
         "!ytmu",
         "!ютм"
       ],
@@ -2608,9 +2608,9 @@
       "name": "OpenStreetMap Wiki",
       "code": [
         "!osmw",
-        "!osmwiki",
+        "!openstreetmapwiki",
         "!wosm",
-        "!openstreetmapwiki"
+        "!osmwiki"
       ],
       "tags": [
         "Online Services/Maps"
@@ -2656,11 +2656,11 @@
       "name": "Google Translate (to English)",
       "code": [
         "!gt",
-        "!gtranslate",
-        "!gten",
         "!gt-english",
-        "!gtenglish",
-        "!гп"
+        "!gten",
+        "!gtranslate",
+        "!гп",
+        "!gtenglish"
       ],
       "tags": [
         "Translation/Google"
@@ -2675,15 +2675,15 @@
       "name": "Amazon Germany / Austria",
       "code": [
         "!ade",
-        "!amazonde",
+        "!amazon_de",
         "!ama",
         "!amde",
+        "!amazonde",
         "!azd",
         "!a.de",
         "!age",
         "!ager",
         "!amznde",
-        "!amazon_de",
         "!a.at"
       ],
       "tags": [
@@ -2713,8 +2713,8 @@
       "name": "Finnish Wikipedia",
       "code": [
         "!wfi",
-        "!wi-fi",
         "!fiwiki",
+        "!wi-fi",
         "!wikifi"
       ],
       "tags": [
@@ -2801,10 +2801,10 @@
       "code": [
         "!gd",
         "!gdocs",
+        "!гдокументы",
         "!гд",
         "!гдок",
-        "!гдокс",
-        "!гдокументы"
+        "!гдокс"
       ],
       "tags": [
         "Online Services/Google"
@@ -3021,10 +3021,10 @@
       "name": "Gentoo Wiki",
       "code": [
         "!gw",
-        "!gentoowiki",
+        "!installgentoo",
         "!gentoo",
         "!gwiki",
-        "!installgentoo"
+        "!gentoowiki"
       ],
       "tags": [
         "Tech/Sysadmin (Gentoo)"
@@ -3081,14 +3081,14 @@
       "name": "Википедия",
       "code": [
         "!ш",
-        "!ruwiki",
         "!wru",
+        "!ruwiki",
         "!wikiru",
+        "!ц",
+        "!шру",
         "!ruwk",
         "!w.ru",
-        "!шру",
-        "!вики",
-        "!ц"
+        "!вики"
       ],
       "tags": [
         "Multimedia/Docs",
@@ -3177,8 +3177,8 @@
       "name": "Portuguese Wikipedia",
       "code": [
         "!wpt",
-        "!wikipt",
-        "!ptwiki"
+        "!ptwiki",
+        "!wikipt"
       ],
       "tags": [
         "Research/Reference"
@@ -3280,8 +3280,8 @@
       "name": "AlternativeTo.net",
       "code": [
         "!a2",
-        "!alternativeto",
         "!alt",
+        "!alternativeto",
         "!alto",
         "!ato",
         "!altto",
@@ -3431,8 +3431,8 @@
       "name": "BibleGateway",
       "code": [
         "!bg",
-        "!biblegateway",
         "!bible",
+        "!biblegateway",
         "!bgw"
       ],
       "tags": [
@@ -3610,8 +3610,8 @@
       "name": "The Unofficial Elder Scrolls Pages",
       "code": [
         "!uesp",
-        "!teswiki",
-        "!elderwiki"
+        "!elderwiki",
+        "!teswiki"
       ],
       "tags": [
         "Entertainment/Games (specific)"
@@ -3801,8 +3801,8 @@
       "name": "Centre national de ressources textuelles et lexicales",
       "code": [
         "!tlfi",
-        "!cnrtld",
         "!cnrtl",
+        "!cnrtld",
         "!cntrl"
       ],
       "tags": [
@@ -3960,8 +3960,8 @@
       "name": "Online Etymology Dictionary",
       "code": [
         "!eo",
-        "!etymonline",
         "!etym",
+        "!etymonline",
         "!ety",
         "!etymology",
         "!etymo"
@@ -4257,8 +4257,8 @@
       "name": "Chinese Wikipedia",
       "code": [
         "!wzh",
-        "!wizh",
         "!zhwiki",
+        "!wizh",
         "!wikizh"
       ],
       "tags": [
@@ -4274,8 +4274,8 @@
       "name": "Czech Wikipedia",
       "code": [
         "!wcs",
-        "!wcz",
         "!cswiki",
+        "!wcz",
         "!wikics"
       ],
       "tags": [
@@ -4410,11 +4410,11 @@
       "code": [
         "!ys",
         "!ytr",
-        "!yad",
-        "!slov",
         "!yaslovari",
         "!яп",
-        "!яс"
+        "!яс",
+        "!yad",
+        "!slov"
       ],
       "tags": [
         "Online Services/Tools"
@@ -4680,8 +4680,8 @@
       "name": "Encyclopaedia metallum",
       "code": [
         "!mab",
-        "!metalarch",
         "!metal",
+        "!metalarch",
         "!metallum",
         "!march",
         "!maband"
@@ -5135,8 +5135,8 @@
       "name": "OLX.pl",
       "code": [
         "!olx",
-        "!olxpl",
-        "!olxpoland"
+        "!olxpoland",
+        "!olxpl"
       ],
       "tags": [
         "Shopping/Online (deals)",
@@ -5225,8 +5225,8 @@
       "name": "Gentoo Packages",
       "code": [
         "!gpo",
-        "!gentoopkg",
         "!genpkg",
+        "!gentoopkg",
         "!emerge",
         "!ebuild",
         "!gpackages",
@@ -5290,8 +5290,8 @@
       "name": "Firefox Add-ons",
       "code": [
         "!amo",
-        "!firefoxaddons",
         "!ffa",
+        "!firefoxaddons",
         "!firefox",
         "!fad",
         "!mozaddon",
@@ -5324,10 +5324,10 @@
       "name": "Catalan Wikipedia",
       "code": [
         "!wca",
+        "!viquipedia",
         "!wcat",
         "!cawiki",
-        "!wikica",
-        "!viquipedia"
+        "!wikica"
       ],
       "tags": [
         "Research/Reference"
@@ -6271,8 +6271,8 @@
       "name": "Binding of Isaac: Rebirth Wiki",
       "code": [
         "!boi",
-        "!isaac",
-        "!rebirth"
+        "!rebirth",
+        "!isaac"
       ],
       "tags": [
         "Entertainment/Games (specific)"
@@ -6458,8 +6458,8 @@
       "name": "DuckDuckGo SafeOff",
       "code": [
         "!soff",
-        "!ssoff",
-        "!s-off"
+        "!s-off",
+        "!ssoff"
       ],
       "tags": [
         "Online Services/Search (DDG)"
@@ -6559,8 +6559,8 @@
       "name": "DevDocs",
       "code": [
         "!dd",
-        "!dev",
-        "!devdocs"
+        "!devdocs",
+        "!dev"
       ],
       "tags": [
         "Tech/Programming"
@@ -6792,10 +6792,10 @@
       "name": "Linguee (es2en)",
       "code": [
         "!les",
-        "!lingues",
         "!linesin",
-        "!ltrans",
-        "!lies"
+        "!lingues",
+        "!lies",
+        "!ltrans"
       ],
       "tags": [
         "Online Services/Tools"
@@ -6925,8 +6925,8 @@
       "name": "Danish Wikipedia",
       "code": [
         "!wda",
-        "!wdk",
-        "!wikida"
+        "!wikida",
+        "!wdk"
       ],
       "tags": [
         "Research/Reference"
@@ -7404,8 +7404,8 @@
       "name": "HowLongToBeat",
       "code": [
         "!hlb",
-        "!howlongtobeat",
-        "!hltb"
+        "!hltb",
+        "!howlongtobeat"
       ],
       "tags": [
         "Entertainment/Games (general)"
@@ -7639,8 +7639,8 @@
       "name": "Wayback Machine",
       "code": [
         "!ia",
-        "!waybackmachine",
         "!wayback",
+        "!waybackmachine",
         "!wbm",
         "!webarchive",
         "!archived",
@@ -7759,12 +7759,12 @@
       "name": "Chrome Web Store",
       "code": [
         "!cws",
-        "!cwebstore",
         "!chrome",
-        "!crx",
-        "!chromestore",
         "!chromewebstore",
-        "!cstore"
+        "!cwebstore",
+        "!crx",
+        "!cstore",
+        "!chromestore"
       ],
       "tags": [
         "Tech/Downloads (add-ons)"
@@ -7898,8 +7898,8 @@
       "name": "Wordreference (es)",
       "code": [
         "!wdr",
-        "!wordreference",
         "!wrs",
+        "!wordreference",
         "!wrensp"
       ],
       "tags": [
@@ -7943,8 +7943,8 @@
       "name": "Idealo",
       "code": [
         "!ide",
-        "!idealode",
-        "!idealo"
+        "!idealo",
+        "!idealode"
       ],
       "tags": [
         "Shopping/Online"
@@ -7959,8 +7959,8 @@
       "name": "OMG! Ubuntu!",
       "code": [
         "!omg",
-        "!omgu",
-        "!omgubuntu"
+        "!omgubuntu",
+        "!omgu"
       ],
       "tags": [
         "News/Magazine"
@@ -8004,8 +8004,8 @@
       "name": "Derpibooru",
       "code": [
         "!dpb",
-        "!derpibooruorg",
         "!derpi",
+        "!derpibooruorg",
         "!derpibooru"
       ],
       "tags": [
@@ -8395,10 +8395,10 @@
       "name": "Google Feeling Lucky",
       "code": [
         "!fl",
-        "!gluck",
         "!lucky",
-        "!гмп",
-        "!фл"
+        "!gluck",
+        "!фл",
+        "!гмп"
       ],
       "tags": [
         "Online Services/Search"
@@ -9072,8 +9072,8 @@
       "name": "Morfix",
       "code": [
         "!mfx",
-        "!morfix",
-        "!מורפיקס"
+        "!מורפיקס",
+        "!morfix"
       ],
       "tags": [
         "Research/Reference (words intl)"
@@ -9246,8 +9246,8 @@
       "code": [
         "!gtde",
         "!translatede",
-        "!gt-german",
-        "!gtgerman"
+        "!gtgerman",
+        "!gt-german"
       ],
       "tags": [
         "Translation/Google"
@@ -9532,8 +9532,8 @@
       "name": "Esperanto Wikipedia",
       "code": [
         "!vo",
-        "!vikipedio",
         "!weo",
+        "!vikipedio",
         "!eowiki",
         "!wikieo"
       ],
@@ -9973,10 +9973,10 @@
       "code": [
         "!гс",
         "!gslides",
-        "!гслайд",
-        "!гслайдс",
+        "!гпрезентации",
         "!гпрез",
-        "!гпрезентации"
+        "!гслайд",
+        "!гслайдс"
       ],
       "tags": [
         "Online Services/Google"
@@ -10368,9 +10368,9 @@
       "name": "Kinopoisk",
       "code": [
         "!кп",
-        "!kpoisk",
         "!kino",
-        "!кинопоиск"
+        "!кинопоиск",
+        "!kpoisk"
       ],
       "tags": [
         "Multimedia/Video"
@@ -10385,9 +10385,9 @@
       "name": "Magic Card Market",
       "code": [
         "!mcm",
-        "!mtgcm",
         "!mkm",
-        "!magiccardmarket"
+        "!magiccardmarket",
+        "!mtgcm"
       ],
       "tags": [
         "Shopping/Online (marketplace)"
@@ -10986,8 +10986,8 @@
       "name": "Dictionary.com",
       "code": [
         "!dxn",
-        "!d.com",
-        "!dcom"
+        "!dcom",
+        "!d.com"
       ],
       "tags": [
         "Research/Reference (words)"
@@ -11869,8 +11869,8 @@
       "name": "English StackExchange",
       "code": [
         "!en",
-        "!enstex",
-        "!seenglish"
+        "!seenglish",
+        "!enstex"
       ],
       "tags": [
         "Research/Learning"
@@ -12232,8 +12232,8 @@
       "name": "Lazada Philippines",
       "code": [
         "!laz",
-        "!lazadaph",
         "!lzd",
+        "!lazadaph",
         "!lzdph"
       ],
       "tags": [

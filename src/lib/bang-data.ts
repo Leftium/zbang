@@ -408,17 +408,27 @@ function sortBangCodes(codes: string[], codeRanks: Record<string, number>) {
 	if (!codes.length) return [];
 
 	const shortest = getShortestCode(codes);
-	const rankedCodes = codes.filter((code) => (codeRanks[code] ?? 0) > 0);
-	const longest = getLongestCode(rankedCodes.length ? rankedCodes : codes);
-	const promoted = uniqueStrings([shortest, longest].filter(isString));
+	const highestRanked = getHighestRankedCode(codes, codeRanks);
+	const longest = getLongestCode(codes);
+	const promoted = uniqueStrings([shortest, highestRanked, longest].filter(isString));
 	const promotedSet = new Set(promoted);
 
 	return [
 		...promoted,
 		...codes
 			.filter((code) => !promotedSet.has(code))
-			.sort((a, b) => (codeRanks[b] ?? 0) - (codeRanks[a] ?? 0))
+			.sort((a, b) => {
+				const rankDifference = (codeRanks[b] ?? 0) - (codeRanks[a] ?? 0);
+				return rankDifference || a.length - b.length || a.localeCompare(b);
+			})
 	];
+}
+
+function getHighestRankedCode(codes: string[], codeRanks: Record<string, number>) {
+	return codes.reduce((highest, code) => {
+		const rankDifference = (codeRanks[code] ?? 0) - (codeRanks[highest] ?? 0);
+		return rankDifference > 0 ? code : highest;
+	}, codes[0]);
 }
 
 function getShortestCode(codes: string[]) {
