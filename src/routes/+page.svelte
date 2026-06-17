@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 
-	import { readBangCatalog, type BangProviderId, type ZbangCatalog } from '$lib/bang-data';
+	import { readBangCatalog, type BangProviderId, type Zbang, type ZbangCatalog } from '$lib/bang-data';
 	import { applyBang, filterBangs, prepareBangCatalog } from '$lib/bang-filter';
 	import { createCompromiseDoc } from '$lib/compromise';
 	import CompromiseInspector, {
@@ -18,19 +19,20 @@
 		id: string;
 		pluginId: string;
 		kind: 'action' | 'insight';
-	title: string;
-	description?: string;
-	rank?: number;
-	score: number;
-	sortOrder?: number;
-	safeForEnter?: boolean;
-	run?: () => void | Promise<void>;
-};
+		title: string;
+		description?: string;
+		rank?: number;
+		score: number;
+		sortOrder?: number;
+		safeForEnter?: boolean;
+		run?: () => void | Promise<void>;
+	};
 
 	type LauncherContext = {
 		value: string;
 		text: string;
 		hasValue: boolean;
+		bangComposition: BangComposition;
 		nlp: CompromiseSignals;
 	};
 
@@ -40,6 +42,13 @@
 	};
 
 	type LauncherMode = 'all' | 'bangs' | 'compromise';
+	type BangCompositionTarget = { token: string; item: Zbang };
+	type BangComposition = {
+		localTargets: BangCompositionTarget[];
+		forwardedTokens: string[];
+		payloadText: string;
+		hasTargets: boolean;
+	};
 	type KeywordSignal = { word: string; score: number };
 	type MoneyJson = { text?: string; number?: { prefix?: string; unit?: string } };
 
@@ -91,6 +100,8 @@
 	const hasValue = $derived(Boolean(value.trim()));
 	const compromiseSignals = $derived(getCompromiseSignals(value));
 	const preparedBangs = $derived(prepareBangCatalog(bangCatalog));
+	const bangCodeMap = $derived(createBangCodeMap(bangCatalog));
+	const bangComposition = $derived(parseBangComposition(value, bangCodeMap, bangEntry));
 	const bangPickerActive = $derived(mode === 'bangs' || Boolean(bangEntry));
 	const bangFilterInput = $derived(bangEntry ? `!${bangEntry.fragment}` : value);
 	const bangResults = $derived(filterBangs(bangFilterInput, preparedBangs));
@@ -99,6 +110,7 @@
 		value,
 		text: value.trim(),
 		hasValue,
+		bangComposition,
 		nlp: compromiseSignals
 	});
 	const plugins = $derived(createPlugins());
@@ -155,6 +167,68 @@
 
 	function search(provider = settings.searchProvider) {
 		window.open(getSearchUrl(provider, value), '_blank', 'noopener,noreferrer');
+	}
+
+	function executeBangSearch(composition = bangComposition) {
+		const { localTargets, forwardedTokens, payloadText } = composition;
+
+		for (const { item } of localTargets) {
+			const url = payloadText ? getBangSearchUrl(item, payloadText) : getBangOpenUrl(item);
+
+			window.open(url, '_blank', 'noopener,noreferrer');
+		}
+
+		if (forwardedTokens.length) {
+			const forwardedQuery = [...forwardedTokens, payloadText].filter(Boolean).join(' ');
+
+			window.open(getSearchUrl(settings.searchProvider, forwardedQuery), '_blank', 'noopener,noreferrer');
+		}
+	}
+
+	function getBangSearchUrl(item: Zbang, query: string) {
+		return item.urls.s.replace(/%s/g, encodeURIComponent(query.trim()));
+	}
+
+	function getBangOpenUrl(item: Zbang) {
+		const placeholder = '__zbang_query__';
+		const template = item.urls.s.replace(/%s/g, placeholder);
+
+		try {
+			const url = new URL(template);
+			const params = [...url.searchParams.entries()];
+			const hasQueryPlaceholder = params.some(([, value]) => value.includes(placeholder));
+
+			for (const [key, value] of params) {
+				if (value.includes(placeholder)) url.searchParams.delete(key);
+			}
+
+			if (url.hash.includes(placeholder)) url.hash = '';
+
+			if (url.pathname.includes(placeholder)) {
+				url.pathname = url.pathname
+					.split('/')
+					.filter((segment) => segment && !segment.includes(placeholder))
+					.join('/');
+			}
+
+			return hasQueryPlaceholder ? `${url.origin}/` : url.toString();
+		} catch {
+			return item.urls.s.replace(/%s/g, '');
+		}
+	}
+
+	function getBangSearchTitle(composition: BangComposition) {
+		return composition.payloadText ? 'Search' : 'Open';
+	}
+
+	function getBangSearchDescription(composition: BangComposition) {
+		const targets = [
+			...composition.localTargets.map(({ item }) => item.name),
+			...composition.forwardedTokens.map((token) => `${token} via ${searchProviderLabels[settings.searchProvider]}`)
+		].join(', ');
+		const payload = composition.payloadText ? ` for "${composition.payloadText}"` : '';
+
+		return `${targets}${payload}`;
 	}
 
 	async function loadBangCatalog(provider: BangProviderId) {
@@ -221,6 +295,61 @@
 		const previous = input[index - 1];
 
 		return previous === undefined || /\s/.test(previous);
+	}
+
+	function createBangCodeMap(catalog: ZbangCatalog | undefined) {
+		const codeMap = new SvelteMap<string, Zbang>();
+
+		for (const item of catalog?.items ?? []) {
+			for (const code of item.code) {
+				codeMap.set(normalizeBangCode(code), item);
+			}
+		}
+
+		return codeMap;
+	}
+
+	function parseBangComposition(
+		input: string,
+		codeMap: Map<string, Zbang>,
+		activeEntry: typeof bangEntry
+	): BangComposition {
+		const localTargets: BangCompositionTarget[] = [];
+		const forwardedTokens: string[] = [];
+		const payloadTokens: string[] = [];
+		const activeTokenStart = activeEntry?.triggerIndex;
+		let offset = 0;
+
+		for (const token of input.match(/\S+/g) ?? []) {
+			const index = input.indexOf(token, offset);
+			offset = index + token.length;
+
+			if (activeTokenStart !== undefined && index === activeTokenStart) continue;
+
+			if (!/^![^\s!]+$/.test(token)) {
+				payloadTokens.push(token);
+				continue;
+			}
+
+			const item = codeMap.get(normalizeBangCode(token));
+
+			if (item) {
+				localTargets.push({ token, item });
+			} else {
+				forwardedTokens.push(token);
+			}
+		}
+
+		return {
+			localTargets,
+			forwardedTokens,
+			payloadText: payloadTokens.join(' '),
+			hasTargets: Boolean(localTargets.length || forwardedTokens.length)
+		};
+	}
+
+	function normalizeBangCode(code: string) {
+		return (code.startsWith('!') ? code : `!${code}`).toLowerCase();
 	}
 
 	function updateBangEntry(textarea: HTMLTextAreaElement) {
@@ -370,6 +499,25 @@
 	function createPlugins(): LauncherPlugin[] {
 		return [
 			{
+				id: 'bang-compose',
+				getItems(context) {
+					if (bangEntry || !context.bangComposition.hasTargets) return [];
+
+					return [
+						{
+							id: 'bang-compose.execute',
+							pluginId: 'bang-compose',
+							kind: 'action',
+							title: getBangSearchTitle(context.bangComposition),
+							description: getBangSearchDescription(context.bangComposition),
+							score: 120,
+							safeForEnter: true,
+							run: () => executeBangSearch(context.bangComposition)
+						}
+					];
+				}
+			},
+			{
 				id: 'bangs',
 				getItems() {
 					if (!bangPickerActive) return [];
@@ -424,7 +572,7 @@
 			{
 				id: 'search',
 				getItems(context) {
-					if (!context.hasValue || bangEntry) return [];
+					if (!context.hasValue || bangEntry || context.bangComposition.hasTargets) return [];
 
 					return searchProviders.map((provider) => ({
 						id: `search.${provider}`,
@@ -710,6 +858,22 @@
 		{/snippet}
 	</ExpandingTextarea>
 
+	{#if bangComposition.hasTargets}
+		<div class="bang-composition" aria-label="Bang composition preview">
+			{#each bangComposition.localTargets as target, index (`local-${index}-${target.token}`)}
+				<span class="composition-chip target-chip">{target.item.name}</span>
+			{/each}
+			{#each bangComposition.forwardedTokens as token, index (`forwarded-${index}-${token}`)}
+				<span class="composition-chip forwarded-chip"
+					>{token} via {searchProviderLabels[settings.searchProvider]}</span
+				>
+			{/each}
+			{#if bangComposition.payloadText}
+				<span class="composition-chip payload-chip">Query: {bangComposition.payloadText}</span>
+			{/if}
+		</div>
+	{/if}
+
 	<section class="launcher-list" aria-label="Launcher actions and insights">
 		{#each secondaryLauncherItems as item (item.id)}
 			{#if item.kind === 'action'}
@@ -752,6 +916,41 @@
 		display: grid;
 		gap: var(--size-2);
 		margin-block-start: var(--size-3);
+	}
+
+	.bang-composition {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--size-1);
+		margin-block-start: var(--size-2);
+	}
+
+	.composition-chip {
+		display: inline-flex;
+		align-items: center;
+		min-height: 1.75rem;
+		padding-inline: 0.625rem;
+		border: 1px solid var(--nc-border);
+		border-radius: 999px;
+		font-size: var(--font-size-0);
+		line-height: 1;
+	}
+
+	.target-chip {
+		color: var(--nc-accent-fg);
+		background: var(--nc-accent-bg);
+		border-color: color-mix(in oklab, var(--nc-accent-bg), var(--nc-border));
+	}
+
+	.forwarded-chip {
+		color: var(--nc-tx-1);
+		background: var(--nc-surface-2);
+	}
+
+	.payload-chip {
+		max-width: 100%;
+		color: var(--nc-tx-2);
+		background: var(--nc-surface-1);
 	}
 
 	.mode-chip {
