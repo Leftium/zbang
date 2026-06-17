@@ -305,7 +305,7 @@ function mergeNormalizedBangs(a: NormalizedBang, b: NormalizedBang): NormalizedB
 		name: getBestName(a, b),
 		code: uniqueStrings([...a.code, ...b.code]),
 		tags: uniqueStrings([...a.tags, ...b.tags]).sort((left, right) => left.localeCompare(right)),
-		urls: a.urls,
+		urls: { s: getBestUrl(a.urls.s, b.urls.s) },
 		domains: uniqueStrings([...a.domains, ...b.domains])
 	};
 }
@@ -363,6 +363,14 @@ function getBestName(a: NormalizedBang, b: NormalizedBang) {
 	return a.name.length <= b.name.length ? a.name : b.name;
 }
 
+function getBestUrl(a: string, b: string) {
+	return [a, b].sort((left, right) => {
+		const protocolPreference =
+			Number(!left.startsWith('https://')) - Number(!right.startsWith('https://'));
+		return protocolPreference || left.length - right.length;
+	})[0];
+}
+
 function normalizeBangCode(code: string) {
 	const trigger = code.trim().replace(/^!+/, '').toLowerCase();
 	return trigger ? `!${trigger}` : undefined;
@@ -379,12 +387,48 @@ function normalizeBangUrl(url: string, provider: BangProviderId) {
 }
 
 function getUrlIdentity(url: string) {
+	const placeholder = '__ZBANG_QUERY_PLACEHOLDER__';
+	const normalized = deepUnescape(url).trim().replaceAll('%s', placeholder);
+
 	try {
-		const parsed = new URL(url);
-		parsed.hostname = parsed.hostname.toLowerCase();
-		return parsed.toString();
+		const parsed = new URL(normalized);
+		parsed.hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
+
+		const path = deepUnescape(parsed.pathname).replace(/\/{2,}/g, '/').replace(/\/+$/, '');
+		const query = [...parsed.searchParams.entries()]
+			.map(([key, value]) => [deepUnescape(key), deepUnescape(value)] as const)
+			.sort(([leftKey, leftValue], [rightKey, rightValue]) => {
+				return leftKey.localeCompare(rightKey) || leftValue.localeCompare(rightValue);
+			})
+			.map(([key, value]) => `${key}=${value}`)
+			.join('&');
+
+		return `${parsed.hostname}${path}${query ? `?${query}` : ''}${deepUnescape(parsed.hash)}`
+			.replaceAll(placeholder, '%s')
+			.toLowerCase();
 	} catch {
-		return url;
+		return normalized.replaceAll(placeholder, '%s').toLowerCase();
+	}
+}
+
+function deepUnescape(value: string) {
+	const placeholder = '__ZBANG_QUERY_PLACEHOLDER__';
+	let previous = value.replaceAll('%s', placeholder);
+	let current = unescapeUrl(previous);
+
+	while (previous !== current) {
+		previous = current;
+		current = unescapeUrl(previous);
+	}
+
+	return current.replaceAll(placeholder, '%s');
+}
+
+function unescapeUrl(value: string) {
+	try {
+		return decodeURIComponent(value);
+	} catch {
+		return value;
 	}
 }
 

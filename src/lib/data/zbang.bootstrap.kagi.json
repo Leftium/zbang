@@ -1,21 +1,21 @@
 {
   "provider": "kagi",
-  "generatedAt": "2026-06-17T17:02:27.562Z",
+  "generatedAt": "2026-06-17T17:47:45.034Z",
   "generatorVersion": 1,
   "sources": [
     {
       "url": "https://github.com/kagisearch/bangs/raw/refs/heads/main/data/bangs.json",
-      "fetchedAt": "2026-06-17T17:02:27.526Z",
+      "fetchedAt": "2026-06-17T17:47:44.996Z",
       "hash": "c303a55902729788ab7263293f1f8e6fe9adc110020f2f4d0e451beba47445bc"
     },
     {
       "url": "https://github.com/kagisearch/bangs/raw/refs/heads/main/data/kagi_bangs.json",
-      "fetchedAt": "2026-06-17T17:02:27.142Z",
+      "fetchedAt": "2026-06-17T17:47:44.600Z",
       "hash": "ad791dbabbabfd24174e8e192142ed1e494836d8c36882f4c5b841f0a7b2c7db"
     },
     {
       "url": "https://duckduckgo.com/bang.js",
-      "fetchedAt": "2026-06-17T17:02:27.023Z",
+      "fetchedAt": "2026-06-17T17:47:44.785Z",
       "hash": "e69536d51e6f306f3e0063af0d88862713bf8d7075aefc8ec85db88779355768"
     }
   ],
@@ -177,15 +177,18 @@
     {
       "ddgr": 18459,
       "rank": 9,
-      "name": "IMDB",
+      "name": "IMBD",
       "code": [
+        "!imbd",
+        "!tv",
         "!imdb"
       ],
       "tags": [
+        "Entertainment/Movies",
         "Multimedia/Movies"
       ],
       "urls": {
-        "s": "https://www.imdb.com/find?s=all&q=%s"
+        "s": "https://www.imdb.com/find?q=%s&s=all"
       }
     },
     {
@@ -552,18 +555,6 @@
     {
       "ddgr": 4394,
       "rank": 31,
-      "name": "Wolfram Alpha",
-      "code": [
-        "!wa"
-      ],
-      "tags": [],
-      "urls": {
-        "s": "https://wolframalpha.com/input?i=%s"
-      }
-    },
-    {
-      "ddgr": 4394,
-      "rank": 32,
       "name": "Wolfram|Alpha",
       "code": [
         "!alpha",
@@ -571,20 +562,24 @@
         "!wolframalpha",
         "!wolfram",
         "!wolf",
-        "!wra"
+        "!wra",
+        "!wa"
       ],
       "tags": [
         "Online Services/Search"
       ],
       "urls": {
-        "s": "https://www.wolframalpha.com/input/?i=%s"
+        "s": "https://wolframalpha.com/input?i=%s"
       }
     },
     {
       "ddgr": 4384,
-      "rank": 33,
-      "name": "Old Reddit (subreddit)",
+      "rank": 32,
+      "name": "Subreddit (Old Style)",
       "code": [
+        "!ors",
+        "!srold",
+        "!sro",
         "!osr"
       ],
       "tags": [
@@ -596,7 +591,7 @@
     },
     {
       "ddgr": 4049,
-      "rank": 34,
+      "rank": 33,
       "name": "Google DE",
       "code": [
         "!gde"
@@ -610,7 +605,7 @@
     },
     {
       "ddgr": 3955,
-      "rank": 35,
+      "rank": 34,
       "name": "Merriam-Webster",
       "code": [
         "!dic",
@@ -629,7 +624,7 @@
     },
     {
       "ddgr": 3927,
-      "rank": 36,
+      "rank": 35,
       "name": "Facebook",
       "code": [
         "!facebook",
@@ -645,7 +640,7 @@
     },
     {
       "ddgr": 3885,
-      "rank": 37,
+      "rank": 36,
       "name": "NixOS Packages",
       "code": [
         "!nixpkg"
@@ -659,7 +654,7 @@
     },
     {
       "ddgr": 3823,
-      "rank": 38,
+      "rank": 37,
       "name": "Amazon Germany / Austria",
       "code": [
         "!amazonde",
@@ -683,7 +678,7 @@
     },
     {
       "ddgr": 3676,
-      "rank": 39,
+      "rank": 38,
       "name": "Google UK",
       "code": [
         "!guk",
@@ -699,7 +694,7 @@
     },
     {
       "ddgr": 3595,
-      "rank": 40,
+      "rank": 39,
       "name": "Brave Search",
       "code": [
         "!brave"
@@ -713,7 +708,7 @@
     },
     {
       "ddgr": 3574,
-      "rank": 41,
+      "rank": 40,
       "name": "MDN Web Docs",
       "code": [
         "!javascript",
@@ -729,7 +724,7 @@
     },
     {
       "ddgr": 3553,
-      "rank": 42,
+      "rank": 41,
       "name": "Arch User Repository",
       "code": [
         "!aur"
@@ -743,7 +738,7 @@
     },
     {
       "ddgr": 3457,
-      "rank": 43,
+      "rank": 42,
       "name": "dict.leo.org",
       "code": [
         "!leo"
@@ -753,6 +748,20 @@
       ],
       "urls": {
         "s": "https://dict.leo.org/englisch-deutsch/%s"
+      }
+    },
+    {
+      "ddgr": 3375,
+      "rank": 43,
+      "name": "fr.wikipedia.org",
+      "code": [
+        "!wf"
+      ],
+      "tags": [
+        "Online Services/Search (non-US)"
+      ],
+      "urls": {
+        "s": "https://fr.wikipedia.org/wiki/Special:Search?search=%s"
       }
     },
     {
@@ -884,8 +893,9 @@
     {
       "ddgr": 2833,
       "rank": 52,
-      "name": "DuckDuckGo Safe Search Off",
+      "name": "DuckDuckGo SafeOff",
       "code": [
+        "!soff",
         "!s-off",
         "!ssoff"
       ],
@@ -893,7 +903,7 @@
         "Online Services/Search (DDG)"
       ],
       "urls": {
-        "s": "https://duckduckgo.com/?q=%s&kp=-2"
+        "s": "https://duckduckgo.com/?kp=-2&q=%s"
       }
     },
     {
@@ -1320,24 +1330,8 @@
       }
     },
     {
-      "ddgr": 1663,
-      "rank": 79,
-      "name": "Subreddit (Old Style)",
-      "code": [
-        "!ors",
-        "!srold",
-        "!sro"
-      ],
-      "tags": [
-        "Entertainment/Forum"
-      ],
-      "urls": {
-        "s": "https://old.reddit.com/r/%s/"
-      }
-    },
-    {
       "ddgr": 1658,
-      "rank": 80,
+      "rank": 79,
       "name": "Google Finance",
       "code": [
         "!gf",
@@ -1353,7 +1347,7 @@
     },
     {
       "ddgr": 1657,
-      "rank": 81,
+      "rank": 80,
       "name": "Discogs",
       "code": [
         "!discogs",
@@ -1368,7 +1362,7 @@
     },
     {
       "ddgr": 1625,
-      "rank": 82,
+      "rank": 81,
       "name": "Google Video",
       "code": [
         "!gv",
@@ -1383,7 +1377,7 @@
     },
     {
       "ddgr": 1591,
-      "rank": 83,
+      "rank": 82,
       "name": "Cargo",
       "code": [
         "!cargo",
@@ -1398,7 +1392,7 @@
     },
     {
       "ddgr": 1564,
-      "rank": 84,
+      "rank": 83,
       "name": "Yahoo! Japan Realtime",
       "code": [
         "!yjr",
@@ -1413,7 +1407,7 @@
     },
     {
       "ddgr": 1549,
-      "rank": 85,
+      "rank": 84,
       "name": "dict.cc",
       "code": [
         "!dcc",
@@ -1429,7 +1423,7 @@
     },
     {
       "ddgr": 1499,
-      "rank": 86,
+      "rank": 85,
       "name": "Flickr",
       "code": [
         "!f",
@@ -1444,7 +1438,7 @@
     },
     {
       "ddgr": 1431,
-      "rank": 87,
+      "rank": 86,
       "name": "TheMovieDB.org",
       "code": [
         "!themoviedb",
@@ -1459,7 +1453,7 @@
     },
     {
       "ddgr": 1404,
-      "rank": 88,
+      "rank": 87,
       "name": "Gmail",
       "code": [
         "!gma",
@@ -1475,7 +1469,7 @@
     },
     {
       "ddgr": 1361,
-      "rank": 89,
+      "rank": 88,
       "name": "Amazon.fr",
       "code": [
         "!afr",
@@ -1492,7 +1486,7 @@
     },
     {
       "ddgr": 1358,
-      "rank": 90,
+      "rank": 89,
       "name": "Google Calendar",
       "code": [
         "!gcal",
@@ -1505,6 +1499,20 @@
       ],
       "urls": {
         "s": "https://calendar.google.com/calendar/b/0/r/search?q=%s"
+      }
+    },
+    {
+      "ddgr": 1351,
+      "rank": 90,
+      "name": "Pinterest",
+      "code": [
+        "!pin"
+      ],
+      "tags": [
+        "Online Services/Social"
+      ],
+      "urls": {
+        "s": "https://pinterest.com/search/pins/?q=%s"
       }
     },
     {
@@ -1818,9 +1826,11 @@
       "rank": 111,
       "name": "Internet",
       "code": [
-        "!archive"
+        "!archive",
+        "!iarchive"
       ],
       "tags": [
+        "Multimedia/General",
         "Online Services/Tools"
       ],
       "urls": {
@@ -2082,8 +2092,24 @@
       }
     },
     {
-      "ddgr": 698,
+      "ddgr": 699,
       "rank": 128,
+      "name": "DuckDuckGo news",
+      "code": [
+        "!ddgn",
+        "!ddg-n",
+        "!ddg-news"
+      ],
+      "tags": [
+        "News/Aggregators"
+      ],
+      "urls": {
+        "s": "https://duckduckgo.com/?q=%s&iar=news&ia=news"
+      }
+    },
+    {
+      "ddgr": 698,
+      "rank": 129,
       "name": "Amazon.ca",
       "code": [
         "!aca",
@@ -2101,7 +2127,7 @@
     },
     {
       "ddgr": 695,
-      "rank": 129,
+      "rank": 130,
       "name": "Dutch Wikipedia",
       "code": [
         "!wnl",
@@ -2118,7 +2144,7 @@
     },
     {
       "ddgr": 689,
-      "rank": 130,
+      "rank": 131,
       "name": "アマゾン (Amazon Japan)",
       "code": [
         "!aj",
@@ -2136,7 +2162,7 @@
     },
     {
       "ddgr": 686,
-      "rank": 131,
+      "rank": 132,
       "name": "4chan Board",
       "code": [
         "!4ch"
@@ -2150,7 +2176,7 @@
     },
     {
       "ddgr": 680,
-      "rank": 132,
+      "rank": 133,
       "name": "ebay.de",
       "code": [
         "!ebayde",
@@ -2166,7 +2192,7 @@
     },
     {
       "ddgr": 648,
-      "rank": 133,
+      "rank": 134,
       "name": "Docs.rs - Documentation for Rust packages",
       "code": [
         "!drs",
@@ -2181,7 +2207,7 @@
     },
     {
       "ddgr": 643,
-      "rank": 134,
+      "rank": 135,
       "name": "Nico Nico Douga",
       "code": [
         "!nico",
@@ -2196,14 +2222,15 @@
     },
     {
       "ddgr": 639,
-      "rank": 135,
+      "rank": 136,
       "name": "Metal Archives",
       "code": [
         "!maband",
         "!march",
         "!metalarch",
         "!metal",
-        "!metallum"
+        "!metallum",
+        "!mab"
       ],
       "tags": [
         "Multimedia/Music"
@@ -2214,7 +2241,7 @@
     },
     {
       "ddgr": 637,
-      "rank": 136,
+      "rank": 137,
       "name": "ProtonDB",
       "code": [
         "!prdb",
@@ -2231,7 +2258,7 @@
     },
     {
       "ddgr": 625,
-      "rank": 137,
+      "rank": 138,
       "name": "Docker Store",
       "code": [
         "!dkstore"
@@ -2245,7 +2272,7 @@
     },
     {
       "ddgr": 617,
-      "rank": 138,
+      "rank": 139,
       "name": "Invidious",
       "code": [
         "!dio",
@@ -2263,7 +2290,7 @@
     },
     {
       "ddgr": 612,
-      "rank": 139,
+      "rank": 140,
       "name": "AlternativeTo.net",
       "code": [
         "!alto",
@@ -2283,7 +2310,7 @@
     },
     {
       "ddgr": 606,
-      "rank": 140,
+      "rank": 141,
       "name": "Startpage",
       "code": [
         "!startpage"
@@ -2297,7 +2324,7 @@
     },
     {
       "ddgr": 599,
-      "rank": 141,
+      "rank": 142,
       "name": "Reddit on Google",
       "code": [
         "!greddit"
@@ -2311,7 +2338,7 @@
     },
     {
       "ddgr": 597,
-      "rank": 142,
+      "rank": 143,
       "name": "Google BR",
       "code": [
         "!gbr"
@@ -2325,7 +2352,7 @@
     },
     {
       "ddgr": 596,
-      "rank": 143,
+      "rank": 144,
       "name": "Know Your Meme",
       "code": [
         "!knowyourmeme",
@@ -2341,7 +2368,7 @@
     },
     {
       "ddgr": 583,
-      "rank": 144,
+      "rank": 145,
       "name": "QR Code Search",
       "code": [
         "!qr"
@@ -2355,7 +2382,7 @@
     },
     {
       "ddgr": 575,
-      "rank": 145,
+      "rank": 146,
       "name": "WordReference (EN)",
       "code": [
         "!wren",
@@ -2371,7 +2398,7 @@
     },
     {
       "ddgr": 560,
-      "rank": 146,
+      "rank": 147,
       "name": "tenor",
       "code": [
         "!tenor"
@@ -2385,7 +2412,7 @@
     },
     {
       "ddgr": 558,
-      "rank": 147,
+      "rank": 148,
       "name": "HowLongToBeat",
       "code": [
         "!hlb",
@@ -2401,7 +2428,7 @@
     },
     {
       "ddgr": 551,
-      "rank": 148,
+      "rank": 149,
       "name": "AniList",
       "code": [
         "!al",
@@ -2416,7 +2443,7 @@
     },
     {
       "ddgr": 550,
-      "rank": 149,
+      "rank": 150,
       "name": "Google CL",
       "code": [
         "!gcl"
@@ -2430,7 +2457,7 @@
     },
     {
       "ddgr": 548,
-      "rank": 150,
+      "rank": 151,
       "name": "Old Reddit",
       "code": [
         "!oldreddit",
@@ -2447,7 +2474,7 @@
     },
     {
       "ddgr": 544,
-      "rank": 151,
+      "rank": 152,
       "name": "Hoogle",
       "code": [
         "!hoogle",
@@ -2465,7 +2492,7 @@
     },
     {
       "ddgr": 523,
-      "rank": 152,
+      "rank": 153,
       "name": "Debian Packages",
       "code": [
         "!deb",
@@ -2485,7 +2512,7 @@
     },
     {
       "ddgr": 519,
-      "rank": 153,
+      "rank": 154,
       "name": "Wordreference (en-fr)",
       "code": [
         "!wenfr",
@@ -2501,7 +2528,7 @@
     },
     {
       "ddgr": 514,
-      "rank": 154,
+      "rank": 155,
       "name": "4plebs Archive",
       "code": [
         "!4plebs"
@@ -2515,7 +2542,7 @@
     },
     {
       "ddgr": 511,
-      "rank": 155,
+      "rank": 156,
       "name": "Yandex (en)",
       "code": [
         "!yan",
@@ -2531,7 +2558,7 @@
     },
     {
       "ddgr": 502,
-      "rank": 156,
+      "rank": 157,
       "name": "The Blue Alliance",
       "code": [
         "!tba"
@@ -2545,7 +2572,7 @@
     },
     {
       "ddgr": 499,
-      "rank": 157,
+      "rank": 158,
       "name": "DeviantArt",
       "code": [
         "!da",
@@ -2560,7 +2587,7 @@
     },
     {
       "ddgr": 499,
-      "rank": 158,
+      "rank": 159,
       "name": "diki.pl",
       "code": [
         "!diki"
@@ -2574,7 +2601,7 @@
     },
     {
       "ddgr": 490,
-      "rank": 159,
+      "rank": 160,
       "name": "Idealo",
       "code": [
         "!idealode",
@@ -2590,7 +2617,7 @@
     },
     {
       "ddgr": 490,
-      "rank": 160,
+      "rank": 161,
       "name": "Wiktionary Français",
       "code": [
         "!fr.wiktionary",
@@ -2607,7 +2634,7 @@
     },
     {
       "ddgr": 486,
-      "rank": 161,
+      "rank": 162,
       "name": "Bandcamp",
       "code": [
         "!bandcamp",
@@ -2623,7 +2650,7 @@
     },
     {
       "ddgr": 484,
-      "rank": 162,
+      "rank": 163,
       "name": "Japanese Wikipedia",
       "code": [
         "!wja",
@@ -2640,7 +2667,7 @@
     },
     {
       "ddgr": 484,
-      "rank": 163,
+      "rank": 164,
       "name": "Wikipedia in Japanese",
       "code": [
         "!wj"
@@ -2654,21 +2681,23 @@
     },
     {
       "ddgr": 482,
-      "rank": 164,
+      "rank": 165,
       "name": "BBC.co.uk",
       "code": [
-        "!bbc"
+        "!bbc",
+        "!bbcr"
       ],
       "tags": [
-        "News/International"
+        "News/International",
+        "Research/Reference"
       ],
       "urls": {
-        "s": "https://www.bbc.co.uk/search/?q=%s"
+        "s": "https://www.bbc.co.uk/search?q=%s"
       }
     },
     {
       "ddgr": 481,
-      "rank": 165,
+      "rank": 166,
       "name": "SlickDeals",
       "code": [
         "!sd",
@@ -2683,7 +2712,7 @@
     },
     {
       "ddgr": 479,
-      "rank": 166,
+      "rank": 167,
       "name": "Arch manual pages",
       "code": [
         "!archman",
@@ -2699,7 +2728,7 @@
     },
     {
       "ddgr": 478,
-      "rank": 167,
+      "rank": 168,
       "name": "Granblue Fantasy Wiki",
       "code": [
         "!gbf"
@@ -2713,7 +2742,7 @@
     },
     {
       "ddgr": 469,
-      "rank": 168,
+      "rank": 169,
       "name": "Le Bon Coin",
       "code": [
         "!lbc",
@@ -2728,7 +2757,7 @@
     },
     {
       "ddgr": 469,
-      "rank": 169,
+      "rank": 170,
       "name": "Wikidata",
       "code": [
         "!wd",
@@ -2744,7 +2773,7 @@
     },
     {
       "ddgr": 463,
-      "rank": 170,
+      "rank": 171,
       "name": "Duden",
       "code": [
         "!duden"
@@ -2758,7 +2787,7 @@
     },
     {
       "ddgr": 461,
-      "rank": 171,
+      "rank": 172,
       "name": "GoodReads",
       "code": [
         "!goodreads"
@@ -2772,7 +2801,7 @@
     },
     {
       "ddgr": 450,
-      "rank": 172,
+      "rank": 173,
       "name": "Domaintools Whois",
       "code": [
         "!whois"
@@ -2786,7 +2815,7 @@
     },
     {
       "ddgr": 447,
-      "rank": 173,
+      "rank": 174,
       "name": "Google Feeling Lucky",
       "code": [
         "!fl",
@@ -2804,7 +2833,7 @@
     },
     {
       "ddgr": 447,
-      "rank": 174,
+      "rank": 175,
       "name": "lib.rs",
       "code": [
         "!librs"
@@ -2814,20 +2843,6 @@
       ],
       "urls": {
         "s": "https://lib.rs/search?q=%s"
-      }
-    },
-    {
-      "ddgr": 443,
-      "rank": 175,
-      "name": "fr.wikipedia.org",
-      "code": [
-        "!wf"
-      ],
-      "tags": [
-        "Online Services/Search (non-US)"
-      ],
-      "urls": {
-        "s": "https://fr.wikipedia.org/wiki/Special:Search?search=%s"
       }
     },
     {
@@ -3259,22 +3274,8 @@
       }
     },
     {
-      "ddgr": 323,
-      "rank": 204,
-      "name": "Pinterest",
-      "code": [
-        "!pin"
-      ],
-      "tags": [
-        "Online Services/Social"
-      ],
-      "urls": {
-        "s": "https://pinterest.com/search/pins/?q=%s"
-      }
-    },
-    {
       "ddgr": 322,
-      "rank": 205,
+      "rank": 204,
       "name": "Amazon Brazil",
       "code": [
         "!abr"
@@ -3288,7 +3289,7 @@
     },
     {
       "ddgr": 315,
-      "rank": 206,
+      "rank": 205,
       "name": "Giphy",
       "code": [
         "!giphy"
@@ -3302,7 +3303,7 @@
     },
     {
       "ddgr": 309,
-      "rank": 207,
+      "rank": 206,
       "name": "HLTV.org",
       "code": [
         "!hltv"
@@ -3316,7 +3317,7 @@
     },
     {
       "ddgr": 306,
-      "rank": 208,
+      "rank": 207,
       "name": "Dictionary.com",
       "code": [
         "!dxn",
@@ -3332,7 +3333,7 @@
     },
     {
       "ddgr": 306,
-      "rank": 209,
+      "rank": 208,
       "name": "StackOverflow",
       "code": [
         "!ov",
@@ -3350,7 +3351,7 @@
     },
     {
       "ddgr": 305,
-      "rank": 210,
+      "rank": 209,
       "name": "RubyGems",
       "code": [
         "!gems",
@@ -3366,7 +3367,7 @@
     },
     {
       "ddgr": 304,
-      "rank": 211,
+      "rank": 210,
       "name": "OpenStreetMap Wiki",
       "code": [
         "!osmw",
@@ -3383,7 +3384,7 @@
     },
     {
       "ddgr": 301,
-      "rank": 212,
+      "rank": 211,
       "name": "Netflix",
       "code": [
         "!netflix",
@@ -3399,7 +3400,7 @@
     },
     {
       "ddgr": 293,
-      "rank": 213,
+      "rank": 212,
       "name": "Daum",
       "code": [
         "!daum"
@@ -3413,7 +3414,7 @@
     },
     {
       "ddgr": 291,
-      "rank": 214,
+      "rank": 213,
       "name": "AniDB",
       "code": [
         "!anime",
@@ -3428,7 +3429,7 @@
     },
     {
       "ddgr": 287,
-      "rank": 215,
+      "rank": 214,
       "name": "Google Image Search",
       "code": [
         "!gis"
@@ -3442,7 +3443,7 @@
     },
     {
       "ddgr": 281,
-      "rank": 216,
+      "rank": 215,
       "name": "Finnish Wikipedia",
       "code": [
         "!wfi",
@@ -3459,7 +3460,7 @@
     },
     {
       "ddgr": 280,
-      "rank": 217,
+      "rank": 216,
       "name": "Google Docs",
       "code": [
         "!gd",
@@ -3478,7 +3479,7 @@
     },
     {
       "ddgr": 279,
-      "rank": 218,
+      "rank": 217,
       "name": "VNDB",
       "code": [
         "!vndb"
@@ -3492,7 +3493,7 @@
     },
     {
       "ddgr": 277,
-      "rank": 219,
+      "rank": 218,
       "name": "Google AU",
       "code": [
         "!gau"
@@ -3506,7 +3507,7 @@
     },
     {
       "ddgr": 276,
-      "rank": 220,
+      "rank": 219,
       "name": "Pro Cycling Stats",
       "code": [
         "!pcs"
@@ -3520,7 +3521,7 @@
     },
     {
       "ddgr": 274,
-      "rank": 221,
+      "rank": 220,
       "name": "osu!",
       "code": [
         "!osu"
@@ -3534,7 +3535,7 @@
     },
     {
       "ddgr": 265,
-      "rank": 222,
+      "rank": 221,
       "name": "NixOS Options Search",
       "code": [
         "!nixopt"
@@ -3548,7 +3549,7 @@
     },
     {
       "ddgr": 261,
-      "rank": 223,
+      "rank": 222,
       "name": "Guild Wars 2 Wiki",
       "code": [
         "!gw2",
@@ -3563,7 +3564,7 @@
     },
     {
       "ddgr": 260,
-      "rank": 224,
+      "rank": 223,
       "name": "Wordreference (fren)",
       "code": [
         "!wfren",
@@ -3579,7 +3580,7 @@
     },
     {
       "ddgr": 259,
-      "rank": 225,
+      "rank": 224,
       "name": "Google AR",
       "code": [
         "!gar"
@@ -3593,7 +3594,7 @@
     },
     {
       "ddgr": 257,
-      "rank": 226,
+      "rank": 225,
       "name": "Linguee (Deutsch/Englisch)",
       "code": [
         "!lide",
@@ -3608,7 +3609,7 @@
     },
     {
       "ddgr": 254,
-      "rank": 227,
+      "rank": 226,
       "name": "Cricbuzz",
       "code": [
         "!cricbuzz"
@@ -3622,7 +3623,7 @@
     },
     {
       "ddgr": 254,
-      "rank": 228,
+      "rank": 227,
       "name": "Google Groups",
       "code": [
         "!gg",
@@ -3638,7 +3639,7 @@
     },
     {
       "ddgr": 251,
-      "rank": 229,
+      "rank": 228,
       "name": "UPS Tracking",
       "code": [
         "!ups"
@@ -3652,7 +3653,7 @@
     },
     {
       "ddgr": 250,
-      "rank": 230,
+      "rank": 229,
       "name": "Anime News Network",
       "code": [
         "!animenewsnetwork",
@@ -3667,7 +3668,7 @@
     },
     {
       "ddgr": 249,
-      "rank": 231,
+      "rank": 230,
       "name": "ESPN.com",
       "code": [
         "!espn"
@@ -3681,7 +3682,7 @@
     },
     {
       "ddgr": 247,
-      "rank": 232,
+      "rank": 231,
       "name": "NetrunnerDB",
       "code": [
         "!netrunner",
@@ -3696,7 +3697,7 @@
     },
     {
       "ddgr": 246,
-      "rank": 233,
+      "rank": 232,
       "name": "GSM Arena",
       "code": [
         "!gsma",
@@ -3712,7 +3713,7 @@
     },
     {
       "ddgr": 245,
-      "rank": 234,
+      "rank": 233,
       "name": "Swedish Wikipedia",
       "code": [
         "!wsv",
@@ -3728,7 +3729,7 @@
     },
     {
       "ddgr": 243,
-      "rank": 235,
+      "rank": 234,
       "name": "Baseball Reference",
       "code": [
         "!bbref",
@@ -3743,7 +3744,7 @@
     },
     {
       "ddgr": 242,
-      "rank": 236,
+      "rank": 235,
       "name": "Flathub",
       "code": [
         "!flat",
@@ -3759,7 +3760,7 @@
     },
     {
       "ddgr": 242,
-      "rank": 237,
+      "rank": 236,
       "name": "pinterest.com/",
       "code": [
         "!pinterest"
@@ -3773,7 +3774,7 @@
     },
     {
       "ddgr": 238,
-      "rank": 238,
+      "rank": 237,
       "name": "BibleGateway",
       "code": [
         "!bg",
@@ -3790,7 +3791,7 @@
     },
     {
       "ddgr": 235,
-      "rank": 239,
+      "rank": 238,
       "name": "The Maven Repository",
       "code": [
         "!mvn",
@@ -3805,7 +3806,7 @@
     },
     {
       "ddgr": 234,
-      "rank": 240,
+      "rank": 239,
       "name": "JustWatch",
       "code": [
         "!justwatch",
@@ -3820,7 +3821,7 @@
     },
     {
       "ddgr": 232,
-      "rank": 241,
+      "rank": 240,
       "name": "LEO Dictionary English",
       "code": [
         "!leoe"
@@ -3832,7 +3833,7 @@
     },
     {
       "ddgr": 231,
-      "rank": 242,
+      "rank": 241,
       "name": "Google BE",
       "code": [
         "!gbe"
@@ -3846,7 +3847,7 @@
     },
     {
       "ddgr": 231,
-      "rank": 243,
+      "rank": 242,
       "name": "OneLook.com",
       "code": [
         "!o"
@@ -3860,7 +3861,7 @@
     },
     {
       "ddgr": 229,
-      "rank": 244,
+      "rank": 243,
       "name": "arXiv.org",
       "code": [
         "!arx",
@@ -3875,7 +3876,7 @@
     },
     {
       "ddgr": 229,
-      "rank": 245,
+      "rank": 244,
       "name": "Gentoo Packages",
       "code": [
         "!emerge",
@@ -3895,7 +3896,7 @@
     },
     {
       "ddgr": 226,
-      "rank": 246,
+      "rank": 245,
       "name": "Final Fantasy XIV A Realm Reborn Wiki",
       "code": [
         "!ffxiv"
@@ -3909,7 +3910,7 @@
     },
     {
       "ddgr": 226,
-      "rank": 247,
+      "rank": 246,
       "name": "Wikivoyage",
       "code": [
         "!wikivoyage",
@@ -3924,7 +3925,7 @@
     },
     {
       "ddgr": 225,
-      "rank": 248,
+      "rank": 247,
       "name": "startpage.com",
       "code": [
         "!start"
@@ -3938,7 +3939,7 @@
     },
     {
       "ddgr": 224,
-      "rank": 249,
+      "rank": 248,
       "name": "Cambridge Dictionary (American English)",
       "code": [
         "!camd"
@@ -3952,8 +3953,8 @@
     },
     {
       "ddgr": 224,
-      "rank": 250,
-      "name": "Russian Wikipedia",
+      "rank": 249,
+      "name": "Википедия",
       "code": [
         "!wru",
         "!ruwiki",
@@ -3961,9 +3962,12 @@
         "!ruwk",
         "!w.ru",
         "!ш",
-        "!шру"
+        "!шру",
+        "!вики",
+        "!ц"
       ],
       "tags": [
+        "Multimedia/Docs",
         "Research/Reference"
       ],
       "urls": {
@@ -3972,7 +3976,7 @@
     },
     {
       "ddgr": 221,
-      "rank": 251,
+      "rank": 250,
       "name": "last.fm music",
       "code": [
         "!lfm",
@@ -3987,7 +3991,7 @@
     },
     {
       "ddgr": 219,
-      "rank": 252,
+      "rank": 251,
       "name": "Google Earth",
       "code": [
         "!earth",
@@ -4002,7 +4006,7 @@
     },
     {
       "ddgr": 217,
-      "rank": 253,
+      "rank": 252,
       "name": "Bing Maps",
       "code": [
         "!bingmaps",
@@ -4018,7 +4022,7 @@
     },
     {
       "ddgr": 214,
-      "rank": 254,
+      "rank": 253,
       "name": "YouTube France",
       "code": [
         "!ytfr"
@@ -4032,7 +4036,7 @@
     },
     {
       "ddgr": 213,
-      "rank": 255,
+      "rank": 254,
       "name": "Seeking Alpha",
       "code": [
         "!seekingalpha"
@@ -4046,7 +4050,7 @@
     },
     {
       "ddgr": 212,
-      "rank": 256,
+      "rank": 255,
       "name": "B&H Photo Video",
       "code": [
         "!bh",
@@ -4061,7 +4065,7 @@
     },
     {
       "ddgr": 212,
-      "rank": 257,
+      "rank": 256,
       "name": "Portuguese Wikipedia",
       "code": [
         "!wpt",
@@ -4077,7 +4081,7 @@
     },
     {
       "ddgr": 212,
-      "rank": 258,
+      "rank": 257,
       "name": "Wikimedia Commons",
       "code": [
         "!commons",
@@ -4094,7 +4098,7 @@
     },
     {
       "ddgr": 211,
-      "rank": 259,
+      "rank": 258,
       "name": "Word Reference EN-IT",
       "code": [
         "!wrei",
@@ -4109,7 +4113,7 @@
     },
     {
       "ddgr": 209,
-      "rank": 260,
+      "rank": 259,
       "name": "Google PL",
       "code": [
         "!gpl"
@@ -4123,7 +4127,7 @@
     },
     {
       "ddgr": 209,
-      "rank": 261,
+      "rank": 260,
       "name": "Pubmed",
       "code": [
         "!pmd",
@@ -4141,7 +4145,7 @@
     },
     {
       "ddgr": 209,
-      "rank": 262,
+      "rank": 261,
       "name": "Target",
       "code": [
         "!target",
@@ -4156,7 +4160,7 @@
     },
     {
       "ddgr": 208,
-      "rank": 263,
+      "rank": 262,
       "name": "FedEx",
       "code": [
         "!fedex"
@@ -4168,7 +4172,7 @@
     },
     {
       "ddgr": 208,
-      "rank": 264,
+      "rank": 263,
       "name": "Geizhals (de)",
       "code": [
         "!ghde"
@@ -4182,7 +4186,7 @@
     },
     {
       "ddgr": 206,
-      "rank": 265,
+      "rank": 264,
       "name": "RationalWiki",
       "code": [
         "!rw",
@@ -4197,7 +4201,7 @@
     },
     {
       "ddgr": 204,
-      "rank": 266,
+      "rank": 265,
       "name": "Hackage",
       "code": [
         "!hackage",
@@ -4213,7 +4217,7 @@
     },
     {
       "ddgr": 204,
-      "rank": 267,
+      "rank": 266,
       "name": "Mercado Livre",
       "code": [
         "!mercadolivre",
@@ -4229,7 +4233,7 @@
     },
     {
       "ddgr": 204,
-      "rank": 268,
+      "rank": 267,
       "name": "Outlook",
       "code": [
         "!outlook"
@@ -4243,7 +4247,7 @@
     },
     {
       "ddgr": 204,
-      "rank": 269,
+      "rank": 268,
       "name": "Wiktionary German",
       "code": [
         "!wktde",
@@ -4258,7 +4262,7 @@
     },
     {
       "ddgr": 202,
-      "rank": 270,
+      "rank": 269,
       "name": "CamelCamelCamel",
       "code": [
         "!ccc",
@@ -4273,7 +4277,7 @@
     },
     {
       "ddgr": 202,
-      "rank": 271,
+      "rank": 270,
       "name": "Fangraphs",
       "code": [
         "!fangraphs",
@@ -4288,7 +4292,7 @@
     },
     {
       "ddgr": 201,
-      "rank": 272,
+      "rank": 271,
       "name": "eBay Kleinanzeigen",
       "code": [
         "!klein"
@@ -4302,7 +4306,7 @@
     },
     {
       "ddgr": 201,
-      "rank": 273,
+      "rank": 272,
       "name": "Google PT",
       "code": [
         "!gpt"
@@ -4316,7 +4320,7 @@
     },
     {
       "ddgr": 199,
-      "rank": 274,
+      "rank": 273,
       "name": "WowHead",
       "code": [
         "!wowhead",
@@ -4331,7 +4335,7 @@
     },
     {
       "ddgr": 197,
-      "rank": 275,
+      "rank": 274,
       "name": "emojipedia",
       "code": [
         "!emoji"
@@ -4345,7 +4349,7 @@
     },
     {
       "ddgr": 197,
-      "rank": 276,
+      "rank": 275,
       "name": "WordReference (enes)",
       "code": [
         "!wrenes"
@@ -4359,7 +4363,7 @@
     },
     {
       "ddgr": 196,
-      "rank": 277,
+      "rank": 276,
       "name": "Google Keep",
       "code": [
         "!keep",
@@ -4375,7 +4379,7 @@
     },
     {
       "ddgr": 196,
-      "rank": 278,
+      "rank": 277,
       "name": "Reverb",
       "code": [
         "!reverb"
@@ -4389,7 +4393,7 @@
     },
     {
       "ddgr": 195,
-      "rank": 279,
+      "rank": 278,
       "name": "9gag",
       "code": [
         "!9g",
@@ -4404,7 +4408,7 @@
     },
     {
       "ddgr": 194,
-      "rank": 280,
+      "rank": 279,
       "name": "Thesaurus by Merriam-Webster",
       "code": [
         "!mwt"
@@ -4418,7 +4422,7 @@
     },
     {
       "ddgr": 188,
-      "rank": 281,
+      "rank": 280,
       "name": "Google AT",
       "code": [
         "!gat"
@@ -4432,7 +4436,7 @@
     },
     {
       "ddgr": 187,
-      "rank": 282,
+      "rank": 281,
       "name": "The Guardian",
       "code": [
         "!guardian"
@@ -4446,7 +4450,7 @@
     },
     {
       "ddgr": 186,
-      "rank": 283,
+      "rank": 282,
       "name": "BDLP",
       "code": [
         "!bdlp",
@@ -4461,7 +4465,7 @@
     },
     {
       "ddgr": 186,
-      "rank": 284,
+      "rank": 283,
       "name": "Home Depot",
       "code": [
         "!hdx",
@@ -4477,7 +4481,7 @@
     },
     {
       "ddgr": 185,
-      "rank": 285,
+      "rank": 284,
       "name": "Last.fm",
       "code": [
         "!lastfm",
@@ -4492,7 +4496,7 @@
     },
     {
       "ddgr": 185,
-      "rank": 286,
+      "rank": 285,
       "name": "LibraryThing",
       "code": [
         "!lt",
@@ -4508,7 +4512,7 @@
     },
     {
       "ddgr": 185,
-      "rank": 287,
+      "rank": 286,
       "name": "Stardew Valley Wiki",
       "code": [
         "!sdv",
@@ -4525,7 +4529,7 @@
     },
     {
       "ddgr": 183,
-      "rank": 288,
+      "rank": 287,
       "name": "ČSFD",
       "code": [
         "!csfd"
@@ -4539,7 +4543,7 @@
     },
     {
       "ddgr": 182,
-      "rank": 289,
+      "rank": 288,
       "name": "GOG.com",
       "code": [
         "!gog"
@@ -4553,7 +4557,7 @@
     },
     {
       "ddgr": 182,
-      "rank": 290,
+      "rank": 289,
       "name": "Imgur",
       "code": [
         "!imgur"
@@ -4567,7 +4571,7 @@
     },
     {
       "ddgr": 182,
-      "rank": 291,
+      "rank": 290,
       "name": "NOAA",
       "code": [
         "!noaa",
@@ -4583,7 +4587,7 @@
     },
     {
       "ddgr": 181,
-      "rank": 292,
+      "rank": 291,
       "name": "The Unofficial Elder Scrolls Pages",
       "code": [
         "!uesp"
@@ -4597,7 +4601,7 @@
     },
     {
       "ddgr": 180,
-      "rank": 293,
+      "rank": 292,
       "name": "Geizhals (eu)",
       "code": [
         "!geiz"
@@ -4611,7 +4615,7 @@
     },
     {
       "ddgr": 179,
-      "rank": 294,
+      "rank": 293,
       "name": "Google Play Store",
       "code": [
         "!gapp",
@@ -4633,7 +4637,7 @@
     },
     {
       "ddgr": 179,
-      "rank": 295,
+      "rank": 294,
       "name": "Metacritic",
       "code": [
         "!mc",
@@ -4648,7 +4652,7 @@
     },
     {
       "ddgr": 178,
-      "rank": 296,
+      "rank": 295,
       "name": "Ars Technica",
       "code": [
         "!arstechnica",
@@ -4663,7 +4667,7 @@
     },
     {
       "ddgr": 177,
-      "rank": 297,
+      "rank": 296,
       "name": "Mapy.cz",
       "code": [
         "!mcz",
@@ -4678,7 +4682,7 @@
     },
     {
       "ddgr": 176,
-      "rank": 298,
+      "rank": 297,
       "name": "Ecosia",
       "code": [
         "!ec",
@@ -4694,7 +4698,7 @@
     },
     {
       "ddgr": 175,
-      "rank": 299,
+      "rank": 298,
       "name": "Who Sampled",
       "code": [
         "!whosampled"
@@ -4708,7 +4712,7 @@
     },
     {
       "ddgr": 173,
-      "rank": 300,
+      "rank": 299,
       "name": "Lazada Philippines",
       "code": [
         "!lazadaph",
@@ -4725,7 +4729,7 @@
     },
     {
       "ddgr": 172,
-      "rank": 301,
+      "rank": 300,
       "name": "Financial Times",
       "code": [
         "!ft"
@@ -4739,7 +4743,7 @@
     },
     {
       "ddgr": 171,
-      "rank": 302,
+      "rank": 301,
       "name": "Zero Hedge",
       "code": [
         "!zh"
@@ -4753,7 +4757,7 @@
     },
     {
       "ddgr": 169,
-      "rank": 303,
+      "rank": 302,
       "name": "CNN",
       "code": [
         "!cnn"
@@ -4767,7 +4771,7 @@
     },
     {
       "ddgr": 169,
-      "rank": 304,
+      "rank": 303,
       "name": "Dict.org",
       "code": [
         "!dict"
@@ -4781,7 +4785,7 @@
     },
     {
       "ddgr": 169,
-      "rank": 305,
+      "rank": 304,
       "name": "Flipkart",
       "code": [
         "!fk",
@@ -4797,7 +4801,7 @@
     },
     {
       "ddgr": 168,
-      "rank": 306,
+      "rank": 305,
       "name": "FurAffinity",
       "code": [
         "!furaffinity"
@@ -4811,7 +4815,7 @@
     },
     {
       "ddgr": 167,
-      "rank": 307,
+      "rank": 306,
       "name": "Centre national de ressources textuelles et lexicales",
       "code": [
         "!cnrtl",
@@ -4828,7 +4832,7 @@
     },
     {
       "ddgr": 167,
-      "rank": 308,
+      "rank": 307,
       "name": "U.GG",
       "code": [
         "!ugg",
@@ -4843,7 +4847,7 @@
     },
     {
       "ddgr": 166,
-      "rank": 309,
+      "rank": 308,
       "name": "Google News Germany",
       "code": [
         "!gnde"
@@ -4857,7 +4861,7 @@
     },
     {
       "ddgr": 166,
-      "rank": 310,
+      "rank": 309,
       "name": "Hotukdeals",
       "code": [
         "!hotukdeals",
@@ -4872,7 +4876,7 @@
     },
     {
       "ddgr": 166,
-      "rank": 311,
+      "rank": 310,
       "name": "InspireHEP",
       "code": [
         "!ihep",
@@ -4887,7 +4891,7 @@
     },
     {
       "ddgr": 166,
-      "rank": 312,
+      "rank": 311,
       "name": "Rumble",
       "code": [
         "!rumble"
@@ -4901,7 +4905,7 @@
     },
     {
       "ddgr": 166,
-      "rank": 313,
+      "rank": 312,
       "name": "TrueAchievements",
       "code": [
         "!trueachievements"
@@ -4915,7 +4919,7 @@
     },
     {
       "ddgr": 165,
-      "rank": 314,
+      "rank": 313,
       "name": "DWDS",
       "code": [
         "!dwds"
@@ -4929,7 +4933,7 @@
     },
     {
       "ddgr": 163,
-      "rank": 315,
+      "rank": 314,
       "name": "The Wall Street Journal",
       "code": [
         "!wsj"
@@ -4943,7 +4947,7 @@
     },
     {
       "ddgr": 162,
-      "rank": 316,
+      "rank": 315,
       "name": "Wiktionary (PL)",
       "code": [
         "!wtpl"
@@ -4957,7 +4961,7 @@
     },
     {
       "ddgr": 161,
-      "rank": 317,
+      "rank": 316,
       "name": "DuckDuckgo France",
       "code": [
         "!ddgf"
@@ -4971,7 +4975,7 @@
     },
     {
       "ddgr": 161,
-      "rank": 318,
+      "rank": 317,
       "name": "Wikipedia mobile",
       "code": [
         "!wm"
@@ -4985,7 +4989,7 @@
     },
     {
       "ddgr": 158,
-      "rank": 319,
+      "rank": 318,
       "name": "Amazon Australia",
       "code": [
         "!aau",
@@ -5001,7 +5005,7 @@
     },
     {
       "ddgr": 157,
-      "rank": 320,
+      "rank": 319,
       "name": "WordReference (esen)",
       "code": [
         "!wresen"
@@ -5015,7 +5019,7 @@
     },
     {
       "ddgr": 155,
-      "rank": 321,
+      "rank": 320,
       "name": "MetaCPAN",
       "code": [
         "!cpan",
@@ -5033,7 +5037,7 @@
     },
     {
       "ddgr": 155,
-      "rank": 322,
+      "rank": 321,
       "name": "nuget gallery",
       "code": [
         "!nuget"
@@ -5047,7 +5051,7 @@
     },
     {
       "ddgr": 154,
-      "rank": 323,
+      "rank": 322,
       "name": "Costco.com",
       "code": [
         "!costco"
@@ -5061,7 +5065,7 @@
     },
     {
       "ddgr": 154,
-      "rank": 324,
+      "rank": 323,
       "name": "Priberam",
       "code": [
         "!dlpo",
@@ -5076,7 +5080,7 @@
     },
     {
       "ddgr": 153,
-      "rank": 325,
+      "rank": 324,
       "name": "Anilist",
       "code": [
         "!ani",
@@ -5091,7 +5095,7 @@
     },
     {
       "ddgr": 150,
-      "rank": 326,
+      "rank": 325,
       "name": "Norwegian Wikipedia",
       "code": [
         "!wno",
@@ -5107,7 +5111,7 @@
     },
     {
       "ddgr": 149,
-      "rank": 327,
+      "rank": 326,
       "name": "RebeccaBlackTech",
       "code": [
         "!rbt"
@@ -5121,7 +5125,7 @@
     },
     {
       "ddgr": 149,
-      "rank": 328,
+      "rank": 327,
       "name": "Reuters",
       "code": [
         "!reuq",
@@ -5136,7 +5140,7 @@
     },
     {
       "ddgr": 149,
-      "rank": 329,
+      "rank": 328,
       "name": "Startpage Images",
       "code": [
         "!spi",
@@ -5151,7 +5155,7 @@
     },
     {
       "ddgr": 148,
-      "rank": 330,
+      "rank": 329,
       "name": "Google CH",
       "code": [
         "!gch"
@@ -5165,7 +5169,7 @@
     },
     {
       "ddgr": 148,
-      "rank": 331,
+      "rank": 330,
       "name": "Keepa",
       "code": [
         "!keepa"
@@ -5179,7 +5183,7 @@
     },
     {
       "ddgr": 147,
-      "rank": 332,
+      "rank": 331,
       "name": "Google US",
       "code": [
         "!gus"
@@ -5193,7 +5197,7 @@
     },
     {
       "ddgr": 147,
-      "rank": 333,
+      "rank": 332,
       "name": "Tineye",
       "code": [
         "!tineye"
@@ -5207,7 +5211,7 @@
     },
     {
       "ddgr": 146,
-      "rank": 334,
+      "rank": 333,
       "name": "Alpine packages",
       "code": [
         "!alpine"
@@ -5221,7 +5225,7 @@
     },
     {
       "ddgr": 146,
-      "rank": 335,
+      "rank": 334,
       "name": "Yelp",
       "code": [
         "!yelp"
@@ -5235,7 +5239,7 @@
     },
     {
       "ddgr": 145,
-      "rank": 336,
+      "rank": 335,
       "name": "PTT",
       "code": [
         "!ptt"
@@ -5249,7 +5253,7 @@
     },
     {
       "ddgr": 144,
-      "rank": 337,
+      "rank": 336,
       "name": "utexas.edu",
       "code": [
         "!ut"
@@ -5263,7 +5267,7 @@
     },
     {
       "ddgr": 144,
-      "rank": 338,
+      "rank": 337,
       "name": "Yandex Images (en)",
       "code": [
         "!ymg",
@@ -5278,7 +5282,7 @@
     },
     {
       "ddgr": 143,
-      "rank": 339,
+      "rank": 338,
       "name": "Chinese Wikipedia",
       "code": [
         "!wzh",
@@ -5295,7 +5299,7 @@
     },
     {
       "ddgr": 143,
-      "rank": 340,
+      "rank": 339,
       "name": "Czech Wikipedia",
       "code": [
         "!wcs",
@@ -5312,7 +5316,7 @@
     },
     {
       "ddgr": 142,
-      "rank": 341,
+      "rank": 340,
       "name": "DuckDuckGo Community",
       "code": [
         "!dc",
@@ -5327,7 +5331,7 @@
     },
     {
       "ddgr": 142,
-      "rank": 342,
+      "rank": 341,
       "name": "Hex Docs",
       "code": [
         "!hexdocs"
@@ -5341,11 +5345,12 @@
     },
     {
       "ddgr": 141,
-      "rank": 343,
-      "name": "Smogon Dex Sun and Moon",
+      "rank": 342,
+      "name": "Smogon",
       "code": [
         "!smgsm",
-        "!smogon"
+        "!smogon",
+        "!smogonsm"
       ],
       "tags": [
         "Entertainment/Games (Pokemon)"
@@ -5356,7 +5361,7 @@
     },
     {
       "ddgr": 141,
-      "rank": 344,
+      "rank": 343,
       "name": "weblio 英和辞典",
       "code": [
         "!weblioe"
@@ -5370,7 +5375,7 @@
     },
     {
       "ddgr": 139,
-      "rank": 345,
+      "rank": 344,
       "name": "Bestbuy",
       "code": [
         "!bby",
@@ -5385,7 +5390,7 @@
     },
     {
       "ddgr": 139,
-      "rank": 346,
+      "rank": 345,
       "name": "Oxford Advanced Learner's Dictionary",
       "code": [
         "!oald"
@@ -5399,7 +5404,7 @@
     },
     {
       "ddgr": 138,
-      "rank": 347,
+      "rank": 346,
       "name": "CTAN.org",
       "code": [
         "!ctan"
@@ -5413,7 +5418,7 @@
     },
     {
       "ddgr": 136,
-      "rank": 348,
+      "rank": 347,
       "name": "Digital Object Identifier",
       "code": [
         "!doi"
@@ -5427,7 +5432,7 @@
     },
     {
       "ddgr": 133,
-      "rank": 349,
+      "rank": 348,
       "name": "NPR.org",
       "code": [
         "!npr"
@@ -5441,7 +5446,7 @@
     },
     {
       "ddgr": 133,
-      "rank": 350,
+      "rank": 349,
       "name": "Yandex Translate",
       "code": [
         "!ytr",
@@ -5461,7 +5466,7 @@
     },
     {
       "ddgr": 132,
-      "rank": 351,
+      "rank": 350,
       "name": "Finviz",
       "code": [
         "!fv",
@@ -5476,7 +5481,7 @@
     },
     {
       "ddgr": 130,
-      "rank": 352,
+      "rank": 351,
       "name": "bol.com",
       "code": [
         "!bol"
@@ -5490,7 +5495,7 @@
     },
     {
       "ddgr": 130,
-      "rank": 353,
+      "rank": 352,
       "name": "Vkontakte",
       "code": [
         "!vk",
@@ -5505,7 +5510,7 @@
     },
     {
       "ddgr": 130,
-      "rank": 354,
+      "rank": 353,
       "name": "Yodobashi.com",
       "code": [
         "!yodobashi"
@@ -5519,7 +5524,7 @@
     },
     {
       "ddgr": 129,
-      "rank": 355,
+      "rank": 354,
       "name": "Google Images (Safe Off)",
       "code": [
         "!gisafeoff",
@@ -5534,7 +5539,7 @@
     },
     {
       "ddgr": 129,
-      "rank": 356,
+      "rank": 355,
       "name": "OED - Oxford English Dictionary",
       "code": [
         "!oed"
@@ -5548,7 +5553,7 @@
     },
     {
       "ddgr": 129,
-      "rank": 357,
+      "rank": 356,
       "name": "www.spiegel.de",
       "code": [
         "!spiegel",
@@ -5563,7 +5568,7 @@
     },
     {
       "ddgr": 128,
-      "rank": 358,
+      "rank": 357,
       "name": "Lowes",
       "code": [
         "!lowes"
@@ -5577,7 +5582,7 @@
     },
     {
       "ddgr": 127,
-      "rank": 359,
+      "rank": 358,
       "name": "All Music",
       "code": [
         "!allmus",
@@ -5593,7 +5598,7 @@
     },
     {
       "ddgr": 127,
-      "rank": 360,
+      "rank": 359,
       "name": "Den Danske Ordbog",
       "code": [
         "!ddo",
@@ -5609,7 +5614,7 @@
     },
     {
       "ddgr": 127,
-      "rank": 361,
+      "rank": 360,
       "name": "NationStats (nation)",
       "code": [
         "!nsn"
@@ -5623,7 +5628,7 @@
     },
     {
       "ddgr": 125,
-      "rank": 362,
+      "rank": 361,
       "name": "baidu",
       "code": [
         "!bd"
@@ -5637,7 +5642,7 @@
     },
     {
       "ddgr": 125,
-      "rank": 363,
+      "rank": 362,
       "name": "Cricinfo",
       "code": [
         "!cricinfo"
@@ -5651,7 +5656,7 @@
     },
     {
       "ddgr": 125,
-      "rank": 364,
+      "rank": 363,
       "name": "Google SE",
       "code": [
         "!gse"
@@ -5665,7 +5670,7 @@
     },
     {
       "ddgr": 125,
-      "rank": 365,
+      "rank": 364,
       "name": "OneLook",
       "code": [
         "!onelook"
@@ -5679,7 +5684,7 @@
     },
     {
       "ddgr": 125,
-      "rank": 366,
+      "rank": 365,
       "name": "VirusTotal",
       "code": [
         "!virustotalfilesearch",
@@ -5694,7 +5699,7 @@
     },
     {
       "ddgr": 125,
-      "rank": 367,
+      "rank": 366,
       "name": "Weather Underground",
       "code": [
         "!wg",
@@ -5710,7 +5715,7 @@
     },
     {
       "ddgr": 124,
-      "rank": 368,
+      "rank": 367,
       "name": "42 Intra",
       "code": [
         "!42"
@@ -5724,7 +5729,7 @@
     },
     {
       "ddgr": 124,
-      "rank": 369,
+      "rank": 368,
       "name": "Google Translate (to Spanish)",
       "code": [
         "!gtes",
@@ -5740,7 +5745,7 @@
     },
     {
       "ddgr": 124,
-      "rank": 370,
+      "rank": 369,
       "name": "Mercadolibre México",
       "code": [
         "!mercadolibremx",
@@ -5753,7 +5758,7 @@
     },
     {
       "ddgr": 123,
-      "rank": 371,
+      "rank": 370,
       "name": "Google Translate (to French)",
       "code": [
         "!gtfr",
@@ -5770,7 +5775,7 @@
     },
     {
       "ddgr": 123,
-      "rank": 372,
+      "rank": 371,
       "name": "Setlist.fm",
       "code": [
         "!setlist",
@@ -5785,21 +5790,7 @@
     },
     {
       "ddgr": 122,
-      "rank": 373,
-      "name": "Encyclopaedia metallum",
-      "code": [
-        "!mab"
-      ],
-      "tags": [
-        "Multimedia/Music"
-      ],
-      "urls": {
-        "s": "https://www.metal-archives.com/search?type=band_name&searchString=%s"
-      }
-    },
-    {
-      "ddgr": 122,
-      "rank": 374,
+      "rank": 372,
       "name": "Google Photos",
       "code": [
         "!gphotos",
@@ -5814,7 +5805,7 @@
     },
     {
       "ddgr": 122,
-      "rank": 375,
+      "rank": 373,
       "name": "Hacker News Search",
       "code": [
         "!yc"
@@ -5828,7 +5819,7 @@
     },
     {
       "ddgr": 122,
-      "rank": 376,
+      "rank": 374,
       "name": "Mastodon Social",
       "code": [
         "!msocial"
@@ -5842,7 +5833,7 @@
     },
     {
       "ddgr": 122,
-      "rank": 377,
+      "rank": 375,
       "name": "Rakuten Infoseek",
       "code": [
         "!infoseek"
@@ -5856,7 +5847,7 @@
     },
     {
       "ddgr": 122,
-      "rank": 378,
+      "rank": 376,
       "name": "Shopee",
       "code": [
         "!shopeeph"
@@ -5870,7 +5861,7 @@
     },
     {
       "ddgr": 121,
-      "rank": 379,
+      "rank": 377,
       "name": "Diccionario de la Lengua Española",
       "code": [
         "!drae"
@@ -5884,7 +5875,7 @@
     },
     {
       "ddgr": 121,
-      "rank": 380,
+      "rank": 378,
       "name": "The Cutting Room Floor",
       "code": [
         "!tcrf"
@@ -5898,7 +5889,7 @@
     },
     {
       "ddgr": 120,
-      "rank": 381,
+      "rank": 379,
       "name": "Ebay Kleinanzeigen",
       "code": [
         "!ebaykleinanzeigen",
@@ -5913,7 +5904,7 @@
     },
     {
       "ddgr": 120,
-      "rank": 382,
+      "rank": 380,
       "name": "Het Laatste Nieuws",
       "code": [
         "!hln"
@@ -5927,7 +5918,7 @@
     },
     {
       "ddgr": 119,
-      "rank": 383,
+      "rank": 381,
       "name": "F-Droid search",
       "code": [
         "!fdroid"
@@ -5941,7 +5932,7 @@
     },
     {
       "ddgr": 119,
-      "rank": 384,
+      "rank": 382,
       "name": "Roblox Experiences",
       "code": [
         "!robloxg",
@@ -5957,7 +5948,7 @@
     },
     {
       "ddgr": 119,
-      "rank": 385,
+      "rank": 383,
       "name": "Roblox Marketplace",
       "code": [
         "!rblx"
@@ -5971,7 +5962,7 @@
     },
     {
       "ddgr": 119,
-      "rank": 386,
+      "rank": 384,
       "name": "Stack Exchange",
       "code": [
         "!stackexchange",
@@ -5987,7 +5978,7 @@
     },
     {
       "ddgr": 119,
-      "rank": 387,
+      "rank": 385,
       "name": "Wordhippo",
       "code": [
         "!whip",
@@ -6002,7 +5993,7 @@
     },
     {
       "ddgr": 118,
-      "rank": 388,
+      "rank": 386,
       "name": "Dicio",
       "code": [
         "!dicio",
@@ -6017,7 +6008,7 @@
     },
     {
       "ddgr": 118,
-      "rank": 389,
+      "rank": 387,
       "name": "Google IT",
       "code": [
         "!gitl"
@@ -6031,7 +6022,7 @@
     },
     {
       "ddgr": 118,
-      "rank": 390,
+      "rank": 388,
       "name": "Word Reference IT-EN",
       "code": [
         "!wrie",
@@ -6047,7 +6038,7 @@
     },
     {
       "ddgr": 117,
-      "rank": 391,
+      "rank": 389,
       "name": "The On-Line Encyclopedia of Integer Sequences",
       "code": [
         "!oeis"
@@ -6061,7 +6052,7 @@
     },
     {
       "ddgr": 116,
-      "rank": 392,
+      "rank": 390,
       "name": "Heureka!",
       "code": [
         "!heureka"
@@ -6075,7 +6066,7 @@
     },
     {
       "ddgr": 115,
-      "rank": 393,
+      "rank": 391,
       "name": "Baseball-Reference",
       "code": [
         "!baseballreference"
@@ -6089,7 +6080,7 @@
     },
     {
       "ddgr": 114,
-      "rank": 394,
+      "rank": 392,
       "name": "McMaster-Carr",
       "code": [
         "!mcmaster",
@@ -6104,7 +6095,7 @@
     },
     {
       "ddgr": 113,
-      "rank": 395,
+      "rank": 393,
       "name": "Elektronik-Kompendium",
       "code": [
         "!ek"
@@ -6118,7 +6109,7 @@
     },
     {
       "ddgr": 113,
-      "rank": 396,
+      "rank": 394,
       "name": "Walmart US",
       "code": [
         "!wus"
@@ -6132,7 +6123,7 @@
     },
     {
       "ddgr": 112,
-      "rank": 397,
+      "rank": 395,
       "name": "Bitcoinity Markets",
       "code": [
         "!btcm"
@@ -6146,7 +6137,7 @@
     },
     {
       "ddgr": 112,
-      "rank": 398,
+      "rank": 396,
       "name": "Google Contacts",
       "code": [
         "!contacts",
@@ -6163,7 +6154,7 @@
     },
     {
       "ddgr": 111,
-      "rank": 399,
+      "rank": 397,
       "name": "Doom Wiki",
       "code": [
         "!doom"
@@ -6177,7 +6168,7 @@
     },
     {
       "ddgr": 111,
-      "rank": 400,
+      "rank": 398,
       "name": "Weather.com",
       "code": [
         "!weather"
@@ -6191,7 +6182,7 @@
     },
     {
       "ddgr": 110,
-      "rank": 401,
+      "rank": 399,
       "name": "messenger.com",
       "code": [
         "!msg"
@@ -6205,7 +6196,7 @@
     },
     {
       "ddgr": 108,
-      "rank": 402,
+      "rank": 400,
       "name": "Chief Delphi",
       "code": [
         "!chief"
@@ -6219,7 +6210,7 @@
     },
     {
       "ddgr": 108,
-      "rank": 403,
+      "rank": 401,
       "name": "CoinMarketCap",
       "code": [
         "!cap",
@@ -6240,7 +6231,7 @@
     },
     {
       "ddgr": 108,
-      "rank": 404,
+      "rank": 402,
       "name": "WhatsApp",
       "code": [
         "!wapp"
@@ -6254,7 +6245,7 @@
     },
     {
       "ddgr": 107,
-      "rank": 405,
+      "rank": 403,
       "name": "Firefox Add-ons",
       "code": [
         "!amo",
@@ -6274,7 +6265,7 @@
     },
     {
       "ddgr": 107,
-      "rank": 406,
+      "rank": 404,
       "name": "Hungarian Wikipedia",
       "code": [
         "!whu",
@@ -6290,7 +6281,7 @@
     },
     {
       "ddgr": 107,
-      "rank": 407,
+      "rank": 405,
       "name": "Newegg",
       "code": [
         "!ne",
@@ -6305,21 +6296,24 @@
     },
     {
       "ddgr": 107,
-      "rank": 408,
-      "name": "OLX Poland",
+      "rank": 406,
+      "name": "OLX.pl",
       "code": [
-        "!olx"
+        "!olx",
+        "!olxpl",
+        "!olxpoland"
       ],
       "tags": [
-        "Shopping/Online (deals)"
+        "Shopping/Online (deals)",
+        "Shopping/Online (marketplace)"
       ],
       "urls": {
-        "s": "https://www.olx.pl/oferty/q-%s/"
+        "s": "https://olx.pl/oferty/q-%s/"
       }
     },
     {
       "ddgr": 106,
-      "rank": 409,
+      "rank": 407,
       "name": "MarketWatch",
       "code": [
         "!wsjmw",
@@ -6334,7 +6328,7 @@
     },
     {
       "ddgr": 106,
-      "rank": 410,
+      "rank": 408,
       "name": "Product Hunt",
       "code": [
         "!ph",
@@ -6349,7 +6343,7 @@
     },
     {
       "ddgr": 105,
-      "rank": 411,
+      "rank": 409,
       "name": "Baidu",
       "code": [
         "!baidu"
@@ -6363,7 +6357,7 @@
     },
     {
       "ddgr": 105,
-      "rank": 412,
+      "rank": 410,
       "name": "Serebii",
       "code": [
         "!serebii"
@@ -6377,7 +6371,7 @@
     },
     {
       "ddgr": 104,
-      "rank": 413,
+      "rank": 411,
       "name": "Google JP",
       "code": [
         "!gjp"
@@ -6391,7 +6385,7 @@
     },
     {
       "ddgr": 103,
-      "rank": 414,
+      "rank": 412,
       "name": "Mozilla Developer Network (JS)",
       "code": [
         "!js",
@@ -6406,7 +6400,7 @@
     },
     {
       "ddgr": 103,
-      "rank": 415,
+      "rank": 413,
       "name": "YouTube United States",
       "code": [
         "!ytus"
@@ -6420,7 +6414,7 @@
     },
     {
       "ddgr": 102,
-      "rank": 416,
+      "rank": 414,
       "name": "Wikimapia",
       "code": [
         "!wikimapia"
@@ -6434,7 +6428,7 @@
     },
     {
       "ddgr": 101,
-      "rank": 417,
+      "rank": 415,
       "name": "Catalan Wikipedia",
       "code": [
         "!wca",
@@ -6452,7 +6446,7 @@
     },
     {
       "ddgr": 101,
-      "rank": 418,
+      "rank": 416,
       "name": "Wordreference (es)",
       "code": [
         "!wdr",
@@ -6469,7 +6463,7 @@
     },
     {
       "ddgr": 100,
-      "rank": 419,
+      "rank": 417,
       "name": "Baka-Updates Manga",
       "code": [
         "!bakaupdatesmanga",
@@ -6484,7 +6478,7 @@
     },
     {
       "ddgr": 100,
-      "rank": 420,
+      "rank": 418,
       "name": "Songsterr",
       "code": [
         "!songsterr",
@@ -6499,7 +6493,7 @@
     },
     {
       "ddgr": 99,
-      "rank": 421,
+      "rank": 419,
       "name": "Books.google.com",
       "code": [
         "!gbooks",
@@ -6514,7 +6508,7 @@
     },
     {
       "ddgr": 98,
-      "rank": 422,
+      "rank": 420,
       "name": "Can I use...",
       "code": [
         "!caniuse",
@@ -6531,7 +6525,7 @@
     },
     {
       "ddgr": 98,
-      "rank": 423,
+      "rank": 421,
       "name": "Qwant",
       "code": [
         "!qwant",
@@ -6547,7 +6541,7 @@
     },
     {
       "ddgr": 97,
-      "rank": 424,
+      "rank": 422,
       "name": "Funnyjunk",
       "code": [
         "!fj"
@@ -6561,7 +6555,7 @@
     },
     {
       "ddgr": 97,
-      "rank": 425,
+      "rank": 423,
       "name": "Magic Card Market",
       "code": [
         "!mcm",
@@ -6578,7 +6572,7 @@
     },
     {
       "ddgr": 97,
-      "rank": 426,
+      "rank": 424,
       "name": "NBA.com",
       "code": [
         "!nba"
@@ -6592,21 +6586,23 @@
     },
     {
       "ddgr": 97,
-      "rank": 427,
+      "rank": 425,
       "name": "Startpage Videos",
       "code": [
-        "!spv"
+        "!spv",
+        "!startpagevideos"
       ],
       "tags": [
+        "Online Services/Search",
         "Online Services/Search (Private)"
       ],
       "urls": {
-        "s": "https://www.startpage.com/do/search?cat=video&cmd=process_search&query=%s"
+        "s": "https://startpage.com/do/search?cat=video&cmd=process_search&query=%s"
       }
     },
     {
       "ddgr": 97,
-      "rank": 428,
+      "rank": 426,
       "name": "Yahoo! News",
       "code": [
         "!ynews"
@@ -6620,7 +6616,7 @@
     },
     {
       "ddgr": 95,
-      "rank": 429,
+      "rank": 427,
       "name": "Wiktionary, das freie Wörterbuch",
       "code": [
         "!wiktde"
@@ -6634,7 +6630,7 @@
     },
     {
       "ddgr": 95,
-      "rank": 430,
+      "rank": 428,
       "name": "Yahoo! Auctions Japan",
       "code": [
         "!yajp"
@@ -6648,7 +6644,7 @@
     },
     {
       "ddgr": 94,
-      "rank": 431,
+      "rank": 429,
       "name": "Chocolatey",
       "code": [
         "!choco",
@@ -6664,7 +6660,7 @@
     },
     {
       "ddgr": 94,
-      "rank": 432,
+      "rank": 430,
       "name": "Trade Me",
       "code": [
         "!tm",
@@ -6679,7 +6675,7 @@
     },
     {
       "ddgr": 93,
-      "rank": 433,
+      "rank": 431,
       "name": "Blu-ray.com",
       "code": [
         "!bluray"
@@ -6693,7 +6689,7 @@
     },
     {
       "ddgr": 93,
-      "rank": 434,
+      "rank": 432,
       "name": "Collins Dictionary",
       "code": [
         "!cd",
@@ -6708,9 +6704,10 @@
     },
     {
       "ddgr": 92,
-      "rank": 435,
-      "name": "GitHub Repo",
+      "rank": 433,
+      "name": "GitHub User",
       "code": [
+        "!ghus",
         "!ghrepo",
         "!ghr"
       ],
@@ -6723,7 +6720,7 @@
     },
     {
       "ddgr": 92,
-      "rank": 436,
+      "rank": 434,
       "name": "Yandex Translate (en)",
       "code": [
         "!yat",
@@ -6738,7 +6735,7 @@
     },
     {
       "ddgr": 91,
-      "rank": 437,
+      "rank": 435,
       "name": "GoDoc",
       "code": [
         "!godoc"
@@ -6752,7 +6749,7 @@
     },
     {
       "ddgr": 91,
-      "rank": 438,
+      "rank": 436,
       "name": "MDBG Dictionary",
       "code": [
         "!mdbg"
@@ -6766,7 +6763,7 @@
     },
     {
       "ddgr": 90,
-      "rank": 439,
+      "rank": 437,
       "name": "Ceneo",
       "code": [
         "!ceneo"
@@ -6780,7 +6777,7 @@
     },
     {
       "ddgr": 90,
-      "rank": 440,
+      "rank": 438,
       "name": "WikiWoordenboek",
       "code": [
         "!wtnl"
@@ -6794,7 +6791,7 @@
     },
     {
       "ddgr": 89,
-      "rank": 441,
+      "rank": 439,
       "name": "BitChute",
       "code": [
         "!bitc",
@@ -6810,7 +6807,7 @@
     },
     {
       "ddgr": 89,
-      "rank": 442,
+      "rank": 440,
       "name": "Google Maps FR",
       "code": [
         "!mapsfr"
@@ -6824,7 +6821,7 @@
     },
     {
       "ddgr": 89,
-      "rank": 443,
+      "rank": 441,
       "name": "Longman Dictionary of Contemporary English",
       "code": [
         "!ld"
@@ -6838,7 +6835,7 @@
     },
     {
       "ddgr": 88,
-      "rank": 444,
+      "rank": 442,
       "name": "bilibili",
       "code": [
         "!bilibili",
@@ -6854,7 +6851,7 @@
     },
     {
       "ddgr": 88,
-      "rank": 445,
+      "rank": 443,
       "name": "Forvo",
       "code": [
         "!forvo"
@@ -6868,7 +6865,7 @@
     },
     {
       "ddgr": 88,
-      "rank": 446,
+      "rank": 444,
       "name": "Google translate en-es",
       "code": [
         "!enes",
@@ -6883,7 +6880,7 @@
     },
     {
       "ddgr": 88,
-      "rank": 447,
+      "rank": 445,
       "name": "IMSLP",
       "code": [
         "!imslp"
@@ -6897,7 +6894,7 @@
     },
     {
       "ddgr": 88,
-      "rank": 448,
+      "rank": 446,
       "name": "note",
       "code": [
         "!note"
@@ -6911,7 +6908,7 @@
     },
     {
       "ddgr": 88,
-      "rank": 449,
+      "rank": 447,
       "name": "openSUSE Bugzilla",
       "code": [
         "!boo",
@@ -6926,7 +6923,7 @@
     },
     {
       "ddgr": 88,
-      "rank": 450,
+      "rank": 448,
       "name": "WordPress.org",
       "code": [
         "!wordpress",
@@ -6941,7 +6938,7 @@
     },
     {
       "ddgr": 87,
-      "rank": 451,
+      "rank": 449,
       "name": "Cambridge Traditional Chinese",
       "code": [
         "!camtw"
@@ -6955,7 +6952,7 @@
     },
     {
       "ddgr": 87,
-      "rank": 452,
+      "rank": 450,
       "name": "IETF RFC",
       "code": [
         "!rfc"
@@ -6969,7 +6966,7 @@
     },
     {
       "ddgr": 87,
-      "rank": 453,
+      "rank": 451,
       "name": "Linguee (en2fr)",
       "code": [
         "!linef",
@@ -6984,7 +6981,7 @@
     },
     {
       "ddgr": 87,
-      "rank": 454,
+      "rank": 452,
       "name": "PokéWiki.de",
       "code": [
         "!pokewiki",
@@ -6999,7 +6996,7 @@
     },
     {
       "ddgr": 86,
-      "rank": 455,
+      "rank": 453,
       "name": "Google Translate fr-en",
       "code": [
         "!fr2en",
@@ -7014,7 +7011,7 @@
     },
     {
       "ddgr": 86,
-      "rank": 456,
+      "rank": 454,
       "name": "Skroutz",
       "code": [
         "!skroutz"
@@ -7028,7 +7025,7 @@
     },
     {
       "ddgr": 85,
-      "rank": 457,
+      "rank": 455,
       "name": "ADS bumblebee",
       "code": [
         "!ads",
@@ -7043,7 +7040,7 @@
     },
     {
       "ddgr": 85,
-      "rank": 458,
+      "rank": 456,
       "name": "LEO Dictionary Spanish",
       "code": [
         "!leos"
@@ -7055,7 +7052,7 @@
     },
     {
       "ddgr": 84,
-      "rank": 459,
+      "rank": 457,
       "name": "Debian Manpages",
       "code": [
         "!debman",
@@ -7070,7 +7067,7 @@
     },
     {
       "ddgr": 84,
-      "rank": 460,
+      "rank": 458,
       "name": "Hex.pm",
       "code": [
         "!hexpm",
@@ -7085,7 +7082,7 @@
     },
     {
       "ddgr": 84,
-      "rank": 461,
+      "rank": 459,
       "name": "NRK",
       "code": [
         "!nrk"
@@ -7099,7 +7096,7 @@
     },
     {
       "ddgr": 83,
-      "rank": 462,
+      "rank": 460,
       "name": "Teamliquid",
       "code": [
         "!teamliquid",
@@ -7114,7 +7111,7 @@
     },
     {
       "ddgr": 82,
-      "rank": 463,
+      "rank": 461,
       "name": "itch.io",
       "code": [
         "!itch"
@@ -7128,7 +7125,7 @@
     },
     {
       "ddgr": 81,
-      "rank": 464,
+      "rank": 462,
       "name": "The New York Times",
       "code": [
         "!nytimes",
@@ -7143,7 +7140,7 @@
     },
     {
       "ddgr": 80,
-      "rank": 465,
+      "rank": 463,
       "name": "Alc Japanese English Dictionary",
       "code": [
         "!alc",
@@ -7158,21 +7155,22 @@
     },
     {
       "ddgr": 80,
-      "rank": 466,
+      "rank": 464,
       "name": "Marktplaats",
       "code": [
-        "!marktplaats"
+        "!marktplaats",
+        "!mar"
       ],
       "tags": [
         "Shopping/Online (marketplace)"
       ],
       "urls": {
-        "s": "https://www.marktplaats.nl/z.html?query=%s"
+        "s": "https://marktplaats.nl/z.html?query=%s"
       }
     },
     {
       "ddgr": 80,
-      "rank": 467,
+      "rank": 465,
       "name": "NYPost",
       "code": [
         "!nypost"
@@ -7186,7 +7184,7 @@
     },
     {
       "ddgr": 79,
-      "rank": 468,
+      "rank": 466,
       "name": "Rakuten Ichiba",
       "code": [
         "!r10",
@@ -7201,7 +7199,7 @@
     },
     {
       "ddgr": 79,
-      "rank": 469,
+      "rank": 467,
       "name": "YouTube (DE)",
       "code": [
         "!ytde"
@@ -7215,7 +7213,7 @@
     },
     {
       "ddgr": 78,
-      "rank": 470,
+      "rank": 468,
       "name": "DuckDuckGo Maps",
       "code": [
         "!ddgm"
@@ -7229,7 +7227,7 @@
     },
     {
       "ddgr": 78,
-      "rank": 471,
+      "rank": 469,
       "name": "LCSC",
       "code": [
         "!lcsc"
@@ -7243,7 +7241,7 @@
     },
     {
       "ddgr": 78,
-      "rank": 472,
+      "rank": 470,
       "name": "Nexus Mods",
       "code": [
         "!nm"
@@ -7257,7 +7255,7 @@
     },
     {
       "ddgr": 78,
-      "rank": 473,
+      "rank": 471,
       "name": "stocktwits",
       "code": [
         "!st"
@@ -7271,7 +7269,7 @@
     },
     {
       "ddgr": 78,
-      "rank": 474,
+      "rank": 472,
       "name": "Wallapop",
       "code": [
         "!wallapop"
@@ -7285,7 +7283,7 @@
     },
     {
       "ddgr": 78,
-      "rank": 475,
+      "rank": 473,
       "name": "WikiQuote",
       "code": [
         "!quotes",
@@ -7300,7 +7298,7 @@
     },
     {
       "ddgr": 77,
-      "rank": 476,
+      "rank": 474,
       "name": "Google DK",
       "code": [
         "!gdk"
@@ -7314,7 +7312,7 @@
     },
     {
       "ddgr": 77,
-      "rank": 477,
+      "rank": 475,
       "name": "Larousse French Dictionary",
       "code": [
         "!dict-fr",
@@ -7330,21 +7328,7 @@
     },
     {
       "ddgr": 77,
-      "rank": 478,
-      "name": "marktplaats.nl",
-      "code": [
-        "!mar"
-      ],
-      "tags": [
-        "Shopping/Online (marketplace)"
-      ],
-      "urls": {
-        "s": "https://marktplaats.nl/z.html?query=%s"
-      }
-    },
-    {
-      "ddgr": 77,
-      "rank": 479,
+      "rank": 476,
       "name": "Moby Games",
       "code": [
         "!mobygames"
@@ -7358,7 +7342,7 @@
     },
     {
       "ddgr": 77,
-      "rank": 480,
+      "rank": 477,
       "name": "Phoronix",
       "code": [
         "!phoronix"
@@ -7372,7 +7356,7 @@
     },
     {
       "ddgr": 77,
-      "rank": 481,
+      "rank": 478,
       "name": "TradingView",
       "code": [
         "!tradingview",
@@ -7387,7 +7371,7 @@
     },
     {
       "ddgr": 77,
-      "rank": 482,
+      "rank": 479,
       "name": "www.virustotal.com",
       "code": [
         "!vtip"
@@ -7401,7 +7385,7 @@
     },
     {
       "ddgr": 76,
-      "rank": 483,
+      "rank": 480,
       "name": "Digi-Key",
       "code": [
         "!digikey"
@@ -7415,7 +7399,7 @@
     },
     {
       "ddgr": 76,
-      "rank": 484,
+      "rank": 481,
       "name": "DuckDuckGo Safe Off",
       "code": [
         "!nsfw"
@@ -7429,7 +7413,7 @@
     },
     {
       "ddgr": 76,
-      "rank": 485,
+      "rank": 482,
       "name": "Geizhals",
       "code": [
         "!gzh",
@@ -7446,7 +7430,7 @@
     },
     {
       "ddgr": 76,
-      "rank": 486,
+      "rank": 483,
       "name": "geizhals.de",
       "code": [
         "!geizhalsde"
@@ -7460,7 +7444,7 @@
     },
     {
       "ddgr": 76,
-      "rank": 487,
+      "rank": 484,
       "name": "Google RU",
       "code": [
         "!gru"
@@ -7474,7 +7458,7 @@
     },
     {
       "ddgr": 76,
-      "rank": 488,
+      "rank": 485,
       "name": "Linux.org.ru",
       "code": [
         "!lor",
@@ -7489,7 +7473,7 @@
     },
     {
       "ddgr": 76,
-      "rank": 489,
+      "rank": 486,
       "name": "Thingiverse",
       "code": [
         "!thg",
@@ -7506,7 +7490,7 @@
     },
     {
       "ddgr": 75,
-      "rank": 490,
+      "rank": 487,
       "name": "AllKeyShop",
       "code": [
         "!aks"
@@ -7520,7 +7504,7 @@
     },
     {
       "ddgr": 75,
-      "rank": 491,
+      "rank": 488,
       "name": "Beatport",
       "code": [
         "!beatport"
@@ -7534,7 +7518,7 @@
     },
     {
       "ddgr": 75,
-      "rank": 492,
+      "rank": 489,
       "name": "Craigslist",
       "code": [
         "!cl",
@@ -7549,7 +7533,7 @@
     },
     {
       "ddgr": 75,
-      "rank": 493,
+      "rank": 490,
       "name": "Fox News",
       "code": [
         "!fox"
@@ -7563,7 +7547,7 @@
     },
     {
       "ddgr": 74,
-      "rank": 494,
+      "rank": 491,
       "name": "nLab",
       "code": [
         "!nlab",
@@ -7578,7 +7562,7 @@
     },
     {
       "ddgr": 74,
-      "rank": 495,
+      "rank": 492,
       "name": "NPM Direct",
       "code": [
         "!npmd"
@@ -7592,7 +7576,7 @@
     },
     {
       "ddgr": 73,
-      "rank": 496,
+      "rank": 493,
       "name": "WikiWand",
       "code": [
         "!wikiwand",
@@ -7608,7 +7592,7 @@
     },
     {
       "ddgr": 73,
-      "rank": 497,
+      "rank": 494,
       "name": "YouTube (past day)",
       "code": [
         "!ytday",
@@ -7623,7 +7607,7 @@
     },
     {
       "ddgr": 72,
-      "rank": 498,
+      "rank": 495,
       "name": "abebooks",
       "code": [
         "!abebooks"
@@ -7637,7 +7621,7 @@
     },
     {
       "ddgr": 72,
-      "rank": 499,
+      "rank": 496,
       "name": "Google Encrypted",
       "code": [
         "!ge"
@@ -7651,7 +7635,7 @@
     },
     {
       "ddgr": 72,
-      "rank": 500,
+      "rank": 497,
       "name": "PkmnCards",
       "code": [
         "!ptcg"
@@ -7665,7 +7649,7 @@
     },
     {
       "ddgr": 72,
-      "rank": 501,
+      "rank": 498,
       "name": "Stanford Encyclopedia of Philosophy",
       "code": [
         "!plato",
@@ -7680,7 +7664,7 @@
     },
     {
       "ddgr": 72,
-      "rank": 502,
+      "rank": 499,
       "name": "tweakers.net",
       "code": [
         "!tweakers"
@@ -7694,7 +7678,7 @@
     },
     {
       "ddgr": 72,
-      "rank": 503,
+      "rank": 500,
       "name": "Valve Developer Community",
       "code": [
         "!vdc"
@@ -7708,7 +7692,7 @@
     },
     {
       "ddgr": 72,
-      "rank": 504,
+      "rank": 501,
       "name": "Wordnik",
       "code": [
         "!wnk",
@@ -7723,7 +7707,7 @@
     },
     {
       "ddgr": 71,
-      "rank": 505,
+      "rank": 502,
       "name": "Hatena Bookmark",
       "code": [
         "!hatebu"
@@ -7737,7 +7721,7 @@
     },
     {
       "ddgr": 71,
-      "rank": 506,
+      "rank": 503,
       "name": "NAOB – Det Norske Akademis ordbok",
       "code": [
         "!naob"
@@ -7751,7 +7735,7 @@
     },
     {
       "ddgr": 70,
-      "rank": 507,
+      "rank": 504,
       "name": "Google Traduction",
       "code": [
         "!en2fr",
@@ -7767,7 +7751,7 @@
     },
     {
       "ddgr": 70,
-      "rank": 508,
+      "rank": 505,
       "name": "Texas Tribune",
       "code": [
         "!tt"
@@ -7781,7 +7765,7 @@
     },
     {
       "ddgr": 70,
-      "rank": 509,
+      "rank": 506,
       "name": "Yubnub",
       "code": [
         "!yn",
@@ -7796,21 +7780,7 @@
     },
     {
       "ddgr": 69,
-      "rank": 510,
-      "name": "DuckDuckGo SafeOff",
-      "code": [
-        "!soff"
-      ],
-      "tags": [
-        "Online Services/Search (DDG)"
-      ],
-      "urls": {
-        "s": "https://duckduckgo.com/?kp=-2&q=%s"
-      }
-    },
-    {
-      "ddgr": 69,
-      "rank": 511,
+      "rank": 507,
       "name": "ebay.com.au",
       "code": [
         "!eau",
@@ -7826,7 +7796,7 @@
     },
     {
       "ddgr": 69,
-      "rank": 512,
+      "rank": 508,
       "name": "LEO Dictionary French",
       "code": [
         "!leofr",
@@ -7841,7 +7811,7 @@
     },
     {
       "ddgr": 69,
-      "rank": 513,
+      "rank": 509,
       "name": "MyDramaList",
       "code": [
         "!mydrama",
@@ -7856,7 +7826,7 @@
     },
     {
       "ddgr": 68,
-      "rank": 514,
+      "rank": 510,
       "name": "Barnes & Noble",
       "code": [
         "!barnesandnoble",
@@ -7872,7 +7842,7 @@
     },
     {
       "ddgr": 68,
-      "rank": 515,
+      "rank": 511,
       "name": "Deezer",
       "code": [
         "!deezer",
@@ -7887,7 +7857,7 @@
     },
     {
       "ddgr": 68,
-      "rank": 516,
+      "rank": 512,
       "name": "Google Shopping UK",
       "code": [
         "!gsuk"
@@ -7901,7 +7871,7 @@
     },
     {
       "ddgr": 68,
-      "rank": 517,
+      "rank": 513,
       "name": "Mecurial",
       "code": [
         "!hg"
@@ -7915,7 +7885,7 @@
     },
     {
       "ddgr": 68,
-      "rank": 518,
+      "rank": 514,
       "name": "The Wirecutter",
       "code": [
         "!wirecutter"
@@ -7929,7 +7899,7 @@
     },
     {
       "ddgr": 67,
-      "rank": 519,
+      "rank": 515,
       "name": "4chan, /vg/",
       "code": [
         "!4cvg"
@@ -7943,7 +7913,7 @@
     },
     {
       "ddgr": 67,
-      "rank": 520,
+      "rank": 516,
       "name": "Cagematch - The Internet Wrestling Database",
       "code": [
         "!cagematch"
@@ -7957,7 +7927,7 @@
     },
     {
       "ddgr": 67,
-      "rank": 521,
+      "rank": 517,
       "name": "DevDocs",
       "code": [
         "!dd",
@@ -7973,7 +7943,7 @@
     },
     {
       "ddgr": 67,
-      "rank": 522,
+      "rank": 518,
       "name": "Google New Zealand",
       "code": [
         "!gnz"
@@ -7987,7 +7957,7 @@
     },
     {
       "ddgr": 67,
-      "rank": 523,
+      "rank": 519,
       "name": "Google Translate (en2ru)",
       "code": [
         "!enru",
@@ -8002,7 +7972,7 @@
     },
     {
       "ddgr": 67,
-      "rank": 524,
+      "rank": 520,
       "name": "Nookipedia",
       "code": [
         "!nook"
@@ -8016,7 +7986,7 @@
     },
     {
       "ddgr": 67,
-      "rank": 525,
+      "rank": 521,
       "name": "Pr0gramm",
       "code": [
         "!pr0"
@@ -8030,7 +8000,7 @@
     },
     {
       "ddgr": 66,
-      "rank": 526,
+      "rank": 522,
       "name": "Menards",
       "code": [
         "!menards"
@@ -8044,7 +8014,7 @@
     },
     {
       "ddgr": 66,
-      "rank": 527,
+      "rank": 523,
       "name": "Prime Video",
       "code": [
         "!pv"
@@ -8058,7 +8028,7 @@
     },
     {
       "ddgr": 66,
-      "rank": 528,
+      "rank": 524,
       "name": "PsychonautWiki",
       "code": [
         "!pnw",
@@ -8075,7 +8045,7 @@
     },
     {
       "ddgr": 66,
-      "rank": 529,
+      "rank": 525,
       "name": "Reelgood",
       "code": [
         "!reelgood"
@@ -8089,7 +8059,7 @@
     },
     {
       "ddgr": 66,
-      "rank": 530,
+      "rank": 526,
       "name": "Wiktionary (Finnish)",
       "code": [
         "!wtfi"
@@ -8103,7 +8073,7 @@
     },
     {
       "ddgr": 65,
-      "rank": 531,
+      "rank": 527,
       "name": "Avito",
       "code": [
         "!avito",
@@ -8118,7 +8088,7 @@
     },
     {
       "ddgr": 65,
-      "rank": 532,
+      "rank": 528,
       "name": "ebay.ca",
       "code": [
         "!ebayca",
@@ -8134,7 +8104,7 @@
     },
     {
       "ddgr": 65,
-      "rank": 533,
+      "rank": 529,
       "name": "The Age",
       "code": [
         "!theage"
@@ -8148,7 +8118,7 @@
     },
     {
       "ddgr": 64,
-      "rank": 534,
+      "rank": 530,
       "name": "ClojureDocs",
       "code": [
         "!clj"
@@ -8162,7 +8132,7 @@
     },
     {
       "ddgr": 64,
-      "rank": 535,
+      "rank": 531,
       "name": "Linguee (es2en)",
       "code": [
         "!les",
@@ -8180,9 +8150,10 @@
     },
     {
       "ddgr": 64,
-      "rank": 536,
-      "name": "Mac Rumors",
+      "rank": 532,
+      "name": "MacRumors",
       "code": [
+        "!macrumors",
         "!mr"
       ],
       "tags": [
@@ -8194,7 +8165,7 @@
     },
     {
       "ddgr": 64,
-      "rank": 537,
+      "rank": 533,
       "name": "Oxford Advanced Learners' dictionary",
       "code": [
         "!oxl"
@@ -8208,7 +8179,7 @@
     },
     {
       "ddgr": 64,
-      "rank": 538,
+      "rank": 534,
       "name": "Pokepedia",
       "code": [
         "!pokepedia"
@@ -8222,7 +8193,7 @@
     },
     {
       "ddgr": 64,
-      "rank": 539,
+      "rank": 535,
       "name": "Tweakers Pricewatch",
       "code": [
         "!pricewatch",
@@ -8238,7 +8209,7 @@
     },
     {
       "ddgr": 63,
-      "rank": 540,
+      "rank": 536,
       "name": "Booking.com",
       "code": [
         "!book",
@@ -8253,7 +8224,7 @@
     },
     {
       "ddgr": 63,
-      "rank": 541,
+      "rank": 537,
       "name": "CC-Canto - A Cantonese Dictionary",
       "code": [
         "!canto"
@@ -8267,7 +8238,7 @@
     },
     {
       "ddgr": 63,
-      "rank": 542,
+      "rank": 538,
       "name": "Tokopedia",
       "code": [
         "!tkpd",
@@ -8283,7 +8254,7 @@
     },
     {
       "ddgr": 63,
-      "rank": 543,
+      "rank": 539,
       "name": "Wikisource",
       "code": [
         "!wikisource",
@@ -8298,7 +8269,7 @@
     },
     {
       "ddgr": 62,
-      "rank": 544,
+      "rank": 540,
       "name": "Artstation",
       "code": [
         "!artstation"
@@ -8312,7 +8283,7 @@
     },
     {
       "ddgr": 62,
-      "rank": 545,
+      "rank": 541,
       "name": "Audible.com",
       "code": [
         "!audible",
@@ -8327,7 +8298,7 @@
     },
     {
       "ddgr": 62,
-      "rank": 546,
+      "rank": 542,
       "name": "CantoDict",
       "code": [
         "!cantodict"
@@ -8341,7 +8312,7 @@
     },
     {
       "ddgr": 62,
-      "rank": 547,
+      "rank": 543,
       "name": "Danish Wikipedia",
       "code": [
         "!wda",
@@ -8357,7 +8328,7 @@
     },
     {
       "ddgr": 62,
-      "rank": 548,
+      "rank": 544,
       "name": "Dutch Wiktionary",
       "code": [
         "!wiktnl"
@@ -8371,7 +8342,7 @@
     },
     {
       "ddgr": 62,
-      "rank": 549,
+      "rank": 545,
       "name": "Lexicanum",
       "code": [
         "!lexicanum"
@@ -8385,7 +8356,7 @@
     },
     {
       "ddgr": 62,
-      "rank": 550,
+      "rank": 546,
       "name": "Pokémon Database",
       "code": [
         "!pokedb",
@@ -8400,7 +8371,7 @@
     },
     {
       "ddgr": 62,
-      "rank": 551,
+      "rank": 547,
       "name": "Store Norske Leksikon",
       "code": [
         "!snl"
@@ -8414,7 +8385,23 @@
     },
     {
       "ddgr": 61,
-      "rank": 552,
+      "rank": 548,
+      "name": "collinsdictionary",
+      "code": [
+        "!codi",
+        "!cdi",
+        "!di"
+      ],
+      "tags": [
+        "Online Services/Search"
+      ],
+      "urls": {
+        "s": "https://www.collinsdictionary.com/dictionary/english/%s"
+      }
+    },
+    {
+      "ddgr": 61,
+      "rank": 549,
       "name": "ebay.it",
       "code": [
         "!ebayit",
@@ -8430,7 +8417,7 @@
     },
     {
       "ddgr": 61,
-      "rank": 553,
+      "rank": 550,
       "name": "Octopart",
       "code": [
         "!octo",
@@ -8445,7 +8432,7 @@
     },
     {
       "ddgr": 61,
-      "rank": 554,
+      "rank": 551,
       "name": "Słownik Języka Polskiego",
       "code": [
         "!sjp"
@@ -8459,7 +8446,7 @@
     },
     {
       "ddgr": 61,
-      "rank": 555,
+      "rank": 552,
       "name": "TVmaze",
       "code": [
         "!tvmaze"
@@ -8473,7 +8460,7 @@
     },
     {
       "ddgr": 60,
-      "rank": 556,
+      "rank": 553,
       "name": "ArchWikiJP",
       "code": [
         "!archjp"
@@ -8487,7 +8474,7 @@
     },
     {
       "ddgr": 60,
-      "rank": 557,
+      "rank": 554,
       "name": "Basketball-Reference",
       "code": [
         "!bbr",
@@ -8502,7 +8489,7 @@
     },
     {
       "ddgr": 60,
-      "rank": 558,
+      "rank": 555,
       "name": "Institut d'Estudis Catalans",
       "code": [
         "!cat",
@@ -8518,7 +8505,7 @@
     },
     {
       "ddgr": 60,
-      "rank": 559,
+      "rank": 556,
       "name": "King James Bible Online",
       "code": [
         "!kjv"
@@ -8532,7 +8519,7 @@
     },
     {
       "ddgr": 60,
-      "rank": 560,
+      "rank": 557,
       "name": "Nixpkgs Repository",
       "code": [
         "!nr"
@@ -8546,7 +8533,7 @@
     },
     {
       "ddgr": 60,
-      "rank": 561,
+      "rank": 558,
       "name": "numpy",
       "code": [
         "!numpy"
@@ -8560,7 +8547,7 @@
     },
     {
       "ddgr": 60,
-      "rank": 562,
+      "rank": 559,
       "name": "SauceNAO",
       "code": [
         "!saucenao"
@@ -8574,7 +8561,7 @@
     },
     {
       "ddgr": 60,
-      "rank": 563,
+      "rank": 560,
       "name": "Super Mario Wiki",
       "code": [
         "!mario",
@@ -8590,7 +8577,7 @@
     },
     {
       "ddgr": 59,
-      "rank": 564,
+      "rank": 561,
       "name": "Dejure",
       "code": [
         "!dejure",
@@ -8605,7 +8592,7 @@
     },
     {
       "ddgr": 59,
-      "rank": 565,
+      "rank": 562,
       "name": "GitHub Code",
       "code": [
         "!ghc",
@@ -8620,7 +8607,7 @@
     },
     {
       "ddgr": 59,
-      "rank": 566,
+      "rank": 563,
       "name": "Humblebundle",
       "code": [
         "!hb",
@@ -8635,7 +8622,7 @@
     },
     {
       "ddgr": 59,
-      "rank": 567,
+      "rank": 564,
       "name": "JeuxVideo",
       "code": [
         "!jeux",
@@ -8652,7 +8639,7 @@
     },
     {
       "ddgr": 59,
-      "rank": 568,
+      "rank": 565,
       "name": "OZON",
       "code": [
         "!ozon",
@@ -8667,7 +8654,7 @@
     },
     {
       "ddgr": 59,
-      "rank": 569,
+      "rank": 566,
       "name": "Plurk",
       "code": [
         "!plurk"
@@ -8681,7 +8668,7 @@
     },
     {
       "ddgr": 59,
-      "rank": 570,
+      "rank": 567,
       "name": "Qobuz",
       "code": [
         "!qobuz"
@@ -8695,7 +8682,7 @@
     },
     {
       "ddgr": 59,
-      "rank": 571,
+      "rank": 568,
       "name": "SensCritique",
       "code": [
         "!scq",
@@ -8712,7 +8699,7 @@
     },
     {
       "ddgr": 59,
-      "rank": 572,
+      "rank": 569,
       "name": "Türk Dil Kurumu",
       "code": [
         "!tdk"
@@ -8726,7 +8713,7 @@
     },
     {
       "ddgr": 58,
-      "rank": 573,
+      "rank": 570,
       "name": "ABCNews",
       "code": [
         "!abcnews"
@@ -8740,7 +8727,7 @@
     },
     {
       "ddgr": 58,
-      "rank": 574,
+      "rank": 571,
       "name": "Elixir Documentation",
       "code": [
         "!elixir"
@@ -8754,7 +8741,7 @@
     },
     {
       "ddgr": 58,
-      "rank": 575,
+      "rank": 572,
       "name": "Godot Docs",
       "code": [
         "!godot",
@@ -8769,7 +8756,7 @@
     },
     {
       "ddgr": 58,
-      "rank": 576,
+      "rank": 573,
       "name": "Google Translator",
       "code": [
         "!enbr",
@@ -8784,7 +8771,7 @@
     },
     {
       "ddgr": 58,
-      "rank": 577,
+      "rank": 574,
       "name": "IGN",
       "code": [
         "!ign"
@@ -8798,7 +8785,7 @@
     },
     {
       "ddgr": 58,
-      "rank": 578,
+      "rank": 575,
       "name": "Seznam Slovník",
       "code": [
         "!slovnik"
@@ -8812,7 +8799,7 @@
     },
     {
       "ddgr": 58,
-      "rank": 579,
+      "rank": 576,
       "name": "Yeggi",
       "code": [
         "!yeggi"
@@ -8826,7 +8813,7 @@
     },
     {
       "ddgr": 57,
-      "rank": 580,
+      "rank": 577,
       "name": "Google Maps UK",
       "code": [
         "!mapsuk"
@@ -8840,7 +8827,7 @@
     },
     {
       "ddgr": 57,
-      "rank": 581,
+      "rank": 578,
       "name": "Lobsters",
       "code": [
         "!lobsters"
@@ -8854,7 +8841,7 @@
     },
     {
       "ddgr": 57,
-      "rank": 582,
+      "rank": 579,
       "name": "OCLC Worldcat",
       "code": [
         "!oclc"
@@ -8868,7 +8855,7 @@
     },
     {
       "ddgr": 57,
-      "rank": 583,
+      "rank": 580,
       "name": "Reverso French - English",
       "code": [
         "!refreb",
@@ -8883,7 +8870,7 @@
     },
     {
       "ddgr": 57,
-      "rank": 584,
+      "rank": 581,
       "name": "Semantic Scholar",
       "code": [
         "!s2",
@@ -8900,7 +8887,7 @@
     },
     {
       "ddgr": 57,
-      "rank": 585,
+      "rank": 582,
       "name": "The Verge",
       "code": [
         "!theverge",
@@ -8915,7 +8902,7 @@
     },
     {
       "ddgr": 57,
-      "rank": 586,
+      "rank": 583,
       "name": "wetter.com",
       "code": [
         "!wetter"
@@ -8929,7 +8916,7 @@
     },
     {
       "ddgr": 56,
-      "rank": 587,
+      "rank": 584,
       "name": "Google (Past Year)",
       "code": [
         "!gyear",
@@ -8944,7 +8931,7 @@
     },
     {
       "ddgr": 56,
-      "rank": 588,
+      "rank": 585,
       "name": "Google Translate (to Portuguese)",
       "code": [
         "!gt-portuguese",
@@ -8960,7 +8947,7 @@
     },
     {
       "ddgr": 56,
-      "rank": 589,
+      "rank": 586,
       "name": "Politico",
       "code": [
         "!politico"
@@ -8974,7 +8961,7 @@
     },
     {
       "ddgr": 56,
-      "rank": 590,
+      "rank": 587,
       "name": "Svenska Akademiens Ordböcker",
       "code": [
         "!saob",
@@ -8989,7 +8976,7 @@
     },
     {
       "ddgr": 55,
-      "rank": 591,
+      "rank": 588,
       "name": "D&D Beyond",
       "code": [
         "!d&d",
@@ -9005,7 +8992,7 @@
     },
     {
       "ddgr": 55,
-      "rank": 592,
+      "rank": 589,
       "name": "PC Gamer",
       "code": [
         "!pcg"
@@ -9019,7 +9006,7 @@
     },
     {
       "ddgr": 55,
-      "rank": 593,
+      "rank": 590,
       "name": "The Weather Channel",
       "code": [
         "!wc",
@@ -9034,7 +9021,7 @@
     },
     {
       "ddgr": 54,
-      "rank": 594,
+      "rank": 591,
       "name": "3Bmeteo",
       "code": [
         "!3bm"
@@ -9048,7 +9035,7 @@
     },
     {
       "ddgr": 54,
-      "rank": 595,
+      "rank": 592,
       "name": "Al Jazeera America",
       "code": [
         "!aja"
@@ -9062,7 +9049,7 @@
     },
     {
       "ddgr": 54,
-      "rank": 596,
+      "rank": 593,
       "name": "Google Maps DE",
       "code": [
         "!gmde",
@@ -9078,7 +9065,7 @@
     },
     {
       "ddgr": 54,
-      "rank": 597,
+      "rank": 594,
       "name": "Japan Dict",
       "code": [
         "!jpd"
@@ -9092,7 +9079,7 @@
     },
     {
       "ddgr": 54,
-      "rank": 598,
+      "rank": 595,
       "name": "MuseScore.com",
       "code": [
         "!musescore"
@@ -9106,13 +9093,15 @@
     },
     {
       "ddgr": 54,
-      "rank": 599,
+      "rank": 596,
       "name": "Reddit User",
       "code": [
-        "!reu"
+        "!reu",
+        "!rusr"
       ],
       "tags": [
-        "Multimedia/General"
+        "Multimedia/General",
+        "Online Services/Social"
       ],
       "urls": {
         "s": "https://www.reddit.com/user/%s"
@@ -9120,7 +9109,7 @@
     },
     {
       "ddgr": 54,
-      "rank": 600,
+      "rank": 597,
       "name": "Yandex Reverse Image Search",
       "code": [
         "!yri"
@@ -9134,7 +9123,7 @@
     },
     {
       "ddgr": 53,
-      "rank": 601,
+      "rank": 598,
       "name": "9to5Mac",
       "code": [
         "!95mac"
@@ -9148,7 +9137,7 @@
     },
     {
       "ddgr": 53,
-      "rank": 602,
+      "rank": 599,
       "name": "Apple Maps",
       "code": [
         "!am",
@@ -9164,7 +9153,7 @@
     },
     {
       "ddgr": 53,
-      "rank": 603,
+      "rank": 600,
       "name": "Explain xkcd",
       "code": [
         "!exkcd",
@@ -9179,7 +9168,7 @@
     },
     {
       "ddgr": 53,
-      "rank": 604,
+      "rank": 601,
       "name": "FreeBSD Man Pages",
       "code": [
         "!bsdman",
@@ -9195,7 +9184,7 @@
     },
     {
       "ddgr": 53,
-      "rank": 605,
+      "rank": 602,
       "name": "Mankier",
       "code": [
         "!mankier"
@@ -9209,7 +9198,7 @@
     },
     {
       "ddgr": 53,
-      "rank": 606,
+      "rank": 603,
       "name": "Power Thesaurus",
       "code": [
         "!powt"
@@ -9223,7 +9212,7 @@
     },
     {
       "ddgr": 53,
-      "rank": 607,
+      "rank": 604,
       "name": "werstreamt.es",
       "code": [
         "!wer"
@@ -9237,7 +9226,7 @@
     },
     {
       "ddgr": 53,
-      "rank": 608,
+      "rank": 605,
       "name": "Zalando.de",
       "code": [
         "!zalandode"
@@ -9251,7 +9240,7 @@
     },
     {
       "ddgr": 52,
-      "rank": 609,
+      "rank": 606,
       "name": "RhymeZone",
       "code": [
         "!rhyme",
@@ -9266,7 +9255,7 @@
     },
     {
       "ddgr": 51,
-      "rank": 610,
+      "rank": 607,
       "name": "Escape From Tarkov Wiki",
       "code": [
         "!tarkov"
@@ -9280,7 +9269,7 @@
     },
     {
       "ddgr": 51,
-      "rank": 611,
+      "rank": 608,
       "name": "Google define",
       "code": [
         "!gdef"
@@ -9294,7 +9283,7 @@
     },
     {
       "ddgr": 51,
-      "rank": 612,
+      "rank": 609,
       "name": "thomann.de",
       "code": [
         "!thm",
@@ -9309,7 +9298,7 @@
     },
     {
       "ddgr": 51,
-      "rank": 613,
+      "rank": 610,
       "name": "YouTube (sort by date)",
       "code": [
         "!ytdate"
@@ -9323,7 +9312,7 @@
     },
     {
       "ddgr": 50,
-      "rank": 614,
+      "rank": 611,
       "name": "CoinGecko",
       "code": [
         "!coingecko",
@@ -9338,7 +9327,7 @@
     },
     {
       "ddgr": 50,
-      "rank": 615,
+      "rank": 612,
       "name": "NetHack Wiki",
       "code": [
         "!nh",
@@ -9354,7 +9343,7 @@
     },
     {
       "ddgr": 49,
-      "rank": 616,
+      "rank": 613,
       "name": "Amazon.com order history",
       "code": [
         "!amazonorders",
@@ -9369,7 +9358,7 @@
     },
     {
       "ddgr": 49,
-      "rank": 617,
+      "rank": 614,
       "name": "Common Sense Media",
       "code": [
         "!commonsensemedia",
@@ -9384,7 +9373,7 @@
     },
     {
       "ddgr": 49,
-      "rank": 618,
+      "rank": 615,
       "name": "Google: I'm Feeling Lucky",
       "code": [
         "!gifl"
@@ -9398,7 +9387,7 @@
     },
     {
       "ddgr": 49,
-      "rank": 619,
+      "rank": 616,
       "name": "Heise.de Preisvergleich",
       "code": [
         "!hpv"
@@ -9412,7 +9401,7 @@
     },
     {
       "ddgr": 49,
-      "rank": 620,
+      "rank": 617,
       "name": "OMG! Ubuntu!",
       "code": [
         "!omg",
@@ -9428,7 +9417,7 @@
     },
     {
       "ddgr": 49,
-      "rank": 621,
+      "rank": 618,
       "name": "Packagist",
       "code": [
         "!packagist",
@@ -9443,7 +9432,7 @@
     },
     {
       "ddgr": 49,
-      "rank": 622,
+      "rank": 619,
       "name": "Toppreise.ch",
       "code": [
         "!toppreise"
@@ -9457,7 +9446,7 @@
     },
     {
       "ddgr": 48,
-      "rank": 623,
+      "rank": 620,
       "name": "Bloomberg",
       "code": [
         "!blmb",
@@ -9472,7 +9461,7 @@
     },
     {
       "ddgr": 48,
-      "rank": 624,
+      "rank": 621,
       "name": "Derpibooru",
       "code": [
         "!derpi",
@@ -9489,7 +9478,7 @@
     },
     {
       "ddgr": 48,
-      "rank": 625,
+      "rank": 622,
       "name": "Django Docs",
       "code": [
         "!django",
@@ -9504,7 +9493,7 @@
     },
     {
       "ddgr": 48,
-      "rank": 626,
+      "rank": 623,
       "name": "EtherScan",
       "code": [
         "!eth",
@@ -9519,7 +9508,7 @@
     },
     {
       "ddgr": 48,
-      "rank": 627,
+      "rank": 624,
       "name": "Le Monde",
       "code": [
         "!lemonde",
@@ -9534,7 +9523,7 @@
     },
     {
       "ddgr": 48,
-      "rank": 628,
+      "rank": 625,
       "name": "Linux Packages Search",
       "code": [
         "!pkgs"
@@ -9548,7 +9537,7 @@
     },
     {
       "ddgr": 48,
-      "rank": 629,
+      "rank": 626,
       "name": "node.js docs",
       "code": [
         "!node"
@@ -9562,7 +9551,7 @@
     },
     {
       "ddgr": 48,
-      "rank": 630,
+      "rank": 627,
       "name": "Puzzling",
       "code": [
         "!puzzse"
@@ -9576,7 +9565,7 @@
     },
     {
       "ddgr": 48,
-      "rank": 631,
+      "rank": 628,
       "name": "Word Reference Definicion",
       "code": [
         "!esdef",
@@ -9593,7 +9582,7 @@
     },
     {
       "ddgr": 47,
-      "rank": 632,
+      "rank": 629,
       "name": "Check-host.net",
       "code": [
         "!checkhost"
@@ -9607,7 +9596,7 @@
     },
     {
       "ddgr": 47,
-      "rank": 633,
+      "rank": 630,
       "name": "Fire Emblem Wiki",
       "code": [
         "!few",
@@ -9622,7 +9611,7 @@
     },
     {
       "ddgr": 47,
-      "rank": 634,
+      "rank": 631,
       "name": "Google Maps (uk)",
       "code": [
         "!gmuk"
@@ -9636,7 +9625,7 @@
     },
     {
       "ddgr": 47,
-      "rank": 635,
+      "rank": 632,
       "name": "Hitta.se",
       "code": [
         "!hitta"
@@ -9650,7 +9639,7 @@
     },
     {
       "ddgr": 47,
-      "rank": 636,
+      "rank": 633,
       "name": "ipinfo.io",
       "code": [
         "!ipinfo"
@@ -9664,7 +9653,7 @@
     },
     {
       "ddgr": 47,
-      "rank": 637,
+      "rank": 634,
       "name": "Kickstarter",
       "code": [
         "!kickstarter",
@@ -9680,7 +9669,7 @@
     },
     {
       "ddgr": 47,
-      "rank": 638,
+      "rank": 635,
       "name": "Kupujemprodajem",
       "code": [
         "!kp"
@@ -9694,7 +9683,7 @@
     },
     {
       "ddgr": 47,
-      "rank": 639,
+      "rank": 636,
       "name": "PlayStation Store",
       "code": [
         "!pss"
@@ -9708,7 +9697,7 @@
     },
     {
       "ddgr": 47,
-      "rank": 640,
+      "rank": 637,
       "name": "pub.dev",
       "code": [
         "!pubdev"
@@ -9722,7 +9711,7 @@
     },
     {
       "ddgr": 47,
-      "rank": 641,
+      "rank": 638,
       "name": "shodan",
       "code": [
         "!shodan",
@@ -9737,7 +9726,7 @@
     },
     {
       "ddgr": 46,
-      "rank": 642,
+      "rank": 639,
       "name": "american heritage dictionary",
       "code": [
         "!ahd"
@@ -9751,7 +9740,7 @@
     },
     {
       "ddgr": 46,
-      "rank": 643,
+      "rank": 640,
       "name": "Apple",
       "code": [
         "!apple"
@@ -9765,7 +9754,7 @@
     },
     {
       "ddgr": 46,
-      "rank": 644,
+      "rank": 641,
       "name": "Factorio wiki",
       "code": [
         "!factorio",
@@ -9780,7 +9769,7 @@
     },
     {
       "ddgr": 46,
-      "rank": 645,
+      "rank": 642,
       "name": "Google map (Taiwan)",
       "code": [
         "!gmtw"
@@ -9794,7 +9783,7 @@
     },
     {
       "ddgr": 46,
-      "rank": 646,
+      "rank": 643,
       "name": "Google Translate (to Russian)",
       "code": [
         "!gtru",
@@ -9810,7 +9799,7 @@
     },
     {
       "ddgr": 46,
-      "rank": 647,
+      "rank": 644,
       "name": "HTTP Status Codes",
       "code": [
         "!http"
@@ -9824,7 +9813,7 @@
     },
     {
       "ddgr": 46,
-      "rank": 648,
+      "rank": 645,
       "name": "Prisjakt",
       "code": [
         "!pj",
@@ -9840,7 +9829,7 @@
     },
     {
       "ddgr": 46,
-      "rank": 649,
+      "rank": 646,
       "name": "REI",
       "code": [
         "!rei"
@@ -9854,7 +9843,7 @@
     },
     {
       "ddgr": 46,
-      "rank": 650,
+      "rank": 647,
       "name": "Willhaben",
       "code": [
         "!willhaben",
@@ -9869,7 +9858,7 @@
     },
     {
       "ddgr": 45,
-      "rank": 651,
+      "rank": 648,
       "name": "Art of Manliness",
       "code": [
         "!aom"
@@ -9883,7 +9872,7 @@
     },
     {
       "ddgr": 45,
-      "rank": 652,
+      "rank": 649,
       "name": "filmaffinity",
       "code": [
         "!film"
@@ -9897,7 +9886,7 @@
     },
     {
       "ddgr": 45,
-      "rank": 653,
+      "rank": 650,
       "name": "Google RO",
       "code": [
         "!gro"
@@ -9911,7 +9900,7 @@
     },
     {
       "ddgr": 45,
-      "rank": 654,
+      "rank": 651,
       "name": "Ikea",
       "code": [
         "!ikea"
@@ -9925,7 +9914,7 @@
     },
     {
       "ddgr": 45,
-      "rank": 655,
+      "rank": 652,
       "name": "kicker online",
       "code": [
         "!kicker"
@@ -9939,7 +9928,7 @@
     },
     {
       "ddgr": 45,
-      "rank": 656,
+      "rank": 653,
       "name": "MusicBrainz Releases",
       "code": [
         "!mbrelease",
@@ -9954,7 +9943,7 @@
     },
     {
       "ddgr": 45,
-      "rank": 657,
+      "rank": 654,
       "name": "Scribd.com",
       "code": [
         "!docs",
@@ -9969,7 +9958,7 @@
     },
     {
       "ddgr": 45,
-      "rank": 658,
+      "rank": 655,
       "name": "unsplash.com",
       "code": [
         "!unsplash",
@@ -9984,7 +9973,7 @@
     },
     {
       "ddgr": 45,
-      "rank": 659,
+      "rank": 656,
       "name": "Vimeo",
       "code": [
         "!vimeo"
@@ -9998,7 +9987,7 @@
     },
     {
       "ddgr": 45,
-      "rank": 660,
+      "rank": 657,
       "name": "Yahoo Mail",
       "code": [
         "!ymail"
@@ -10012,7 +10001,7 @@
     },
     {
       "ddgr": 44,
-      "rank": 661,
+      "rank": 658,
       "name": "Depop",
       "code": [
         "!depop"
@@ -10026,7 +10015,7 @@
     },
     {
       "ddgr": 44,
-      "rank": 662,
+      "rank": 659,
       "name": "Google SK",
       "code": [
         "!gsk"
@@ -10040,7 +10029,7 @@
     },
     {
       "ddgr": 44,
-      "rank": 663,
+      "rank": 660,
       "name": "Google Translate URL",
       "code": [
         "!gturl"
@@ -10054,22 +10043,7 @@
     },
     {
       "ddgr": 44,
-      "rank": 664,
-      "name": "IMBD",
-      "code": [
-        "!imbd",
-        "!tv"
-      ],
-      "tags": [
-        "Entertainment/Movies"
-      ],
-      "urls": {
-        "s": "https://www.imdb.com/find?q=%s&s=all"
-      }
-    },
-    {
-      "ddgr": 44,
-      "rank": 665,
+      "rank": 661,
       "name": "Mozilla Developer Network CSS",
       "code": [
         "!css",
@@ -10084,7 +10058,7 @@
     },
     {
       "ddgr": 44,
-      "rank": 666,
+      "rank": 662,
       "name": "MyFigureCollection",
       "code": [
         "!mfc"
@@ -10098,7 +10072,7 @@
     },
     {
       "ddgr": 44,
-      "rank": 667,
+      "rank": 663,
       "name": "Racket",
       "code": [
         "!racket",
@@ -10113,7 +10087,7 @@
     },
     {
       "ddgr": 44,
-      "rank": 668,
+      "rank": 664,
       "name": "RemyWiki",
       "code": [
         "!remywiki",
@@ -10128,7 +10102,7 @@
     },
     {
       "ddgr": 44,
-      "rank": 669,
+      "rank": 665,
       "name": "Speedrun.com",
       "code": [
         "!speedrun"
@@ -10142,7 +10116,7 @@
     },
     {
       "ddgr": 44,
-      "rank": 670,
+      "rank": 666,
       "name": "Ubuntu Packages",
       "code": [
         "!ubuntupack",
@@ -10158,7 +10132,7 @@
     },
     {
       "ddgr": 44,
-      "rank": 671,
+      "rank": 667,
       "name": "World of Warcraft",
       "code": [
         "!wow"
@@ -10172,7 +10146,7 @@
     },
     {
       "ddgr": 43,
-      "rank": 672,
+      "rank": 668,
       "name": "AEMET",
       "code": [
         "!aemet"
@@ -10186,7 +10160,7 @@
     },
     {
       "ddgr": 43,
-      "rank": 673,
+      "rank": 669,
       "name": "endic.naver.com",
       "code": [
         "!endic"
@@ -10200,7 +10174,7 @@
     },
     {
       "ddgr": 43,
-      "rank": 674,
+      "rank": 670,
       "name": "Google (Past 24h)",
       "code": [
         "!g24",
@@ -10215,7 +10189,7 @@
     },
     {
       "ddgr": 43,
-      "rank": 675,
+      "rank": 671,
       "name": "Google Translate (ruen)",
       "code": [
         "!ruen",
@@ -10232,7 +10206,7 @@
     },
     {
       "ddgr": 43,
-      "rank": 676,
+      "rank": 672,
       "name": "Kubernetes",
       "code": [
         "!k8s",
@@ -10247,7 +10221,7 @@
     },
     {
       "ddgr": 43,
-      "rank": 677,
+      "rank": 673,
       "name": "LaserDisc Database",
       "code": [
         "!lddb"
@@ -10261,7 +10235,7 @@
     },
     {
       "ddgr": 43,
-      "rank": 678,
+      "rank": 674,
       "name": "Lutris - Open Gaming Platform",
       "code": [
         "!lutris"
@@ -10275,7 +10249,7 @@
     },
     {
       "ddgr": 43,
-      "rank": 679,
+      "rank": 675,
       "name": "openSUSE Build Service",
       "code": [
         "!obs"
@@ -10289,7 +10263,7 @@
     },
     {
       "ddgr": 43,
-      "rank": 680,
+      "rank": 676,
       "name": "Sam's Club",
       "code": [
         "!samsclub"
@@ -10303,7 +10277,7 @@
     },
     {
       "ddgr": 43,
-      "rank": 681,
+      "rank": 677,
       "name": "TMZ",
       "code": [
         "!tmz"
@@ -10317,7 +10291,7 @@
     },
     {
       "ddgr": 43,
-      "rank": 682,
+      "rank": 678,
       "name": "Wiktionary (SV)",
       "code": [
         "!wtsv"
@@ -10331,7 +10305,7 @@
     },
     {
       "ddgr": 43,
-      "rank": 683,
+      "rank": 679,
       "name": "Wirecutter (A New York Times Company)",
       "code": [
         "!twc"
@@ -10345,7 +10319,7 @@
     },
     {
       "ddgr": 42,
-      "rank": 684,
+      "rank": 680,
       "name": "Chess.com",
       "code": [
         "!chess"
@@ -10359,7 +10333,7 @@
     },
     {
       "ddgr": 42,
-      "rank": 685,
+      "rank": 681,
       "name": "Dexonline",
       "code": [
         "!dexonline"
@@ -10373,7 +10347,7 @@
     },
     {
       "ddgr": 42,
-      "rank": 686,
+      "rank": 682,
       "name": "Games",
       "code": [
         "!games"
@@ -10387,7 +10361,7 @@
     },
     {
       "ddgr": 42,
-      "rank": 687,
+      "rank": 683,
       "name": "GOG Database",
       "code": [
         "!gogdb"
@@ -10401,7 +10375,7 @@
     },
     {
       "ddgr": 42,
-      "rank": 688,
+      "rank": 684,
       "name": "Google Cloud Search",
       "code": [
         "!gcs"
@@ -10415,7 +10389,7 @@
     },
     {
       "ddgr": 42,
-      "rank": 689,
+      "rank": 685,
       "name": "Google IE",
       "code": [
         "!gie"
@@ -10429,7 +10403,7 @@
     },
     {
       "ddgr": 42,
-      "rank": 690,
+      "rank": 686,
       "name": "Logeion",
       "code": [
         "!logeion",
@@ -10444,7 +10418,7 @@
     },
     {
       "ddgr": 42,
-      "rank": 691,
+      "rank": 687,
       "name": "This MIght Be a Wiki",
       "code": [
         "!tmbw"
@@ -10458,7 +10432,7 @@
     },
     {
       "ddgr": 42,
-      "rank": 692,
+      "rank": 688,
       "name": "Wallhaven Alpha",
       "code": [
         "!walla",
@@ -10476,7 +10450,7 @@
     },
     {
       "ddgr": 42,
-      "rank": 693,
+      "rank": 689,
       "name": "Wired",
       "code": [
         "!wired"
@@ -10490,7 +10464,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 694,
+      "rank": 690,
       "name": "Danawa",
       "code": [
         "!danawa",
@@ -10505,7 +10479,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 695,
+      "rank": 691,
       "name": "DuckDuckGo in Japan",
       "code": [
         "!ddgja"
@@ -10519,7 +10493,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 696,
+      "rank": 692,
       "name": "Google UA",
       "code": [
         "!gua"
@@ -10533,7 +10507,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 697,
+      "rank": 693,
       "name": "Imgflip",
       "code": [
         "!imgflip"
@@ -10547,7 +10521,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 698,
+      "rank": 694,
       "name": "Microsoft/Bing Translator",
       "code": [
         "!bt"
@@ -10561,7 +10535,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 699,
+      "rank": 695,
       "name": "Morfix",
       "code": [
         "!mfx",
@@ -10577,7 +10551,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 700,
+      "rank": 696,
       "name": "Multitran",
       "code": [
         "!mt",
@@ -10592,7 +10566,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 701,
+      "rank": 697,
       "name": "MyDealz",
       "code": [
         "!mydealz"
@@ -10606,7 +10580,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 702,
+      "rank": 698,
       "name": "OpenGL",
       "code": [
         "!gl"
@@ -10620,7 +10594,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 703,
+      "rank": 699,
       "name": "PrintFriendly & PDF",
       "code": [
         "!pdfy",
@@ -10635,7 +10609,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 704,
+      "rank": 700,
       "name": "Reta Vortaro",
       "code": [
         "!reta-vortaro",
@@ -10650,7 +10624,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 705,
+      "rank": 701,
       "name": "Saccharomyces Genome Database",
       "code": [
         "!sgd",
@@ -10666,7 +10640,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 706,
+      "rank": 702,
       "name": "Subito.it",
       "code": [
         "!subito"
@@ -10680,7 +10654,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 707,
+      "rank": 703,
       "name": "TF2 Wiki",
       "code": [
         "!tf2",
@@ -10695,7 +10669,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 708,
+      "rank": 704,
       "name": "tripadvisor",
       "code": [
         "!ta"
@@ -10709,7 +10683,7 @@
     },
     {
       "ddgr": 41,
-      "rank": 709,
+      "rank": 705,
       "name": "Tyda.se",
       "code": [
         "!tyda",
@@ -10722,7 +10696,7 @@
     },
     {
       "ddgr": 40,
-      "rank": 710,
+      "rank": 706,
       "name": "alibris",
       "code": [
         "!alibris"
@@ -10736,21 +10710,7 @@
     },
     {
       "ddgr": 40,
-      "rank": 711,
-      "name": "archive.org",
-      "code": [
-        "!iarchive"
-      ],
-      "tags": [
-        "Multimedia/General"
-      ],
-      "urls": {
-        "s": "https://www.archive.org/search.php?query=%s"
-      }
-    },
-    {
-      "ddgr": 40,
-      "rank": 712,
+      "rank": 707,
       "name": "BBC News",
       "code": [
         "!bbcnews"
@@ -10764,7 +10724,7 @@
     },
     {
       "ddgr": 40,
-      "rank": 713,
+      "rank": 708,
       "name": "CMake documentation",
       "code": [
         "!cmake"
@@ -10778,7 +10738,7 @@
     },
     {
       "ddgr": 40,
-      "rank": 714,
+      "rank": 709,
       "name": "DuckDuckGo Calculator",
       "code": [
         "!ddg-calc",
@@ -10794,7 +10754,7 @@
     },
     {
       "ddgr": 40,
-      "rank": 715,
+      "rank": 710,
       "name": "ebay.fr",
       "code": [
         "!ebayfr",
@@ -10810,7 +10770,7 @@
     },
     {
       "ddgr": 40,
-      "rank": 716,
+      "rank": 711,
       "name": "Google Translate (to German)",
       "code": [
         "!gtde",
@@ -10827,7 +10787,7 @@
     },
     {
       "ddgr": 40,
-      "rank": 717,
+      "rank": 712,
       "name": "Google translate es-en",
       "code": [
         "!esen"
@@ -10841,7 +10801,7 @@
     },
     {
       "ddgr": 40,
-      "rank": 718,
+      "rank": 713,
       "name": "Internet Movie Firearms Database",
       "code": [
         "!imfdb"
@@ -10855,7 +10815,7 @@
     },
     {
       "ddgr": 40,
-      "rank": 719,
+      "rank": 714,
       "name": "LEO Dictionary Italian",
       "code": [
         "!leoi"
@@ -10867,7 +10827,7 @@
     },
     {
       "ddgr": 40,
-      "rank": 720,
+      "rank": 715,
       "name": "Linguee (pt2en)",
       "code": [
         "!linbr"
@@ -10881,7 +10841,7 @@
     },
     {
       "ddgr": 40,
-      "rank": 721,
+      "rank": 716,
       "name": "Radiopaedia.org",
       "code": [
         "!radio",
@@ -10897,7 +10857,7 @@
     },
     {
       "ddgr": 40,
-      "rank": 722,
+      "rank": 717,
       "name": "The Open Group Base Specifications",
       "code": [
         "!posix"
@@ -10911,7 +10871,7 @@
     },
     {
       "ddgr": 40,
-      "rank": 723,
+      "rank": 718,
       "name": "Ukrainian Wikipedia",
       "code": [
         "!wuk",
@@ -10927,7 +10887,7 @@
     },
     {
       "ddgr": 40,
-      "rank": 724,
+      "rank": 719,
       "name": "ZDF",
       "code": [
         "!zdf"
@@ -10941,7 +10901,7 @@
     },
     {
       "ddgr": 39,
-      "rank": 725,
+      "rank": 720,
       "name": "A Wiki of Ice and Fire",
       "code": [
         "!asoiaf",
@@ -10956,7 +10916,7 @@
     },
     {
       "ddgr": 39,
-      "rank": 726,
+      "rank": 721,
       "name": "Behind the Name",
       "code": [
         "!btname",
@@ -10971,7 +10931,7 @@
     },
     {
       "ddgr": 39,
-      "rank": 727,
+      "rank": 722,
       "name": "BEOLINGUS",
       "code": [
         "!bde",
@@ -10988,7 +10948,7 @@
     },
     {
       "ddgr": 39,
-      "rank": 728,
+      "rank": 723,
       "name": "FotMob",
       "code": [
         "!fot"
@@ -11002,7 +10962,7 @@
     },
     {
       "ddgr": 39,
-      "rank": 729,
+      "rank": 724,
       "name": "Girls with muscle",
       "code": [
         "!gwm"
@@ -11016,7 +10976,7 @@
     },
     {
       "ddgr": 39,
-      "rank": 730,
+      "rank": 725,
       "name": "JoyReactor",
       "code": [
         "!jr"
@@ -11030,7 +10990,7 @@
     },
     {
       "ddgr": 39,
-      "rank": 731,
+      "rank": 726,
       "name": "MusicBrainz Recordings",
       "code": [
         "!mbrc",
@@ -11045,7 +11005,7 @@
     },
     {
       "ddgr": 39,
-      "rank": 732,
+      "rank": 727,
       "name": "Naver Map",
       "code": [
         "!nmap"
@@ -11059,7 +11019,7 @@
     },
     {
       "ddgr": 39,
-      "rank": 733,
+      "rank": 728,
       "name": "RuTube",
       "code": [
         "!rutube",
@@ -11075,7 +11035,7 @@
     },
     {
       "ddgr": 39,
-      "rank": 734,
+      "rank": 729,
       "name": "Veekun Pokedex",
       "code": [
         "!veekun"
@@ -11089,7 +11049,7 @@
     },
     {
       "ddgr": 38,
-      "rank": 735,
+      "rank": 730,
       "name": "Akakçe",
       "code": [
         "!akakce"
@@ -11103,7 +11063,7 @@
     },
     {
       "ddgr": 38,
-      "rank": 736,
+      "rank": 731,
       "name": "alpine linux wiki",
       "code": [
         "!alw"
@@ -11117,7 +11077,7 @@
     },
     {
       "ddgr": 38,
-      "rank": 737,
+      "rank": 732,
       "name": "Esperanto Wikipedia",
       "code": [
         "!weo",
@@ -11135,7 +11095,7 @@
     },
     {
       "ddgr": 38,
-      "rank": 738,
+      "rank": 733,
       "name": "GitHub Gists",
       "code": [
         "!gist"
@@ -11149,7 +11109,7 @@
     },
     {
       "ddgr": 38,
-      "rank": 739,
+      "rank": 734,
       "name": "Il Fatto Quotidiano",
       "code": [
         "!ilfatto"
@@ -11163,21 +11123,23 @@
     },
     {
       "ddgr": 38,
-      "rank": 740,
+      "rank": 735,
       "name": "Oracle Java Docs",
       "code": [
+        "!java9",
+        "!jdk",
         "!java"
       ],
       "tags": [
         "Tech/Languages (java)"
       ],
       "urls": {
-        "s": "https://docs.oracle.com/apps/search/search.jsp?q=%s&category=java"
+        "s": "https://docs.oracle.com/apps/search/search.jsp?category=java&q=%s"
       }
     },
     {
       "ddgr": 38,
-      "rank": 741,
+      "rank": 736,
       "name": "picsearch",
       "code": [
         "!pic"
@@ -11191,7 +11153,7 @@
     },
     {
       "ddgr": 38,
-      "rank": 742,
+      "rank": 737,
       "name": "pro-football-reference.com",
       "code": [
         "!pfr"
@@ -11205,7 +11167,7 @@
     },
     {
       "ddgr": 38,
-      "rank": 743,
+      "rank": 738,
       "name": "Sebsauvage",
       "code": [
         "!seb"
@@ -11219,7 +11181,7 @@
     },
     {
       "ddgr": 38,
-      "rank": 744,
+      "rank": 739,
       "name": "Tori",
       "code": [
         "!tori"
@@ -11233,7 +11195,7 @@
     },
     {
       "ddgr": 38,
-      "rank": 745,
+      "rank": 740,
       "name": "WooordHunt",
       "code": [
         "!woo",
@@ -11248,7 +11210,7 @@
     },
     {
       "ddgr": 38,
-      "rank": 746,
+      "rank": 741,
       "name": "쿠팡",
       "code": [
         "!coupang"
@@ -11262,7 +11224,7 @@
     },
     {
       "ddgr": 37,
-      "rank": 747,
+      "rank": 742,
       "name": "Bitbucket",
       "code": [
         "!bb",
@@ -11277,7 +11239,7 @@
     },
     {
       "ddgr": 37,
-      "rank": 748,
+      "rank": 743,
       "name": "DriveThruRPG",
       "code": [
         "!dtrpg"
@@ -11291,7 +11253,7 @@
     },
     {
       "ddgr": 37,
-      "rank": 749,
+      "rank": 744,
       "name": "Galaxus.ch",
       "code": [
         "!galaxus"
@@ -11305,7 +11267,7 @@
     },
     {
       "ddgr": 37,
-      "rank": 750,
+      "rank": 745,
       "name": "Google Images (Animated)",
       "code": [
         "!ggif",
@@ -11320,7 +11282,7 @@
     },
     {
       "ddgr": 37,
-      "rank": 751,
+      "rank": 746,
       "name": "How-To Geek",
       "code": [
         "!howtogeek",
@@ -11335,7 +11297,7 @@
     },
     {
       "ddgr": 37,
-      "rank": 752,
+      "rank": 747,
       "name": "JPC",
       "code": [
         "!jpc"
@@ -11349,7 +11311,7 @@
     },
     {
       "ddgr": 37,
-      "rank": 753,
+      "rank": 748,
       "name": "Novel updates",
       "code": [
         "!novelupdates",
@@ -11364,7 +11326,7 @@
     },
     {
       "ddgr": 37,
-      "rank": 754,
+      "rank": 749,
       "name": "Pokémon Showdown",
       "code": [
         "!showdown"
@@ -11378,7 +11340,7 @@
     },
     {
       "ddgr": 37,
-      "rank": 755,
+      "rank": 750,
       "name": "Rails API",
       "code": [
         "!rails"
@@ -11392,7 +11354,7 @@
     },
     {
       "ddgr": 37,
-      "rank": 756,
+      "rank": 751,
       "name": "Reverso German - English",
       "code": [
         "!redeen",
@@ -11407,7 +11369,7 @@
     },
     {
       "ddgr": 37,
-      "rank": 757,
+      "rank": 752,
       "name": "Sweetwater",
       "code": [
         "!sweetwater",
@@ -11422,7 +11384,7 @@
     },
     {
       "ddgr": 37,
-      "rank": 758,
+      "rank": 753,
       "name": "The KoLwiki",
       "code": [
         "!kol",
@@ -11437,7 +11399,7 @@
     },
     {
       "ddgr": 36,
-      "rank": 759,
+      "rank": 754,
       "name": "AccuWeather",
       "code": [
         "!accuweather"
@@ -11451,7 +11413,7 @@
     },
     {
       "ddgr": 36,
-      "rank": 760,
+      "rank": 755,
       "name": "Alibaba",
       "code": [
         "!alibaba",
@@ -11466,7 +11428,7 @@
     },
     {
       "ddgr": 36,
-      "rank": 761,
+      "rank": 756,
       "name": "Arte (FR)",
       "code": [
         "!arte",
@@ -11481,7 +11443,7 @@
     },
     {
       "ddgr": 36,
-      "rank": 762,
+      "rank": 757,
       "name": "Canadian Tire",
       "code": [
         "!ct",
@@ -11496,7 +11458,7 @@
     },
     {
       "ddgr": 36,
-      "rank": 763,
+      "rank": 758,
       "name": "DuckDuckGo Lite",
       "code": [
         "!lite"
@@ -11510,7 +11472,7 @@
     },
     {
       "ddgr": 36,
-      "rank": 764,
+      "rank": 759,
       "name": "Epic Games",
       "code": [
         "!epic"
@@ -11524,7 +11486,7 @@
     },
     {
       "ddgr": 36,
-      "rank": 765,
+      "rank": 760,
       "name": "Google Slides",
       "code": [
         "!gslides",
@@ -11543,7 +11505,7 @@
     },
     {
       "ddgr": 36,
-      "rank": 766,
+      "rank": 761,
       "name": "Google Spreadsheets",
       "code": [
         "!gsheet",
@@ -11564,7 +11526,7 @@
     },
     {
       "ddgr": 36,
-      "rank": 767,
+      "rank": 762,
       "name": "HabraHabr",
       "code": [
         "!habr",
@@ -11579,7 +11541,7 @@
     },
     {
       "ddgr": 36,
-      "rank": 768,
+      "rank": 763,
       "name": "Inkpedia",
       "code": [
         "!splatoon"
@@ -11593,7 +11555,7 @@
     },
     {
       "ddgr": 36,
-      "rank": 769,
+      "rank": 764,
       "name": "PCPartPicker",
       "code": [
         "!pcpartpicker",
@@ -11608,7 +11570,7 @@
     },
     {
       "ddgr": 36,
-      "rank": 770,
+      "rank": 765,
       "name": "Ricardo",
       "code": [
         "!ricardo"
@@ -11622,7 +11584,7 @@
     },
     {
       "ddgr": 36,
-      "rank": 771,
+      "rank": 766,
       "name": "StartPage safeoff eng",
       "code": [
         "!spp"
@@ -11636,7 +11598,7 @@
     },
     {
       "ddgr": 35,
-      "rank": 772,
+      "rank": 767,
       "name": "Al Jazeera",
       "code": [
         "!aljazeera",
@@ -11652,7 +11614,7 @@
     },
     {
       "ddgr": 35,
-      "rank": 773,
+      "rank": 768,
       "name": "Google India",
       "code": [
         "!gin",
@@ -11667,7 +11629,7 @@
     },
     {
       "ddgr": 35,
-      "rank": 774,
+      "rank": 769,
       "name": "Guild Wars Wiki",
       "code": [
         "!gww"
@@ -11681,7 +11643,7 @@
     },
     {
       "ddgr": 35,
-      "rank": 775,
+      "rank": 770,
       "name": "LiveChart.me",
       "code": [
         "!livec"
@@ -11695,7 +11657,7 @@
     },
     {
       "ddgr": 35,
-      "rank": 776,
+      "rank": 771,
       "name": "mojeek",
       "code": [
         "!mojeek"
@@ -11709,7 +11671,7 @@
     },
     {
       "ddgr": 35,
-      "rank": 777,
+      "rank": 772,
       "name": "NDTV",
       "code": [
         "!ndtv"
@@ -11723,7 +11685,7 @@
     },
     {
       "ddgr": 35,
-      "rank": 778,
+      "rank": 773,
       "name": "Wikibooks",
       "code": [
         "!wb",
@@ -11738,7 +11700,7 @@
     },
     {
       "ddgr": 34,
-      "rank": 779,
+      "rank": 774,
       "name": "4chan Catalog",
       "code": [
         "!4chc"
@@ -11752,7 +11714,7 @@
     },
     {
       "ddgr": 34,
-      "rank": 780,
+      "rank": 775,
       "name": "CeX",
       "code": [
         "!cex"
@@ -11766,7 +11728,7 @@
     },
     {
       "ddgr": 34,
-      "rank": 781,
+      "rank": 776,
       "name": "Down For Everyone Or Just Me",
       "code": [
         "!dfeojm",
@@ -11776,10 +11738,14 @@
         "!downforme",
         "!isitdown",
         "!isup",
-        "!updown"
+        "!updown",
+        "!isoffline",
+        "!isonline",
+        "!offline"
       ],
       "tags": [
-        "Online Services/Tools"
+        "Online Services/Tools",
+        "Online Services/Tools (URLs)"
       ],
       "urls": {
         "s": "https://downforeveryoneorjustme.com/%s"
@@ -11787,7 +11753,7 @@
     },
     {
       "ddgr": 34,
-      "rank": 782,
+      "rank": 777,
       "name": "fnac",
       "code": [
         "!fnac"
@@ -11801,7 +11767,7 @@
     },
     {
       "ddgr": 34,
-      "rank": 783,
+      "rank": 778,
       "name": "Google Fonts",
       "code": [
         "!gfont",
@@ -11817,24 +11783,11 @@
     },
     {
       "ddgr": 34,
-      "rank": 784,
-      "name": "HERE maps",
-      "code": [
-        "!hm"
-      ],
-      "tags": [
-        "Online Services/Maps"
-      ],
-      "urls": {
-        "s": "https://wego.here.com/search/%s?"
-      }
-    },
-    {
-      "ddgr": 34,
-      "rank": 785,
+      "rank": 779,
       "name": "Here WeGo",
       "code": [
-        "!here"
+        "!here",
+        "!hm"
       ],
       "tags": [
         "Online Services/Maps"
@@ -11845,7 +11798,7 @@
     },
     {
       "ddgr": 34,
-      "rank": 786,
+      "rank": 780,
       "name": "Pitchfork Media",
       "code": [
         "!p4k",
@@ -11860,7 +11813,7 @@
     },
     {
       "ddgr": 34,
-      "rank": 787,
+      "rank": 781,
       "name": "wikiFeet",
       "code": [
         "!feet",
@@ -11876,7 +11829,7 @@
     },
     {
       "ddgr": 33,
-      "rank": 788,
+      "rank": 782,
       "name": "All in One",
       "code": [
         "!all"
@@ -11890,7 +11843,7 @@
     },
     {
       "ddgr": 33,
-      "rank": 789,
+      "rank": 783,
       "name": "ARD Mediathek",
       "code": [
         "!ard"
@@ -11904,7 +11857,7 @@
     },
     {
       "ddgr": 33,
-      "rank": 790,
+      "rank": 784,
       "name": "Gmail by account",
       "code": [
         "!gba"
@@ -11918,7 +11871,7 @@
     },
     {
       "ddgr": 33,
-      "rank": 791,
+      "rank": 785,
       "name": "Google ZA",
       "code": [
         "!gza"
@@ -11932,7 +11885,7 @@
     },
     {
       "ddgr": 33,
-      "rank": 792,
+      "rank": 786,
       "name": "Hurricane Electrics Internet Services",
       "code": [
         "!bgp"
@@ -11946,7 +11899,7 @@
     },
     {
       "ddgr": 33,
-      "rank": 793,
+      "rank": 787,
       "name": "Kinopoisk",
       "code": [
         "!kino",
@@ -11963,7 +11916,7 @@
     },
     {
       "ddgr": 33,
-      "rank": 794,
+      "rank": 788,
       "name": "Mass Effect Wiki",
       "code": [
         "!me"
@@ -11977,7 +11930,7 @@
     },
     {
       "ddgr": 33,
-      "rank": 795,
+      "rank": 789,
       "name": "MTG Salvation Wiki",
       "code": [
         "!mtgs"
@@ -11991,7 +11944,7 @@
     },
     {
       "ddgr": 33,
-      "rank": 796,
+      "rank": 790,
       "name": "MXToolbox (dns)",
       "code": [
         "!dns"
@@ -12005,7 +11958,7 @@
     },
     {
       "ddgr": 33,
-      "rank": 797,
+      "rank": 791,
       "name": "Plena Ilustrita Vortaro",
       "code": [
         "!piv",
@@ -12020,7 +11973,7 @@
     },
     {
       "ddgr": 33,
-      "rank": 798,
+      "rank": 792,
       "name": "The Free Dictionary (Thesaurus)",
       "code": [
         "!freethesaurus",
@@ -12036,7 +11989,7 @@
     },
     {
       "ddgr": 33,
-      "rank": 799,
+      "rank": 793,
       "name": "WikiDex",
       "code": [
         "!wikidex"
@@ -12050,7 +12003,7 @@
     },
     {
       "ddgr": 33,
-      "rank": 800,
+      "rank": 794,
       "name": "YouTube Playlists",
       "code": [
         "!ytp"
@@ -12064,7 +12017,7 @@
     },
     {
       "ddgr": 32,
-      "rank": 801,
+      "rank": 795,
       "name": "Albert Heijn",
       "code": [
         "!ah",
@@ -12080,7 +12033,7 @@
     },
     {
       "ddgr": 32,
-      "rank": 802,
+      "rank": 796,
       "name": "Basketball Reference",
       "code": [
         "!bkref",
@@ -12096,7 +12049,7 @@
     },
     {
       "ddgr": 32,
-      "rank": 803,
+      "rank": 797,
       "name": "Crunchyroll",
       "code": [
         "!crs"
@@ -12110,7 +12063,7 @@
     },
     {
       "ddgr": 32,
-      "rank": 804,
+      "rank": 798,
       "name": "Dealabs",
       "code": [
         "!dealabs"
@@ -12124,7 +12077,7 @@
     },
     {
       "ddgr": 32,
-      "rank": 805,
+      "rank": 799,
       "name": "El Tiempo",
       "code": [
         "!et"
@@ -12138,7 +12091,7 @@
     },
     {
       "ddgr": 32,
-      "rank": 806,
+      "rank": 800,
       "name": "Flightradar24",
       "code": [
         "!flightradar",
@@ -12154,7 +12107,7 @@
     },
     {
       "ddgr": 32,
-      "rank": 807,
+      "rank": 801,
       "name": "Korean Wikipedia",
       "code": [
         "!wko",
@@ -12170,7 +12123,7 @@
     },
     {
       "ddgr": 32,
-      "rank": 808,
+      "rank": 802,
       "name": "maps.google.com",
       "code": [
         "!gmfr"
@@ -12184,7 +12137,7 @@
     },
     {
       "ddgr": 32,
-      "rank": 809,
+      "rank": 803,
       "name": "NOS",
       "code": [
         "!nos"
@@ -12198,7 +12151,7 @@
     },
     {
       "ddgr": 32,
-      "rank": 810,
+      "rank": 804,
       "name": "openSUSE",
       "code": [
         "!sus"
@@ -12212,7 +12165,7 @@
     },
     {
       "ddgr": 32,
-      "rank": 811,
+      "rank": 805,
       "name": "OpenSUSE Software Search",
       "code": [
         "!opensusesoftware",
@@ -12228,7 +12181,7 @@
     },
     {
       "ddgr": 32,
-      "rank": 812,
+      "rank": 806,
       "name": "Reddit (subreddit)",
       "code": [
         "!srs",
@@ -12243,7 +12196,7 @@
     },
     {
       "ddgr": 32,
-      "rank": 813,
+      "rank": 807,
       "name": "wikiHow",
       "code": [
         "!wh",
@@ -12260,7 +12213,7 @@
     },
     {
       "ddgr": 31,
-      "rank": 814,
+      "rank": 808,
       "name": "Amazon Nederland",
       "code": [
         "!amazonnl"
@@ -12274,7 +12227,7 @@
     },
     {
       "ddgr": 31,
-      "rank": 815,
+      "rank": 809,
       "name": "Micro Center",
       "code": [
         "!microcenter"
@@ -12288,7 +12241,7 @@
     },
     {
       "ddgr": 31,
-      "rank": 816,
+      "rank": 810,
       "name": "Mouser Electronics",
       "code": [
         "!mouser"
@@ -12302,7 +12255,7 @@
     },
     {
       "ddgr": 31,
-      "rank": 817,
+      "rank": 811,
       "name": "NotebookCheck",
       "code": [
         "!nbc"
@@ -12316,7 +12269,7 @@
     },
     {
       "ddgr": 31,
-      "rank": 818,
+      "rank": 812,
       "name": "Rust Nightly Standard Library Documentation",
       "code": [
         "!rustn"
@@ -12330,7 +12283,7 @@
     },
     {
       "ddgr": 31,
-      "rank": 819,
+      "rank": 813,
       "name": "SOLO: Search Oxford Libraries Online",
       "code": [
         "!solo"
@@ -12344,7 +12297,7 @@
     },
     {
       "ddgr": 31,
-      "rank": 820,
+      "rank": 814,
       "name": "TCGPlayer",
       "code": [
         "!tcgp",
@@ -12359,7 +12312,7 @@
     },
     {
       "ddgr": 31,
-      "rank": 821,
+      "rank": 815,
       "name": "Teamliquid Wiki",
       "code": [
         "!dota2",
@@ -12375,7 +12328,7 @@
     },
     {
       "ddgr": 31,
-      "rank": 822,
+      "rank": 816,
       "name": "Telegram",
       "code": [
         "!tlgrm"
@@ -12389,7 +12342,7 @@
     },
     {
       "ddgr": 31,
-      "rank": 823,
+      "rank": 817,
       "name": "The Washington Post",
       "code": [
         "!twp",
@@ -12405,7 +12358,7 @@
     },
     {
       "ddgr": 31,
-      "rank": 824,
+      "rank": 818,
       "name": "Vgmdb",
       "code": [
         "!vgmdb"
@@ -12419,7 +12372,7 @@
     },
     {
       "ddgr": 31,
-      "rank": 825,
+      "rank": 819,
       "name": "Wetter Online",
       "code": [
         "!wetteronline",
@@ -12434,7 +12387,7 @@
     },
     {
       "ddgr": 31,
-      "rank": 826,
+      "rank": 820,
       "name": "Yahoo Image Search",
       "code": [
         "!yi"
@@ -12448,7 +12401,7 @@
     },
     {
       "ddgr": 31,
-      "rank": 827,
+      "rank": 821,
       "name": "英辞郎 on the WEB Pro",
       "code": [
         "!eow"
@@ -12462,7 +12415,7 @@
     },
     {
       "ddgr": 30,
-      "rank": 828,
+      "rank": 822,
       "name": "Amazon Kindle",
       "code": [
         "!kindle"
@@ -12476,7 +12429,7 @@
     },
     {
       "ddgr": 30,
-      "rank": 829,
+      "rank": 823,
       "name": "Comic Vine",
       "code": [
         "!comicvine"
@@ -12490,7 +12443,7 @@
     },
     {
       "ddgr": 30,
-      "rank": 830,
+      "rank": 824,
       "name": "Google Flights",
       "code": [
         "!gfl",
@@ -12505,7 +12458,7 @@
     },
     {
       "ddgr": 30,
-      "rank": 831,
+      "rank": 825,
       "name": "Hdblog",
       "code": [
         "!hdblog"
@@ -12519,7 +12472,7 @@
     },
     {
       "ddgr": 30,
-      "rank": 832,
+      "rank": 826,
       "name": "HEB Grocery Company",
       "code": [
         "!heb"
@@ -12533,7 +12486,7 @@
     },
     {
       "ddgr": 30,
-      "rank": 833,
+      "rank": 827,
       "name": "Mercado Libre Venezuela",
       "code": [
         "!mlve"
@@ -12547,7 +12500,7 @@
     },
     {
       "ddgr": 30,
-      "rank": 834,
+      "rank": 828,
       "name": "NameMC",
       "code": [
         "!mcname",
@@ -12563,7 +12516,7 @@
     },
     {
       "ddgr": 30,
-      "rank": 835,
+      "rank": 829,
       "name": "Newgrounds",
       "code": [
         "!newgrounds"
@@ -12577,7 +12530,7 @@
     },
     {
       "ddgr": 30,
-      "rank": 836,
+      "rank": 830,
       "name": "Nintendo Life",
       "code": [
         "!ninlife",
@@ -12593,7 +12546,7 @@
     },
     {
       "ddgr": 30,
-      "rank": 837,
+      "rank": 831,
       "name": "Perldoc Browser",
       "code": [
         "!perldoc"
@@ -12607,7 +12560,7 @@
     },
     {
       "ddgr": 30,
-      "rank": 838,
+      "rank": 832,
       "name": "Pexels",
       "code": [
         "!pexels"
@@ -12621,7 +12574,7 @@
     },
     {
       "ddgr": 30,
-      "rank": 839,
+      "rank": 833,
       "name": "SlackBuilds.org",
       "code": [
         "!sbopkg",
@@ -12638,7 +12591,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 840,
+      "rank": 834,
       "name": "Allociné",
       "code": [
         "!ac",
@@ -12655,7 +12608,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 841,
+      "rank": 835,
       "name": "BookMY Show",
       "code": [
         "!bms",
@@ -12670,7 +12623,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 842,
+      "rank": 836,
       "name": "Gentoo's Bugzilla",
       "code": [
         "!gbugs"
@@ -12684,7 +12637,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 843,
+      "rank": 837,
       "name": "Google Maps Australia",
       "code": [
         "!gmau"
@@ -12698,7 +12651,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 844,
+      "rank": 838,
       "name": "Google NO",
       "code": [
         "!gno"
@@ -12712,7 +12665,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 845,
+      "rank": 839,
       "name": "Jacobin Magazine",
       "code": [
         "!jacobin"
@@ -12726,7 +12679,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 846,
+      "rank": 840,
       "name": "MangaDex",
       "code": [
         "!mangadex",
@@ -12741,7 +12694,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 847,
+      "rank": 841,
       "name": "MLB.com",
       "code": [
         "!mlb"
@@ -12755,7 +12708,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 848,
+      "rank": 842,
       "name": "MusicBrainz Artists",
       "code": [
         "!mbartist"
@@ -12769,7 +12722,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 849,
+      "rank": 843,
       "name": "Nico Nico Pedia",
       "code": [
         "!nicodic"
@@ -12783,7 +12736,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 850,
+      "rank": 844,
       "name": "Pinboard",
       "code": [
         "!pb",
@@ -12799,7 +12752,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 851,
+      "rank": 845,
       "name": "Rate My Professor",
       "code": [
         "!ratemyprofessor",
@@ -12815,7 +12768,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 852,
+      "rank": 846,
       "name": "Roller Coaster Database",
       "code": [
         "!rcdb"
@@ -12829,7 +12782,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 853,
+      "rank": 847,
       "name": "SCP Foundation",
       "code": [
         "!scp"
@@ -12843,7 +12796,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 854,
+      "rank": 848,
       "name": "Strava",
       "code": [
         "!strava"
@@ -12857,7 +12810,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 855,
+      "rank": 849,
       "name": "Süddeutsche Zeitung",
       "code": [
         "!sz"
@@ -12871,7 +12824,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 856,
+      "rank": 850,
       "name": "Texdoc",
       "code": [
         "!texdoc"
@@ -12885,7 +12838,7 @@
     },
     {
       "ddgr": 29,
-      "rank": 857,
+      "rank": 851,
       "name": "TimeAndDate",
       "code": [
         "!td"
@@ -12899,7 +12852,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 858,
+      "rank": 852,
       "name": "Alza.cz",
       "code": [
         "!alza"
@@ -12913,7 +12866,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 859,
+      "rank": 853,
       "name": "Ansa",
       "code": [
         "!ansa"
@@ -12927,7 +12880,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 860,
+      "rank": 854,
       "name": "ArchLinux Package Search",
       "code": [
         "!archpackages"
@@ -12941,7 +12894,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 861,
+      "rank": 855,
       "name": "chefkoch.de",
       "code": [
         "!chefkoch"
@@ -12955,7 +12908,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 862,
+      "rank": 856,
       "name": "Den Blå Avis",
       "code": [
         "!dba"
@@ -12969,7 +12922,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 863,
+      "rank": 857,
       "name": "dwarf fortress wiki",
       "code": [
         "!dwarf"
@@ -12983,7 +12936,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 864,
+      "rank": 858,
       "name": "EDHREC",
       "code": [
         "!edhrec"
@@ -12997,7 +12950,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 865,
+      "rank": 859,
       "name": "FlightAware",
       "code": [
         "!faw",
@@ -13012,21 +12965,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 866,
-      "name": "GitHub User",
-      "code": [
-        "!ghus"
-      ],
-      "tags": [
-        "Tech/Programming"
-      ],
-      "urls": {
-        "s": "https://github.com/%s/"
-      }
-    },
-    {
-      "ddgr": 28,
-      "rank": 867,
+      "rank": 860,
       "name": "Google (Past Week)",
       "code": [
         "!gweek"
@@ -13040,7 +12979,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 868,
+      "rank": 861,
       "name": "Google GR",
       "code": [
         "!ggr",
@@ -13055,7 +12994,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 869,
+      "rank": 862,
       "name": "Google Translate - pt-en",
       "code": [
         "!pten"
@@ -13069,7 +13008,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 870,
+      "rank": 863,
       "name": "Kobo",
       "code": [
         "!kobo"
@@ -13083,7 +13022,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 871,
+      "rank": 864,
       "name": "Laravel",
       "code": [
         "!laravel"
@@ -13097,7 +13036,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 872,
+      "rank": 865,
       "name": "Naver English Dictionary",
       "code": [
         "!ndic"
@@ -13111,7 +13050,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 873,
+      "rank": 866,
       "name": "Next INpact",
       "code": [
         "!nxi"
@@ -13125,7 +13064,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 874,
+      "rank": 867,
       "name": "RaiPlay",
       "code": [
         "!rai"
@@ -13139,7 +13078,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 875,
+      "rank": 868,
       "name": "The Mod Archive",
       "code": [
         "!modarchive",
@@ -13154,7 +13093,7 @@
     },
     {
       "ddgr": 28,
-      "rank": 876,
+      "rank": 869,
       "name": "Touhou Wiki",
       "code": [
         "!touhou"
@@ -13168,7 +13107,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 877,
+      "rank": 870,
       "name": "Amazon Automotive",
       "code": [
         "!aa"
@@ -13182,7 +13121,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 878,
+      "rank": 871,
       "name": "Boston Globe",
       "code": [
         "!bostonglobe"
@@ -13196,7 +13135,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 879,
+      "rank": 872,
       "name": "CommonLisp HyperSpec",
       "code": [
         "!clhs"
@@ -13210,7 +13149,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 880,
+      "rank": 873,
       "name": "crate.io",
       "code": [
         "!crate"
@@ -13224,7 +13163,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 881,
+      "rank": 874,
       "name": "Epic Games Store",
       "code": [
         "!egs"
@@ -13238,7 +13177,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 882,
+      "rank": 875,
       "name": "Geizhals (at)",
       "code": [
         "!geizhalsat",
@@ -13253,7 +13192,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 883,
+      "rank": 876,
       "name": "Indeed",
       "code": [
         "!indeed",
@@ -13268,7 +13207,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 884,
+      "rank": 877,
       "name": "Israel National News - Arutz Sheva 7",
       "code": [
         "!inn"
@@ -13282,7 +13221,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 885,
+      "rank": 878,
       "name": "Ling.pl Angielsko-Polski",
       "code": [
         "!ling"
@@ -13296,25 +13235,27 @@
     },
     {
       "ddgr": 27,
-      "rank": 886,
-      "name": "Microsoft Docs",
+      "rank": 879,
+      "name": "MSDN",
       "code": [
         "!md",
         "!msd",
         "!msdocs",
         "!posh",
-        "!dotnet"
+        "!dotnet",
+        "!msdn"
       ],
       "tags": [
+        "Tech/Companies",
         "Tech/Programming"
       ],
       "urls": {
-        "s": "https://learn.microsoft.com/en-us/search/?terms=%s"
+        "s": "https://learn.microsoft.com/en-us/search?terms=%s"
       }
     },
     {
       "ddgr": 27,
-      "rank": 887,
+      "rank": 880,
       "name": "MTG Salvation",
       "code": [
         "!mtgwiki"
@@ -13328,7 +13269,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 888,
+      "rank": 881,
       "name": "Naver Papago",
       "code": [
         "!ppg",
@@ -13343,7 +13284,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 889,
+      "rank": 882,
       "name": "NCBI",
       "code": [
         "!ncbi"
@@ -13357,7 +13298,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 890,
+      "rank": 883,
       "name": "OpenStreetMap Taginfo",
       "code": [
         "!taginfo"
@@ -13371,7 +13312,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 891,
+      "rank": 884,
       "name": "Project Gutenberg",
       "code": [
         "!gutenberg",
@@ -13387,7 +13328,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 892,
+      "rank": 885,
       "name": "Protein Data Bank",
       "code": [
         "!pdb"
@@ -13401,7 +13342,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 893,
+      "rank": 886,
       "name": "Ridibooks",
       "code": [
         "!ridi"
@@ -13415,7 +13356,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 894,
+      "rank": 887,
       "name": "Slovarji Inštituta za slovenski jezik Frana Ramovša ZRC SAZU",
       "code": [
         "!fran"
@@ -13429,7 +13370,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 895,
+      "rank": 888,
       "name": "Verkkokauppa.com",
       "code": [
         "!verkkis",
@@ -13445,7 +13386,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 896,
+      "rank": 889,
       "name": "Watchtower Online Library",
       "code": [
         "!watchtower",
@@ -13460,7 +13401,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 897,
+      "rank": 890,
       "name": "Wiby",
       "code": [
         "!wiby"
@@ -13474,7 +13415,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 898,
+      "rank": 891,
       "name": "WordReference es > it",
       "code": [
         "!wresit"
@@ -13488,7 +13429,7 @@
     },
     {
       "ddgr": 27,
-      "rank": 899,
+      "rank": 892,
       "name": "Викисловарь",
       "code": [
         "!wikru",
@@ -13504,7 +13445,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 900,
+      "rank": 893,
       "name": "DHL German",
       "code": [
         "!dhlde"
@@ -13518,7 +13459,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 901,
+      "rank": 894,
       "name": "emag.ro",
       "code": [
         "!emag"
@@ -13532,7 +13473,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 902,
+      "rank": 895,
       "name": "English StackExchange",
       "code": [
         "!en",
@@ -13548,7 +13489,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 903,
+      "rank": 896,
       "name": "FreeBSD Ports",
       "code": [
         "!fports",
@@ -13563,7 +13504,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 904,
+      "rank": 897,
       "name": "Frinkiac",
       "code": [
         "!frinkiac"
@@ -13577,7 +13518,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 905,
+      "rank": 898,
       "name": "go.mail.ru",
       "code": [
         "!mailru",
@@ -13592,7 +13533,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 906,
+      "rank": 899,
       "name": "Google Translate (en2de)",
       "code": [
         "!ende"
@@ -13606,7 +13547,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 907,
+      "rank": 900,
       "name": "LanguageTool",
       "code": [
         "!lang"
@@ -13620,7 +13561,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 908,
+      "rank": 901,
       "name": "Ludwig",
       "code": [
         "!ludwig",
@@ -13635,7 +13576,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 909,
+      "rank": 902,
       "name": "mercari US",
       "code": [
         "!mercari"
@@ -13649,7 +13590,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 910,
+      "rank": 903,
       "name": "OpenBSD",
       "code": [
         "!openbsd"
@@ -13663,7 +13604,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 911,
+      "rank": 904,
       "name": "SmashWiki",
       "code": [
         "!ssb"
@@ -13677,7 +13618,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 912,
+      "rank": 905,
       "name": "Tibia",
       "code": [
         "!tbc",
@@ -13692,7 +13633,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 913,
+      "rank": 906,
       "name": "Turkish Wikipedia",
       "code": [
         "!wtr",
@@ -13708,7 +13649,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 914,
+      "rank": 907,
       "name": "Ubuntu Packages Search",
       "code": [
         "!apt",
@@ -13723,7 +13664,7 @@
     },
     {
       "ddgr": 26,
-      "rank": 915,
+      "rank": 908,
       "name": "Vikipedi (Turkish Wikipedia)",
       "code": [
         "!vikipedi"
@@ -13737,7 +13678,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 916,
+      "rank": 909,
       "name": "1881.no",
       "code": [
         "!1881"
@@ -13751,7 +13692,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 917,
+      "rank": 910,
       "name": "aladin",
       "code": [
         "!aladin"
@@ -13765,7 +13706,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 918,
+      "rank": 911,
       "name": "Arch Linux Forums",
       "code": [
         "!archforums",
@@ -13780,7 +13721,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 919,
+      "rank": 912,
       "name": "Argos UK",
       "code": [
         "!argos"
@@ -13794,7 +13735,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 920,
+      "rank": 913,
       "name": "CBC News",
       "code": [
         "!cbc"
@@ -13808,7 +13749,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 921,
+      "rank": 914,
       "name": "Debian",
       "code": [
         "!debian"
@@ -13822,7 +13763,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 922,
+      "rank": 915,
       "name": "ebay (ES)",
       "code": [
         "!ebayes",
@@ -13838,7 +13779,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 923,
+      "rank": 916,
       "name": "GitLab",
       "code": [
         "!glab",
@@ -13853,7 +13794,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 924,
+      "rank": 917,
       "name": "Grand Dictionnaire Terminologique",
       "code": [
         "!gdt"
@@ -13867,7 +13808,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 925,
+      "rank": 918,
       "name": "IGDB - Internet Game Database",
       "code": [
         "!igdb"
@@ -13881,7 +13822,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 926,
+      "rank": 919,
       "name": "JSTOR",
       "code": [
         "!jstor"
@@ -13895,7 +13836,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 927,
+      "rank": 920,
       "name": "Latin Word Study tool",
       "code": [
         "!latin",
@@ -13910,7 +13851,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 928,
+      "rank": 921,
       "name": "linguee.com German - English",
       "code": [
         "!lied"
@@ -13924,21 +13865,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 929,
-      "name": "MacRumors",
-      "code": [
-        "!macrumors"
-      ],
-      "tags": [
-        "Tech/Blogs"
-      ],
-      "urls": {
-        "s": "https://www.macrumors.com/search/?s=%s"
-      }
-    },
-    {
-      "ddgr": 25,
-      "rank": 930,
+      "rank": 922,
       "name": "Polygon",
       "code": [
         "!polygon"
@@ -13952,7 +13879,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 931,
+      "rank": 923,
       "name": "Repology",
       "code": [
         "!repology"
@@ -13966,7 +13893,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 932,
+      "rank": 924,
       "name": "ru.wiktionary.org",
       "code": [
         "!wtru"
@@ -13980,7 +13907,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 933,
+      "rank": 925,
       "name": "Shutterstock",
       "code": [
         "!ststock",
@@ -13995,7 +13922,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 934,
+      "rank": 926,
       "name": "Star Tribune",
       "code": [
         "!strib"
@@ -14009,7 +13936,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 935,
+      "rank": 927,
       "name": "Tldr",
       "code": [
         "!tldr"
@@ -14023,7 +13950,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 936,
+      "rank": 928,
       "name": "Tweakers",
       "code": [
         "!tweak"
@@ -14037,7 +13964,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 937,
+      "rank": 929,
       "name": "Udemy",
       "code": [
         "!udemy"
@@ -14051,7 +13978,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 938,
+      "rank": 930,
       "name": "Wikcionario",
       "code": [
         "!wiktes",
@@ -14066,7 +13993,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 939,
+      "rank": 931,
       "name": "Wikcionário (PT)",
       "code": [
         "!wiktpt",
@@ -14081,7 +14008,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 940,
+      "rank": 932,
       "name": "Wikipedia (BR)",
       "code": [
         "!w.br"
@@ -14095,7 +14022,7 @@
     },
     {
       "ddgr": 25,
-      "rank": 941,
+      "rank": 933,
       "name": "Wikiquote",
       "code": [
         "!wikiquote"

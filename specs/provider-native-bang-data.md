@@ -175,6 +175,8 @@ This is close to the current Kagi dedupe behavior: the grouping rule is conserva
 
 URL fragments are part of URL identity. Some providers encode behavior in fragments, such as Google Translate language pairs in `#source/target/query`, so stripping fragments would incorrectly merge distinct bang targets.
 
+URL identity is normalized for comparison only. Generated JSON should keep the selected source URL casing, but dedupe comparisons should trim and deeply unescape URL templates, strip a leading `www.` hostname, and lowercase the comparison key. When duplicate URL identities merge, keep the shortest source URL, preferring `https` over `http`.
+
 ### DuckDuckGo
 
 DuckDuckGo source data is the source of truth for DDG bang semantics.

@@ -35,6 +35,8 @@
 	let bangSourceErrors = $state<Partial<Record<BangSourceId, string>>>({});
 	let bangCatalogStatuses = $state<BangCatalogStatus[]>([]);
 	let bangCatalogErrors = $state<Partial<Record<BangProviderId, string>>>({});
+	let bangSourceCountChanges = $state<Partial<Record<BangSourceId, number>>>({});
+	let bangCatalogCountChanges = $state<Partial<Record<BangProviderId, number>>>({});
 	let bangSourceMessage = $state('');
 	let isRefreshingBangData = $state(false);
 
@@ -51,6 +53,8 @@
 		isRefreshingBangData = true;
 		bangSourceErrors = {};
 		bangCatalogErrors = {};
+		const previousSourceStatuses = bangSourceStatuses;
+		const previousCatalogStatuses = bangCatalogStatuses;
 		bangSourceMessage = 'Refreshing bang data...';
 
 		try {
@@ -66,6 +70,14 @@
 
 			bangSourceStatuses = getSuccessfulSourceStatuses(sources, bangSourceStatuses);
 			bangCatalogStatuses = getSuccessfulCatalogStatuses(catalogs, bangCatalogStatuses);
+			bangSourceCountChanges = getBangSourceCountChanges(
+				previousSourceStatuses,
+				bangSourceStatuses
+			);
+			bangCatalogCountChanges = getBangCatalogCountChanges(
+				previousCatalogStatuses,
+				bangCatalogStatuses
+			);
 			bangSourceErrors = getBangSourceErrors(failedSources);
 			bangCatalogErrors = getBangCatalogErrors(failedCatalogs);
 			bangSourceMessage =
@@ -139,6 +151,34 @@
 		return Object.fromEntries(results.map((result) => [result.provider, result.error]));
 	}
 
+	function getBangSourceCountChanges(
+		previousStatuses: BangSourceStatus[],
+		currentStatuses: BangSourceStatus[]
+	): Partial<Record<BangSourceId, number>> {
+		return Object.fromEntries(
+			currentStatuses.flatMap((status) => {
+				const previous = previousStatuses.find((item) => item.id === status.id)?.bangCount;
+				return previous === undefined || status.bangCount === undefined
+					? []
+					: [[status.id, status.bangCount - previous]];
+			})
+		);
+	}
+
+	function getBangCatalogCountChanges(
+		previousStatuses: BangCatalogStatus[],
+		currentStatuses: BangCatalogStatus[]
+	): Partial<Record<BangProviderId, number>> {
+		return Object.fromEntries(
+			currentStatuses.map((status) => {
+				const previous = previousStatuses.find(
+					(item) => item.provider === status.provider
+				)?.recordCount;
+				return [status.provider, previous === undefined ? 0 : status.recordCount - previous];
+			})
+		);
+	}
+
 	function getBangSourceStatus(id: BangSourceId) {
 		return bangSourceStatuses.find((status) => status.id === id);
 	}
@@ -162,6 +202,16 @@
 
 	function formatRecordCount(recordCount: number) {
 		return new Intl.NumberFormat().format(recordCount);
+	}
+
+	function formatCountChange(change: number | undefined) {
+		if (change === undefined) {
+			return '';
+		}
+
+		return new Intl.NumberFormat(undefined, {
+			signDisplay: 'always'
+		}).format(change);
 	}
 
 	function formatFetchedAt(fetchedAt: string) {
@@ -256,7 +306,14 @@
 								</div>
 								<div>
 									<dt>Records</dt>
-									<dd>{formatRecordCount(status.recordCount)}</dd>
+									<dd>
+										{formatRecordCount(status.recordCount)}
+										{#if bangCatalogCountChanges[status.provider] !== undefined}
+											<span class="count-change">
+												{formatCountChange(bangCatalogCountChanges[status.provider])}
+											</span>
+										{/if}
+									</dd>
 								</div>
 								<div>
 									<dt>Generator</dt>
@@ -297,7 +354,14 @@
 								</div>
 								<div>
 									<dt>Bangs</dt>
-									<dd>{formatBangCount(status.bangCount)}</dd>
+									<dd>
+										{formatBangCount(status.bangCount)}
+										{#if bangSourceCountChanges[status.id] !== undefined}
+											<span class="count-change">
+												{formatCountChange(bangSourceCountChanges[status.id])}
+											</span>
+										{/if}
+									</dd>
 								</div>
 								<div>
 									<dt>SHA-256</dt>
@@ -423,6 +487,11 @@
 
 	dd {
 		margin: 0;
+	}
+
+	.count-change {
+		margin-inline-start: var(--size-1);
+		color: var(--gray-6);
 	}
 
 	.refresh-message,
