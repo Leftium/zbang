@@ -19,6 +19,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import {
 		resetColorScheme,
+		setBangProvider,
 		setColorScheme,
 		setSearchProvider,
 		settings,
@@ -226,6 +227,10 @@
 		return new Intl.NumberFormat().format(recordCount);
 	}
 
+	function formatDedupedCount(dedupedCount: number | undefined) {
+		return dedupedCount === undefined ? 'Unknown' : new Intl.NumberFormat().format(dedupedCount);
+	}
+
 	function formatCountChange(change: number | undefined) {
 		if (change === undefined) {
 			return '';
@@ -278,6 +283,25 @@
 							value={provider.value}
 							checked={settings.searchProvider === provider.value}
 							onchange={() => setSearchProvider(provider.value)}
+						/>
+						<span>{provider.label}</span>
+					</label>
+				{/each}
+			</div>
+		</fieldset>
+
+		<fieldset class="setting provider-setting">
+			<legend>Bang catalog provider</legend>
+
+			<div class="providers">
+				{#each BANG_CATALOGS as provider (provider.value)}
+					<label>
+						<input
+							type="radio"
+							name="bang-provider"
+							value={provider.value}
+							checked={settings.bangProvider === provider.value}
+							onchange={() => setBangProvider(provider.value)}
 						/>
 						<span>{provider.label}</span>
 					</label>
@@ -346,6 +370,10 @@
 											</span>
 										{/if}
 									</dd>
+								</div>
+								<div>
+									<dt>Deduped</dt>
+									<dd>{formatDedupedCount(status.dedupedCount)}</dd>
 								</div>
 								<div>
 									<dt>Generator</dt>

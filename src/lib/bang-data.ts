@@ -39,6 +39,7 @@ export type ZbangCatalog = {
 	provider: BangProviderId;
 	generatedAt: string;
 	generatorVersion: number;
+	dedupedCount?: number;
 	sources: Array<Pick<PersistedBangSource, 'url' | 'fetchedAt' | 'hash'>>;
 	items: Zbang[];
 };
@@ -69,6 +70,16 @@ type SourceBangRecord = {
 
 type NormalizedBang = Omit<Zbang, 'rank'> & {
 	domains: string[];
+};
+
+type DedupeResult = {
+	items: NormalizedBang[];
+	dedupedCount: number;
+};
+
+type DuckDuckGoRank = {
+	ddgr: number;
+	domain: string;
 };
 
 const DB_NAME = 'zbang';
@@ -180,11 +191,12 @@ async function generateBangCatalogs(): Promise<BangCatalogGenerationResult[]> {
 	}
 
 	try {
-		const duckDuckGo = generateDuckDuckGoCatalog(requireSource(sources, 'duckduckgo'), generatedAt);
+		const duckDuckGoSource = requireSource(sources, 'duckduckgo');
+		const duckDuckGo = generateDuckDuckGoCatalog(duckDuckGoSource, generatedAt);
 		const catalog = generateKagiCatalog(
 			requireSource(sources, 'kagi-shared'),
 			requireSource(sources, 'kagi-kagi'),
-			duckDuckGo,
+			duckDuckGoSource,
 			generatedAt
 		);
 		await putInStore(db, CATALOG_STORE, catalog);
@@ -204,12 +216,14 @@ async function generateBangCatalogs(): Promise<BangCatalogGenerationResult[]> {
 function generateDuckDuckGoCatalog(source: PersistedBangSource, generatedAt: string): ZbangCatalog {
 	const records = parseSourceRecords(source);
 	const normalized = records.flatMap((record) => normalizeSourceRecord(record, 'duckduckgo'));
-	const items = rankCatalogItems(dedupeNormalizedBangs(normalized));
+	const deduped = dedupeNormalizedBangs(normalized);
+	const items = rankCatalogItems(deduped.items);
 
 	return {
 		provider: 'duckduckgo',
 		generatedAt,
 		generatorVersion: GENERATOR_VERSION,
+		dedupedCount: deduped.dedupedCount,
 		sources: [getCatalogSource(source)],
 		items
 	};
@@ -218,22 +232,30 @@ function generateDuckDuckGoCatalog(source: PersistedBangSource, generatedAt: str
 function generateKagiCatalog(
 	sharedSource: PersistedBangSource,
 	kagiSource: PersistedBangSource,
-	duckDuckGoCatalog: ZbangCatalog,
+	duckDuckGoSource: PersistedBangSource,
 	generatedAt: string
 ): ZbangCatalog {
-	const records = [...parseSourceRecords(sharedSource), ...parseSourceRecords(kagiSource)];
-	const duckDuckGoByCode = getDuckDuckGoRankLookup(duckDuckGoCatalog);
-	const normalized = records.flatMap((record) => normalizeKagiRecord(record, duckDuckGoByCode));
-	const items = rankCatalogItems(dedupeNormalizedBangs(normalized));
+	const duckDuckGoByCode = getDuckDuckGoRankLookup(duckDuckGoSource);
+	const normalized = [
+		...parseSourceRecords(sharedSource).flatMap((record) =>
+			normalizeKagiRecord(record, duckDuckGoByCode)
+		),
+		...parseSourceRecords(kagiSource).flatMap((record) =>
+			normalizeKagiRecord(record, duckDuckGoByCode)
+		)
+	];
+	const deduped = dedupeNormalizedBangs(normalized);
+	const items = rankCatalogItems(deduped.items);
 
 	return {
 		provider: 'kagi',
 		generatedAt,
 		generatorVersion: GENERATOR_VERSION,
+		dedupedCount: deduped.dedupedCount,
 		sources: [
 			getCatalogSource(sharedSource),
 			getCatalogSource(kagiSource),
-			...duckDuckGoCatalog.sources
+			getCatalogSource(duckDuckGoSource)
 		],
 		items
 	};
@@ -241,21 +263,46 @@ function generateKagiCatalog(
 
 function normalizeKagiRecord(
 	record: SourceBangRecord,
-	duckDuckGoByCode: Map<string, NormalizedBang[]>
+	duckDuckGoByCode: Map<string, DuckDuckGoRank>
 ): NormalizedBang[] {
 	return normalizeSourceRecord(record, 'kagi').map((bang) => {
-		let ddgr = bang.ddgr;
+		const ddgr = getKagiRecordDdgr(record, duckDuckGoByCode);
 
-		for (const code of bang.code) {
-			for (const duckDuckGoBang of duckDuckGoByCode.get(code) ?? []) {
-				if (areCompatibleBangs(bang, duckDuckGoBang)) {
-					ddgr = Math.max(ddgr ?? 0, duckDuckGoBang.ddgr ?? 0);
-				}
-			}
-		}
-
-		return ddgr ? { ...bang, ddgr } : bang;
+		return { ...bang, ddgr };
 	});
+}
+
+function getKagiRecordDdgr(record: SourceBangRecord, duckDuckGoByCode: Map<string, DuckDuckGoRank>) {
+	const code = record.t ? normalizeBangCode(record.t) : undefined;
+	const duckDuckGoRank = code ? duckDuckGoByCode.get(code) : undefined;
+	const isProviderNative = Boolean(record.u?.startsWith('/'));
+	const mismatchedTriggers = new Set(['!p', '!q', '!k', '!code']);
+
+	if (record.c === 'Region search') {
+		return 2;
+	}
+
+	if (code && mismatchedTriggers.has(code) && isProviderNative) {
+		return 2;
+	}
+
+	if (!duckDuckGoRank) {
+		return 1;
+	}
+
+	const kagiDomain = isProviderNative ? 'bang-provider' : getUrlHostname(normalizeBangUrl(record.u ?? '', 'kagi'));
+
+	if (
+		kagiDomain &&
+		duckDuckGoRank.domain !== kagiDomain &&
+		kagiDomain !== 'bang-provider' &&
+		duckDuckGoRank.ddgr > 1 &&
+		getDistanceRatio(duckDuckGoRank.domain, kagiDomain) > 0.7
+	) {
+		return 2;
+	}
+
+	return duckDuckGoRank.ddgr;
 }
 
 function normalizeSourceRecord(
@@ -289,7 +336,7 @@ function normalizeSourceRecord(
 	];
 }
 
-function dedupeNormalizedBangs(items: NormalizedBang[]): NormalizedBang[] {
+function dedupeNormalizedBangs(items: NormalizedBang[]): DedupeResult {
 	const groups = new Map<string, NormalizedBang>();
 
 	for (const item of items) {
@@ -304,7 +351,10 @@ function dedupeNormalizedBangs(items: NormalizedBang[]): NormalizedBang[] {
 		groups.set(key, mergeNormalizedBangs(existing, item));
 	}
 
-	return [...groups.values()];
+	return {
+		items: [...groups.values()],
+		dedupedCount: items.length - groups.size
+	};
 }
 
 function mergeNormalizedBangs(a: NormalizedBang, b: NormalizedBang): NormalizedBang {
@@ -336,25 +386,23 @@ function rankCatalogItems(items: NormalizedBang[]): Zbang[] {
 		}));
 }
 
-function getDuckDuckGoRankLookup(catalog: ZbangCatalog) {
-	const lookup = new Map<string, NormalizedBang[]>();
+function getDuckDuckGoRankLookup(source: PersistedBangSource) {
+	const lookup = new Map<string, DuckDuckGoRank>();
 
-	for (const item of catalog.items) {
-		const normalized = { ...item, domains: [getUrlHostname(item.urls.s)].filter(isString) };
+	for (const record of parseSourceRecords(source)) {
+		const code = record.t ? normalizeBangCode(record.t) : undefined;
+		const url = record.u ? normalizeBangUrl(record.u, 'duckduckgo') : undefined;
+		const domain = url ? getUrlHostname(url) : undefined;
 
-		for (const code of item.code) {
-			lookup.set(code, [...(lookup.get(code) ?? []), normalized]);
+		if (code && url && domain) {
+			lookup.set(code, {
+				ddgr: typeof record.r === 'number' ? record.r : 1,
+				domain
+			});
 		}
 	}
 
 	return lookup;
-}
-
-function areCompatibleBangs(a: NormalizedBang, b: NormalizedBang) {
-	return (
-		getUrlIdentity(a.urls.s) === getUrlIdentity(b.urls.s) ||
-		a.domains.some((domain) => b.domains.includes(domain))
-	);
 }
 
 function getBangTags(record: SourceBangRecord) {
@@ -450,6 +498,31 @@ function getUrlHostname(url: string) {
 	}
 }
 
+function getDistanceRatio(a: string, b: string) {
+	return getLevenshteinDistance(a, b) / b.length;
+}
+
+function getLevenshteinDistance(a: string, b: string) {
+	const previous = Array.from({ length: b.length + 1 }, (_, index) => index);
+	const current = Array.from({ length: b.length + 1 }, () => 0);
+
+	for (let i = 1; i <= a.length; i += 1) {
+		current[0] = i;
+
+		for (let j = 1; j <= b.length; j += 1) {
+			current[j] = Math.min(
+				previous[j] + 1,
+				current[j - 1] + 1,
+				previous[j - 1] + Number(a[i - 1] !== b[j - 1])
+			);
+		}
+
+		previous.splice(0, previous.length, ...current);
+	}
+
+	return previous[b.length];
+}
+
 function uniqueStrings(values: string[]) {
 	return [...new Set(values)];
 }
@@ -529,6 +602,7 @@ function getBangCatalogStatus(catalog: ZbangCatalog): BangCatalogStatus {
 		provider: catalog.provider,
 		generatedAt: catalog.generatedAt,
 		generatorVersion: catalog.generatorVersion,
+		dedupedCount: catalog.dedupedCount,
 		sources: catalog.sources,
 		recordCount: catalog.items.length
 	};

@@ -1,11 +1,11 @@
 {
   "provider": "duckduckgo",
-  "generatedAt": "2026-06-17T17:47:45.034Z",
+  "generatedAt": "2026-06-17T18:50:55.045Z",
   "generatorVersion": 1,
   "sources": [
     {
       "url": "https://duckduckgo.com/bang.js",
-      "fetchedAt": "2026-06-17T17:47:44.785Z",
+      "fetchedAt": "2026-06-17T18:50:55.007Z",
       "hash": "e69536d51e6f306f3e0063af0d88862713bf8d7075aefc8ec85db88779355768"
     }
   ],

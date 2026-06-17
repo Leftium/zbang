@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { onMount } from 'svelte';
 
+	import { readBangCatalog, type BangProviderId, type ZbangCatalog } from '$lib/bang-data';
+	import { applyBang, filterBangs, prepareBangCatalog } from '$lib/bang-filter';
 	import { createCompromiseDoc } from '$lib/compromise';
 	import CompromiseInspector, {
 		getInspectPanelId
@@ -15,12 +18,14 @@
 		id: string;
 		pluginId: string;
 		kind: 'action' | 'insight';
-		title: string;
-		description?: string;
-		score: number;
-		safeForEnter?: boolean;
-		run?: () => void | Promise<void>;
-	};
+	title: string;
+	description?: string;
+	rank?: number;
+	score: number;
+	sortOrder?: number;
+	safeForEnter?: boolean;
+	run?: () => void | Promise<void>;
+};
 
 	type LauncherContext = {
 		value: string;
@@ -34,7 +39,7 @@
 		getItems: (context: LauncherContext) => LauncherItem[];
 	};
 
-	type LauncherMode = 'all' | 'compromise';
+	type LauncherMode = 'all' | 'bangs' | 'compromise';
 	type KeywordSignal = { word: string; score: number };
 	type MoneyJson = { text?: string; number?: { prefix?: string; unit?: string } };
 
@@ -75,11 +80,17 @@
 		google: 'Google'
 	};
 	const searchProviders = Object.keys(searchProviderLabels) as SearchProvider[];
+	let bangCatalog = $state<ZbangCatalog>();
+	let loadedBangProvider = $state<BangProviderId>();
+
 	const mode = $derived(getMode(page.url.searchParams.get('mode')));
 	const inspect = $derived(getInspectPanelId(page.url.searchParams.get('inspect')));
 	const expression = $derived(page.url.searchParams.get('expr') ?? undefined);
 	const hasValue = $derived(Boolean(value.trim()));
 	const compromiseSignals = $derived(getCompromiseSignals(value));
+	const preparedBangs = $derived(prepareBangCatalog(bangCatalog));
+	const bangResults = $derived(filterBangs(value, preparedBangs));
+	const bangTotalCount = $derived(bangCatalog?.items.length ?? 0);
 	const launcherContext = $derived({
 		value,
 		text: value.trim(),
@@ -91,7 +102,9 @@
 		rankItems(plugins.flatMap((plugin) => plugin.getItems(launcherContext)))
 	);
 	const visibleLauncherItems = $derived(
-		mode === 'compromise'
+		mode === 'bangs'
+			? launcherItems.filter((item) => item.pluginId === 'bangs')
+			: mode === 'compromise'
 			? launcherItems.filter((item) => item.pluginId === 'compromise')
 			: launcherItems
 	);
@@ -103,6 +116,18 @@
 	const secondaryLauncherItems = $derived(
 		visibleLauncherItems.filter((item) => item.id !== primaryLauncherItem?.id)
 	);
+
+	onMount(() => {
+		void loadBangCatalog(settings.bangProvider);
+	});
+
+	$effect(() => {
+		const provider = settings.bangProvider;
+
+		if (loadedBangProvider && loadedBangProvider !== provider) {
+			void loadBangCatalog(provider);
+		}
+	});
 
 	function getSearchUrl(provider: SearchProvider, query: string) {
 		const trimmedQuery = query.trim();
@@ -128,6 +153,25 @@
 		window.open(getSearchUrl(provider, value), '_blank', 'noopener,noreferrer');
 	}
 
+	async function loadBangCatalog(provider: BangProviderId) {
+		const persistedCatalog = await readBangCatalog(provider);
+
+		bangCatalog = persistedCatalog ?? (await loadBootstrapBangCatalog(provider));
+		loadedBangProvider = provider;
+	}
+
+	async function loadBootstrapBangCatalog(provider: BangProviderId): Promise<ZbangCatalog> {
+		if (provider === 'duckduckgo') {
+			return (await import('$lib/data/zbang.bootstrap.duckduckgo.json')).default as ZbangCatalog;
+		}
+
+		return (await import('$lib/data/zbang.bootstrap.kagi.json')).default as ZbangCatalog;
+	}
+
+	function insertBang(code: string) {
+		value = applyBang(value, code);
+	}
+
 	async function pasteFromClipboard() {
 		value = await navigator.clipboard.readText();
 	}
@@ -141,7 +185,11 @@
 	}
 
 	function getMode(mode: string | null): LauncherMode {
-		return mode === 'compromise' ? 'compromise' : 'all';
+		if (mode === 'bangs' || mode === 'compromise') {
+			return mode;
+		}
+
+		return 'all';
 	}
 
 	function getCompromiseSignals(input: string): CompromiseSignals {
@@ -248,6 +296,25 @@
 
 	function createPlugins(): LauncherPlugin[] {
 		return [
+			{
+				id: 'bangs',
+				getItems() {
+					if (mode !== 'bangs') return [];
+
+					return bangResults.items.map(({ item, score }, index) => ({
+						id: `bangs.${item.rank}`,
+						pluginId: 'bangs',
+						kind: 'action',
+						title: `${item.code[0]} ${item.name}`,
+						description: `${item.code.join(', ')} | ${item.urls.s}`,
+						rank: item.rank,
+						score,
+						sortOrder: index,
+						safeForEnter: true,
+						run: () => insertBang(item.code[0])
+					}));
+				}
+			},
 			{
 				id: 'clipboard',
 				getItems(context) {
@@ -498,8 +565,26 @@
 		return values.length ? values.join(', ') : 'None detected';
 	}
 
+	function formatCount(count: number) {
+		return new Intl.NumberFormat().format(count);
+	}
+
+	function formatItemMeta(item: LauncherItem) {
+		return [item.pluginId, item.rank ? `rank ${formatCount(item.rank)}` : undefined, item.score]
+			.filter(Boolean)
+			.join(' | ');
+	}
+
 	function rankItems(items: LauncherItem[]) {
-		return [...items].sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
+		return [...items].sort(
+			(a, b) => {
+				if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
+					return a.sortOrder - b.sortOrder;
+				}
+
+				return b.score - a.score || a.title.localeCompare(b.title);
+			}
+		);
 	}
 </script>
 
@@ -508,6 +593,12 @@
 
 	{#if mode !== 'all'}
 		<div class="mode-chip">Mode: {mode}</div>
+	{/if}
+
+	{#if mode === 'bangs'}
+		<div class="result-count">
+			Results: {formatCount(bangResults.total)}/{formatCount(bangTotalCount)}
+		</div>
 	{/if}
 
 	<ExpandingTextarea
@@ -527,7 +618,7 @@
 						{#if primaryLauncherItem.description}<small>{primaryLauncherItem.description}</small
 							>{/if}
 					</span>
-					<span class="meta">{primaryLauncherItem.pluginId} · {primaryLauncherItem.score}</span>
+					<span class="meta">{formatItemMeta(primaryLauncherItem)}</span>
 				</button>
 			{/if}
 		{/snippet}
@@ -545,7 +636,7 @@
 						<strong>{item.title}</strong>
 						{#if item.description}<small>{item.description}</small>{/if}
 					</span>
-					<span class="meta">{item.pluginId} · {item.score}</span>
+					<span class="meta">{formatItemMeta(item)}</span>
 				</button>
 			{:else}
 				<article class="launcher-item insight-item">
@@ -553,7 +644,7 @@
 						<strong>{item.title}</strong>
 						{#if item.description}<small>{item.description}</small>{/if}
 					</span>
-					<span class="meta">{item.pluginId} · {item.score}</span>
+					<span class="meta">{formatItemMeta(item)}</span>
 				</article>
 			{/if}
 		{/each}
@@ -585,6 +676,12 @@
 		background: var(--nc-surface-1);
 		border: 1px solid var(--nc-border);
 		border-radius: 999px;
+		font-size: var(--font-size-0);
+	}
+
+	.result-count {
+		margin-block-end: var(--size-2);
+		color: var(--nc-tx-2);
 		font-size: var(--font-size-0);
 	}
 

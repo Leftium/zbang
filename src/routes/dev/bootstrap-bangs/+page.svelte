@@ -90,7 +90,10 @@
 		const items = catalog.items.filter((item) => (item.ddgr ?? 0) >= BOOTSTRAP_MIN_DDGR);
 
 		return {
-			...catalog,
+			provider: catalog.provider,
+			generatedAt: catalog.generatedAt,
+			generatorVersion: catalog.generatorVersion,
+			sources: catalog.sources,
 			items
 		};
 	}
