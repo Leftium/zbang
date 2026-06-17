@@ -87,6 +87,7 @@
 
 	$effect(() => {
 		document.body.style.overflowY = fullscreen ? 'hidden' : 'auto';
+		if (!fullscreen && growWrapElement) growWrapElement.style.bottom = '';
 		void wordwrap;
 
 		requestAnimationFrame(adjustHeight);
@@ -108,7 +109,7 @@
 		let keyboardOpen = false;
 
 		function preventScrollDown(event: Event) {
-			if (keyboardOpen && window.scrollY > 0) {
+			if (fullscreen && keyboardOpen && window.scrollY > 0) {
 				event.preventDefault();
 				window.scrollTo(0, 0);
 			}
@@ -121,12 +122,17 @@
 			const wasKeyboardOpen = keyboardOpen;
 			keyboardOpen = offset > 50;
 
+			if (!fullscreen) {
+				growWrapElement.style.bottom = '';
+				return;
+			}
+
 			if (keyboardOpen === wasKeyboardOpen) return;
 
 			if (keyboardOpen) {
 				growWrapElement.style.bottom = `${offset}px`;
 			} else {
-				growWrapElement.style.bottom = '0px';
+				growWrapElement.style.bottom = '';
 				height = viewport.height;
 			}
 		}
