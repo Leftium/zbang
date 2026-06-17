@@ -1,5 +1,12 @@
 @import '@leftium/nimble.css';
+@import 'open-props/style';
 
 :root {
-	--nc-content-width: 64ch;
+	--nc-content-width: 768px;
+	--nc-primary: #546486;
+	--nc-primary-hover: #4a5876;
+}
+
+html {
+	transition: background-color 0.2s ease;
 }
