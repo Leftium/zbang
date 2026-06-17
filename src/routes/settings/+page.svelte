@@ -5,6 +5,7 @@
 
 	import {
 		BANG_SOURCES,
+		clearPersistedBangData,
 		readBangCatalogStatuses,
 		readBangSourceStatuses,
 		refreshBangData,
@@ -39,6 +40,7 @@
 	let bangCatalogCountChanges = $state<Partial<Record<BangProviderId, number>>>({});
 	let bangSourceMessage = $state('');
 	let isRefreshingBangData = $state(false);
+	let isClearingBangData = $state(false);
 
 	onMount(() => {
 		void loadBangDataStatuses();
@@ -88,6 +90,26 @@
 			bangSourceMessage = error instanceof Error ? error.message : 'Failed to refresh bang data.';
 		} finally {
 			isRefreshingBangData = false;
+		}
+	}
+
+	async function clearLocalBangData() {
+		isClearingBangData = true;
+		bangSourceMessage = 'Clearing persisted bang data...';
+
+		try {
+			await clearPersistedBangData();
+			bangSourceStatuses = [];
+			bangCatalogStatuses = [];
+			bangSourceErrors = {};
+			bangCatalogErrors = {};
+			bangSourceCountChanges = {};
+			bangCatalogCountChanges = {};
+			bangSourceMessage = 'Cleared persisted bang data.';
+		} catch (error) {
+			bangSourceMessage = error instanceof Error ? error.message : 'Failed to clear bang data.';
+		} finally {
+			isClearingBangData = false;
 		}
 	}
 
@@ -284,9 +306,19 @@
 			{/if}
 
 			{#if dev}
-				<p class="dev-link">
-					Dev tool: <a href={resolve('/dev/bootstrap-bangs')}>generate bootstrap bang files</a>
-				</p>
+				<div class="dev-tools">
+					<p>
+						Dev tool: <a href={resolve('/dev/bootstrap-bangs')}>generate bootstrap bang files</a>
+					</p>
+
+					<button
+						class="secondary outline"
+						disabled={isRefreshingBangData || isClearingBangData}
+						onclick={clearLocalBangData}
+					>
+						{isClearingBangData ? 'Clearing...' : 'Clear persisted bang data'}
+					</button>
+				</div>
 			{/if}
 
 			<div class="source-list">
@@ -452,6 +484,13 @@
 		white-space: nowrap;
 	}
 
+	.dev-tools {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--size-3);
+	}
+
 	.source-list {
 		display: grid;
 		gap: var(--size-3);
@@ -505,6 +544,11 @@
 
 	@media (max-width: 40rem) {
 		.setting {
+			align-items: flex-start;
+			flex-direction: column;
+		}
+
+		.dev-tools {
 			align-items: flex-start;
 			flex-direction: column;
 		}

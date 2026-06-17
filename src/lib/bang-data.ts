@@ -131,6 +131,16 @@ export async function refreshBangData(): Promise<BangDataRefreshResult> {
 	return { sources, catalogs };
 }
 
+export async function clearPersistedBangData(): Promise<void> {
+	const db = await openBangDb();
+
+	try {
+		await clearStores(db, [SOURCE_STORE, CATALOG_STORE]);
+	} finally {
+		db.close();
+	}
+}
+
 export async function downloadBangSources(): Promise<BangSourceDownloadResult[]> {
 	return Promise.all(
 		BANG_SOURCES.map(async (source) => {
@@ -604,5 +614,19 @@ function putInStore(db: IDBDatabase, storeName: string, value: unknown): Promise
 		transaction.oncomplete = () => resolve();
 		transaction.onerror = () =>
 			reject(transaction.error ?? new Error(`Failed to write ${storeName}`));
+	});
+}
+
+function clearStores(db: IDBDatabase, storeNames: string[]): Promise<void> {
+	return new Promise((resolve, reject) => {
+		const transaction = db.transaction(storeNames, 'readwrite');
+
+		for (const storeName of storeNames) {
+			transaction.objectStore(storeName).clear();
+		}
+
+		transaction.oncomplete = () => resolve();
+		transaction.onerror = () =>
+			reject(transaction.error ?? new Error('Failed to clear persisted bang data'));
 	});
 }
