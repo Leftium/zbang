@@ -417,6 +417,79 @@ Some syntax may be ambiguous. For example, `@notes` could be a scope in the laun
 
 This model supports the observation that search bangs are similar to fancy bookmarks with template variables. A bookmark, bang, note tag, or task tag can all be represented as a named marker with behavior or metadata attached.
 
+### Installed Bangs And Provider Fallback
+
+Search bangs should use an opt-in trust model. The provider catalog is useful for discovery, but zbang should only
+execute bangs locally after the user installs them. This avoids treating the entire long tail of provider bangs as trusted
+local actions while still preserving native provider behavior.
+
+Useful states:
+
+- Available: present in the selected provider catalog.
+- Installed: approved by the user for local zbang execution.
+- Queued: selected for the current query or reusable workflow.
+
+When the textarea contains multiple bangs, zbang can split the query into local targets and provider fallback instead of
+requiring an all-or-nothing decision.
+
+Example:
+
+```txt
+!w !foo cats
+```
+
+If `!w` is installed and `!foo` is not installed, the composed execution plan is:
+
+```txt
+Local fan-out:
+Wikipedia -> cats
+
+Provider fallback:
+Kagi or DuckDuckGo -> !foo cats
+```
+
+This preserves two important properties:
+
+- zbang only locally executes bangs the user installed.
+- Uninstalled or unknown bangs still work through the configured provider.
+
+The main risk is surprise from partial handling. The mitigation is not to collapse the behavior into a vague primary
+button. The primary action can stay compact, such as `Run 2 actions`, while a nearby composition preview explains what
+Enter will do.
+
+Possible preview:
+
+```txt
+Query: cats
+Targets: [!w Wikipedia]
+Forwarded: [!foo via Kagi]
+```
+
+For a fully installed fan-out query:
+
+```txt
+!w !gi cats
+```
+
+The preview can show:
+
+```txt
+Query: cats
+Targets: [!w Wikipedia] [!gi Google Images]
+```
+
+For known but uninstalled catalog bangs, the action list can offer installation without changing what Enter currently
+does:
+
+```txt
+Install Foo bang
+Install Foo and search
+Continue with Kagi fallback
+```
+
+This makes installation a progressive enhancement rather than a compatibility wall. Raw provider bang behavior remains
+available, while installed bangs gain better ranking, local fan-out, reusable queues, and clearer composition UI.
+
 ## Notes UX
 
 The notes plugin should draw heavily from nvAlt and Notational Velocity.

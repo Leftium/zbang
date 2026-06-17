@@ -244,6 +244,54 @@ They should support:
 
 Search bangs are primarily text delivery actions.
 
+Bang execution should be opt-in at the launcher level. A bang from a provider catalog is available for discovery, but it
+is not locally executable until the user installs it. This keeps the long tail of stale or low-quality provider bangs out
+of zbang's trusted execution path while preserving provider compatibility.
+
+Bang states:
+
+- Available: present in the configured provider catalog and discoverable in bang search or completion.
+- Installed: explicitly approved by the user and eligible for local zbang execution.
+- Queued: selected for the current launcher query or saved workflow.
+
+Installed bangs may be executed locally as fan-out delivery targets. Uninstalled or unknown bang tokens should be
+forwarded unchanged to the configured bang provider as a fallback search. This lets users keep using native provider
+bangs without requiring zbang to validate or curate the full catalog.
+
+Example:
+
+```txt
+!w !foo cats
+```
+
+If `!w` is installed and `!foo` is not installed, pressing Enter should run a composed plan equivalent to:
+
+```txt
+Open Wikipedia for "cats"
+Search the configured bang provider for "!foo cats"
+```
+
+The launcher should not hide this split behind a generic primary action. The primary Enter action may stay compact, but
+the UI should show a visible execution preview near the textarea using chips or an equivalent composition summary.
+
+The preview should distinguish:
+
+- Installed bang chips that zbang will execute locally.
+- Uninstalled known bang chips that will be forwarded to the configured provider and may offer install actions.
+- Unknown bang chips that will be forwarded to the configured provider.
+- The payload text that local bangs and provider fallback searches will receive.
+
+For the example above, the preview could communicate:
+
+```txt
+Targets: [Wikipedia]
+Forwarded: [!foo via Kagi]
+Query: cats
+```
+
+Install actions should be available for known but uninstalled catalog bangs. Useful actions include install only, install
+and rerun/search, or continue with provider fallback.
+
 ## Notes
 
 Notes should be treated as plugin-like capabilities.
