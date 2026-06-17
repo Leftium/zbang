@@ -69,6 +69,7 @@ type SourceBangRecord = {
 };
 
 type NormalizedBang = Omit<Zbang, 'rank'> & {
+	codeRanks: Record<string, number>;
 	domains: string[];
 };
 
@@ -267,8 +268,11 @@ function normalizeKagiRecord(
 ): NormalizedBang[] {
 	return normalizeSourceRecord(record, 'kagi').map((bang) => {
 		const ddgr = getKagiRecordDdgr(record, duckDuckGoByCode);
+		const codeRanks = Object.fromEntries(
+			bang.code.map((code) => [code, duckDuckGoByCode.get(code)?.ddgr ?? 0])
+		);
 
-		return { ...bang, ddgr };
+		return { ...bang, codeRanks, ddgr };
 	});
 }
 
@@ -329,6 +333,9 @@ function normalizeSourceRecord(
 			...(ddgr ? { ddgr } : {}),
 			name: record.s,
 			code,
+			codeRanks: Object.fromEntries(
+				code.map((trigger) => [trigger, trigger === code[0] ? (ddgr ?? 0) : 0])
+			),
 			tags: getBangTags(record),
 			urls: { s: url },
 			domains: uniqueStrings([record.d, getUrlHostname(url)].filter(isString))
@@ -364,10 +371,21 @@ function mergeNormalizedBangs(a: NormalizedBang, b: NormalizedBang): NormalizedB
 		...(ddgr ? { ddgr } : {}),
 		name: getBestName(a, b),
 		code: uniqueStrings([...a.code, ...b.code]),
+		codeRanks: mergeCodeRanks(a.codeRanks, b.codeRanks),
 		tags: uniqueStrings([...a.tags, ...b.tags]).sort((left, right) => left.localeCompare(right)),
 		urls: { s: getBestUrl(a.urls.s, b.urls.s) },
 		domains: uniqueStrings([...a.domains, ...b.domains])
 	};
+}
+
+function mergeCodeRanks(a: Record<string, number>, b: Record<string, number>) {
+	const ranks = { ...a };
+
+	for (const [code, rank] of Object.entries(b)) {
+		ranks[code] = Math.max(ranks[code] ?? 0, rank);
+	}
+
+	return ranks;
 }
 
 function rankCatalogItems(items: NormalizedBang[]): Zbang[] {
@@ -380,10 +398,41 @@ function rankCatalogItems(items: NormalizedBang[]): Zbang[] {
 			...(item.ddgr ? { ddgr: item.ddgr } : {}),
 			rank: index + 1,
 			name: item.name,
-			code: item.code,
+			code: sortBangCodes(item.code, item.codeRanks),
 			tags: item.tags,
 			urls: item.urls
 		}));
+}
+
+function sortBangCodes(codes: string[], codeRanks: Record<string, number>) {
+	if (!codes.length) return [];
+
+	const shortest = getShortestCode(codes);
+	const rankedCodes = codes.filter((code) => (codeRanks[code] ?? 0) > 0);
+	const longest = getLongestCode(rankedCodes.length ? rankedCodes : codes);
+	const promoted = uniqueStrings([shortest, longest].filter(isString));
+	const promotedSet = new Set(promoted);
+
+	return [
+		...promoted,
+		...codes
+			.filter((code) => !promotedSet.has(code))
+			.sort((a, b) => (codeRanks[b] ?? 0) - (codeRanks[a] ?? 0))
+	];
+}
+
+function getShortestCode(codes: string[]) {
+	return codes.reduce(
+		(shortest, code) => (code.length < shortest.length ? code : shortest),
+		codes[0]
+	);
+}
+
+function getLongestCode(codes: string[]) {
+	return codes.reduce(
+		(longest, code) => (code.length > longest.length ? code : longest),
+		codes[0]
+	);
 }
 
 function getDuckDuckGoRankLookup(source: PersistedBangSource) {

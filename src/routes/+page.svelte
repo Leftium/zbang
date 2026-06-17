@@ -305,8 +305,8 @@
 						id: `bangs.${item.rank}`,
 						pluginId: 'bangs',
 						kind: 'action',
-						title: `${item.code[0]} ${item.name}`,
-						description: `${item.code.join(', ')} | ${item.urls.s}`,
+						title: item.name,
+						description: `${item.code.join(' ')} | ${formatBangUrl(item.urls.s)}`,
 						rank: item.rank,
 						score,
 						sortOrder: index,
@@ -567,6 +567,10 @@
 
 	function formatCount(count: number) {
 		return new Intl.NumberFormat().format(count);
+	}
+
+	function formatBangUrl(url: string) {
+		return url.replace(/^https?:\/\//, '').replace(/^www\./, '');
 	}
 
 	function formatItemMeta(item: LauncherItem) {

@@ -452,8 +452,8 @@
 	main > section,
 	.bang-sources {
 		display: grid;
-		gap: var(--size-5);
-		margin-block-start: var(--size-6);
+		gap: var(--size-4);
+		margin-block-start: var(--size-5);
 	}
 
 	h1,
@@ -464,27 +464,29 @@
 	}
 
 	h1 {
-		font-size: var(--font-size-5);
+		font-size: var(--font-size-4);
 	}
 
 	h2,
 	legend {
-		font-size: var(--font-size-2);
+		font-size: var(--font-size-1);
 		font-weight: var(--font-weight-7);
 	}
 
 	p {
 		color: var(--gray-6);
+		font-size: var(--font-size-0);
 	}
 
 	.setting {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: var(--size-4);
-		padding: var(--size-4);
+		gap: var(--size-3);
+		padding: var(--size-2) var(--size-3);
 		border: var(--border-size-1) solid var(--gray-7);
 		border-radius: var(--radius-2);
+		font-size: var(--font-size-0);
 	}
 
 	.provider-setting {
@@ -499,47 +501,57 @@
 
 	.providers {
 		display: grid;
-		gap: var(--size-2);
+		gap: var(--size-1);
 	}
 
 	label {
 		display: flex;
 		align-items: center;
-		gap: var(--size-2);
+		gap: var(--size-1);
+		font-size: var(--font-size-0);
 	}
 
 	button {
+		padding: 0.35rem 0.65rem;
+		font-size: var(--font-size-0);
 		white-space: nowrap;
+	}
+
+	input[type='radio'] {
+		width: 0.9rem;
+		height: 0.9rem;
 	}
 
 	.dev-tools {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: var(--size-3);
+		gap: var(--size-2);
+		font-size: var(--font-size-0);
 	}
 
 	.source-list {
 		display: grid;
-		gap: var(--size-3);
+		gap: var(--size-2);
 	}
 
 	.source-card {
 		display: grid;
-		gap: var(--size-3);
-		padding: var(--size-4);
+		gap: var(--size-2);
+		padding: var(--size-3);
 		border: var(--border-size-1) solid var(--gray-7);
 		border-radius: var(--radius-2);
 	}
 
 	.source-card h3 {
-		font-size: var(--font-size-1);
+		font-size: var(--font-size-0);
 	}
 
 	dl {
 		display: grid;
-		gap: var(--size-2);
+		gap: var(--size-1);
 		margin: 0;
+		font-size: var(--font-size-0);
 	}
 
 	dl div {

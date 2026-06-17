@@ -1,11 +1,11 @@
 {
   "provider": "duckduckgo",
-  "generatedAt": "2026-06-17T18:50:55.045Z",
+  "generatedAt": "2026-06-17T19:12:48.907Z",
   "generatorVersion": 1,
   "sources": [
     {
       "url": "https://duckduckgo.com/bang.js",
-      "fetchedAt": "2026-06-17T18:50:55.007Z",
+      "fetchedAt": "2026-06-17T19:12:48.870Z",
       "hash": "e69536d51e6f306f3e0063af0d88862713bf8d7075aefc8ec85db88779355768"
     }
   ],
@@ -32,13 +32,13 @@
       "rank": 2,
       "name": "Wikipedia",
       "code": [
-        "!encyclopedia",
-        "!wen",
-        "!w-es",
+        "!wi",
         "!wikipedia",
-        "!wikispecies",
+        "!wen",
         "!wiki",
-        "!wi"
+        "!encyclopedia",
+        "!w-es",
+        "!wikispecies"
       ],
       "tags": [
         "Research/Academic",
@@ -55,10 +55,10 @@
       "name": "YouTube",
       "code": [
         "!ty",
-        "!watch",
         "!youtube",
-        "!you",
         "!yt",
+        "!you",
+        "!watch",
         "!υτ"
       ],
       "tags": [
@@ -74,8 +74,8 @@
       "rank": 4,
       "name": "Wikipedia",
       "code": [
-        "!w.en",
-        "!w"
+        "!w",
+        "!w.en"
       ],
       "tags": [
         "Online Services/Search",
@@ -90,16 +90,16 @@
       "rank": 5,
       "name": "DuckDuckGo Images",
       "code": [
+        "!i",
+        "!pictures",
+        "!image",
+        "!img",
+        "!images",
         "!ddgi",
         "!ddi",
-        "!dim",
-        "!i",
-        "!image",
-        "!images",
-        "!img",
-        "!imgs",
         "!pics",
-        "!pictures"
+        "!dim",
+        "!imgs"
       ],
       "tags": [
         "Multimedia/Images",
@@ -128,8 +128,8 @@
       "rank": 7,
       "name": "Reddit",
       "code": [
-        "!reddit",
-        "!r"
+        "!r",
+        "!reddit"
       ],
       "tags": [
         "News/Aggregators",
@@ -145,10 +145,10 @@
       "name": "Google Image",
       "code": [
         "!gi",
-        "!gimages",
+        "!googleimages",
         "!gimg",
         "!gim",
-        "!googleimages",
+        "!gimages",
         "!googleimg"
       ],
       "tags": [
@@ -165,13 +165,13 @@
       "name": "Amazon",
       "code": [
         "!a",
-        "!am",
         "!amazon",
-        "!amus",
+        "!az",
+        "!am",
         "!amz",
         "!aus",
-        "!az",
         "!buy",
+        "!amus",
         "!price"
       ],
       "tags": [
@@ -200,12 +200,12 @@
       "rank": 11,
       "name": "Google Maps",
       "code": [
-        "!gmap",
-        "!gmaps",
-        "!googlemap",
+        "!m",
         "!googlemaps",
+        "!gmaps",
         "!map",
-        "!m"
+        "!gmap",
+        "!googlemap"
       ],
       "tags": [
         "Online Services/Google",
@@ -236,8 +236,8 @@
       "rank": 13,
       "name": "Wiktionary",
       "code": [
-        "!wtionary",
-        "!wt"
+        "!wt",
+        "!wtionary"
       ],
       "tags": [
         "Research/Learning",
@@ -252,13 +252,13 @@
       "rank": 14,
       "name": "Google Translate",
       "code": [
-        "!gten",
-        "!gt-english",
-        "!gtenglish",
         "!gt",
         "!gtranslate",
+        "!tr",
         "!translate",
-        "!tr"
+        "!gten",
+        "!gt-english",
+        "!gtenglish"
       ],
       "tags": [
         "Online Services/Google",
@@ -288,8 +288,8 @@
       "rank": 16,
       "name": "startpage.com",
       "code": [
-        "!sp",
-        "!s"
+        "!s",
+        "!sp"
       ],
       "tags": [
         "Online Services/Search"
@@ -303,14 +303,14 @@
       "rank": 17,
       "name": "reddit",
       "code": [
-        "!rds",
-        "!reddits",
-        "!rsub",
-        "!sbr",
-        "!sreddit",
         "!sr",
         "!subreddit",
-        "!subr"
+        "!rds",
+        "!rsub",
+        "!reddits",
+        "!subr",
+        "!sbr",
+        "!sreddit"
       ],
       "tags": [
         "Entertainment/Forum",
@@ -327,9 +327,9 @@
       "rank": 18,
       "name": "Wiktionary",
       "code": [
-        "!wikten",
+        "!wikt",
         "!wiktionary",
-        "!wikt"
+        "!wikten"
       ],
       "tags": [
         "Research/Reference (words)"
@@ -385,9 +385,9 @@
       "rank": 22,
       "name": "eBay",
       "code": [
+        "!e",
         "!ebay",
-        "!eb",
-        "!e"
+        "!eb"
       ],
       "tags": [
         "Shopping/Online (marketplace)"
@@ -416,9 +416,9 @@
       "rank": 24,
       "name": "OpenStreetMap",
       "code": [
-        "!omap",
-        "!openmaps",
         "!osm",
+        "!openmaps",
+        "!omap",
         "!ost"
       ],
       "tags": [
@@ -433,8 +433,8 @@
       "rank": 25,
       "name": "Duck.ai",
       "code": [
-        "!aichat",
         "!ai",
+        "!aichat",
         "!chat",
         "!duckai"
       ],
@@ -465,11 +465,11 @@
       "name": "Wikipedia",
       "code": [
         "!wde",
+        "!wikipediade",
+        "!wikide",
         "!w.de",
         "!wge",
-        "!wiki.de",
-        "!wikide",
-        "!wikipediade"
+        "!wiki.de"
       ],
       "tags": [
         "Online Services/Tools",
@@ -486,8 +486,8 @@
       "rank": 28,
       "name": "Arch Linux Wiki",
       "code": [
-        "!archlinuxit",
-        "!aw"
+        "!aw",
+        "!archlinuxit"
       ],
       "tags": [
         "Tech/Sysadmin (Arch)"
@@ -518,9 +518,9 @@
       "rank": 30,
       "name": "Twitter",
       "code": [
+        "!tw",
         "!twitter",
-        "!twit",
-        "!tw"
+        "!twit"
       ],
       "tags": [
         "Online Services/Social"
@@ -536,8 +536,8 @@
       "code": [
         "!myt",
         "!ytmusic",
-        "!ytmu",
-        "!ytm"
+        "!ytm",
+        "!ytmu"
       ],
       "tags": [
         "Multimedia/Music",
@@ -630,13 +630,13 @@
       "rank": 37,
       "name": "Wolfram|Alpha",
       "code": [
-        "!alpha",
-        "!walpha",
         "!wa",
         "!wolframalpha",
         "!wolfram",
         "!wolf",
-        "!wra"
+        "!alpha",
+        "!wra",
+        "!walpha"
       ],
       "tags": [
         "Online Services/Search",
@@ -653,8 +653,8 @@
       "name": "Old Reddit (subreddit)",
       "code": [
         "!ors",
-        "!osr",
         "!srold",
+        "!osr",
         "!sro"
       ],
       "tags": [
@@ -684,12 +684,12 @@
       "rank": 40,
       "name": "Merriam-Webster Dictionary",
       "code": [
-        "!dic",
-        "!dmw",
+        "!mw",
         "!merriamwebster",
         "!mwd",
-        "!mweb",
-        "!mw"
+        "!dic",
+        "!dmw",
+        "!mweb"
       ],
       "tags": [
         "Research/Academic",
@@ -735,17 +735,17 @@
       "rank": 43,
       "name": "Amazon.de",
       "code": [
-        "!a.at",
-        "!a.de",
         "!ade",
+        "!amazonde",
+        "!ama",
+        "!amde",
+        "!azd",
+        "!a.de",
         "!age",
         "!ager",
-        "!ama",
-        "!amazon_de",
-        "!amazonde",
-        "!amde",
         "!amznde",
-        "!azd"
+        "!a.at",
+        "!amazon_de"
       ],
       "tags": [
         "Shopping/Online",
@@ -788,8 +788,8 @@
       "rank": 46,
       "name": "Mozilla Developer Network",
       "code": [
-        "!javascript",
         "!mdc",
+        "!javascript",
         "!mdn"
       ],
       "tags": [
@@ -908,9 +908,9 @@
       "rank": 54,
       "name": "Steam",
       "code": [
+        "!ste",
         "!steam",
-        "!steme",
-        "!ste"
+        "!steme"
       ],
       "tags": [
         "Entertainment/Games (general)",
@@ -925,8 +925,8 @@
       "rank": 55,
       "name": "npm",
       "code": [
-        "!npmjs",
-        "!npm"
+        "!npm",
+        "!npmjs"
       ],
       "tags": [
         "Tech/Languages (javascript)",
@@ -941,10 +941,10 @@
       "rank": 56,
       "name": "Urban Dictionary",
       "code": [
-        "!ud",
+        "!u",
         "!urbandictionary",
-        "!urban",
-        "!u"
+        "!ud",
+        "!urban"
       ],
       "tags": [
         "Research/Learning",
@@ -959,10 +959,10 @@
       "rank": 57,
       "name": "Safe search off",
       "code": [
-        "!safeoff",
         "!soff",
-        "!s-off",
-        "!ssoff"
+        "!safeoff",
+        "!ssoff",
+        "!s-off"
       ],
       "tags": [
         "Online Services/Search (DDG)"
@@ -1019,8 +1019,8 @@
       "rank": 61,
       "name": "Twitch.tv",
       "code": [
-        "!twitchc",
-        "!twitch"
+        "!twitch",
+        "!twitchc"
       ],
       "tags": [
         "Entertainment/Games (general)"
@@ -1034,13 +1034,13 @@
       "rank": 62,
       "name": "Web Archive",
       "code": [
-        "!archived",
-        "!archiveweb",
         "!ia",
-        "!wayback",
         "!waybackmachine",
+        "!wayback",
         "!wbm",
-        "!webarchive"
+        "!webarchive",
+        "!archived",
+        "!archiveweb"
       ],
       "tags": [
         "Multimedia/General",
@@ -1057,12 +1057,12 @@
       "rank": 63,
       "name": "The Free Dictionary",
       "code": [
-        "!define",
-        "!def",
-        "!dictionary",
         "!d",
-        "!idioms",
+        "!dictionary",
+        "!define",
         "!tfd",
+        "!def",
+        "!idioms",
         "!thefreedictionary"
       ],
       "tags": [
@@ -1094,10 +1094,10 @@
       "rank": 65,
       "name": "DuckDuckGo",
       "code": [
-        "!dax",
-        "!ddg",
+        "!?",
         "!duckduckgo",
-        "!?"
+        "!ddg",
+        "!dax"
       ],
       "tags": [
         "Multimedia/Images",
@@ -1113,8 +1113,8 @@
       "rank": 66,
       "name": "DeepL",
       "code": [
-        "!deepl",
-        "!dpl"
+        "!dpl",
+        "!deepl"
       ],
       "tags": [
         "Translation/General"
@@ -1128,8 +1128,8 @@
       "rank": 67,
       "name": "Yahoo Finance",
       "code": [
-        "!yfinance",
-        "!yf"
+        "!yf",
+        "!yfinance"
       ],
       "tags": [
         "News/Business"
@@ -1143,11 +1143,11 @@
       "rank": 68,
       "name": "Amazon UK",
       "code": [
-        "!amazonuk",
-        "!amuk",
-        "!a.uk",
         "!auk",
-        "!azuk"
+        "!amazonuk",
+        "!azuk",
+        "!amuk",
+        "!a.uk"
       ],
       "tags": [
         "Shopping/Online",
@@ -1192,10 +1192,10 @@
       "rank": 71,
       "name": "Rust stdlib docs",
       "code": [
-        "!rustdoc",
-        "!rustd",
         "!rust",
-        "!ruststd"
+        "!rustdoc",
+        "!ruststd",
+        "!rustd"
       ],
       "tags": [
         "Tech/Languages (other)",
@@ -1287,9 +1287,9 @@
       "rank": 77,
       "name": "Rotten Tomatoes",
       "code": [
+        "!rt",
         "!rottentomatoes",
-        "!rottentomato",
-        "!rt"
+        "!rottentomato"
       ],
       "tags": [
         "Entertainment/Movies",
@@ -1321,9 +1321,9 @@
       "rank": 79,
       "name": "MyAnimeList",
       "code": [
-        "!malist",
         "!mal",
-        "!myanimelist"
+        "!myanimelist",
+        "!malist"
       ],
       "tags": [
         "Entertainment/Comics",
@@ -1340,9 +1340,9 @@
       "name": "Bing Images",
       "code": [
         "!bi",
+        "!bingimages",
         "!bimages",
-        "!bim",
-        "!bingimages"
+        "!bim"
       ],
       "tags": [
         "Multimedia/Images",
@@ -1357,8 +1357,8 @@
       "rank": 81,
       "name": "Yahoo!",
       "code": [
-        "!yahoo",
-        "!y"
+        "!y",
+        "!yahoo"
       ],
       "tags": [
         "Online Services/Search"
@@ -1372,8 +1372,8 @@
       "rank": 82,
       "name": "Yahoo Japan",
       "code": [
-        "!yjp",
-        "!yj"
+        "!yj",
+        "!yjp"
       ],
       "tags": [
         "Online Services/Search (non-US)"
@@ -1387,13 +1387,13 @@
       "rank": 83,
       "name": "Thesaurus.com",
       "code": [
-        "!like",
+        "!t",
         "!synonyms",
-        "!synonym",
-        "!syn",
         "!thes",
-        "!tref",
-        "!t"
+        "!syn",
+        "!synonym",
+        "!like",
+        "!tref"
       ],
       "tags": [
         "Research/Reference",
@@ -1409,10 +1409,10 @@
       "rank": 84,
       "name": "Hoogle",
       "code": [
-        "!hgle",
-        "!hgl",
         "!h",
-        "!ho"
+        "!hgle",
+        "!ho",
+        "!hgl"
       ],
       "tags": [
         "Tech/Languages (haskell)"
@@ -1531,10 +1531,10 @@
       "name": "dict.cc",
       "code": [
         "!dcc",
-        "!deen",
-        "!dende",
+        "!dict.cc",
         "!dictcc",
-        "!dict.cc"
+        "!deen",
+        "!dende"
       ],
       "tags": [
         "Online Services/Tools",
@@ -1566,8 +1566,8 @@
       "rank": 94,
       "name": "Yandex.Ru",
       "code": [
-        "!yandex",
-        "!я"
+        "!я",
+        "!yandex"
       ],
       "tags": [
         "Online Services/Search (non-US)"
@@ -1581,8 +1581,8 @@
       "rank": 95,
       "name": "TheMovieDB.org",
       "code": [
-        "!themoviedb",
-        "!tmdb"
+        "!tmdb",
+        "!themoviedb"
       ],
       "tags": [
         "Entertainment/Movies",
@@ -1597,8 +1597,8 @@
       "rank": 96,
       "name": "Gmail",
       "code": [
-        "!gma",
-        "!go"
+        "!go",
+        "!gma"
       ],
       "tags": [
         "Online Services/Google",
@@ -1615,8 +1615,8 @@
       "code": [
         "!afr",
         "!amazonfr",
-        "!amfr",
-        "!azf"
+        "!azf",
+        "!amfr"
       ],
       "tags": [
         "Shopping/Online",
@@ -1645,8 +1645,8 @@
       "rank": 99,
       "name": "Pinterest",
       "code": [
-        "!pin",
-        "!p"
+        "!p",
+        "!pin"
       ],
       "tags": [
         "Multimedia/Images",
@@ -1764,8 +1764,8 @@
       "code": [
         "!gs",
         "!gshopping",
-        "!gsus",
-        "!shopping"
+        "!shopping",
+        "!gsus"
       ],
       "tags": [
         "Online Services/Google",
@@ -1808,11 +1808,11 @@
       "rank": 110,
       "name": "SoundCloud",
       "code": [
-        "!scloud",
         "!sc",
-        "!sndcld",
         "!soundcloud",
-        "!sound"
+        "!sound",
+        "!sndcld",
+        "!scloud"
       ],
       "tags": [
         "Entertainment/Audio",
@@ -1827,11 +1827,11 @@
       "rank": 111,
       "name": "Amazon India",
       "code": [
-        "!a.in",
         "!ain",
-        "!amazonin",
         "!amazon.in",
         "!amin",
+        "!amazonin",
+        "!a.in",
         "!amznin"
       ],
       "tags": [
@@ -1878,9 +1878,9 @@
       "name": "Aliexpress",
       "code": [
         "!ae",
+        "!aliexpress",
         "!ali",
-        "!aliexp",
-        "!aliexpress"
+        "!aliexp"
       ],
       "tags": [
         "Shopping/Online",
@@ -1925,9 +1925,9 @@
       "name": "cppreference.com",
       "code": [
         "!cpp",
+        "!cppreference",
         "!cppr",
         "!cppref",
-        "!cppreference",
         "!c++ref"
       ],
       "tags": [
@@ -2013,8 +2013,8 @@
       "name": "Bing Videos",
       "code": [
         "!bv",
-        "!bvideo",
-        "!bvideos"
+        "!bvideos",
+        "!bvideo"
       ],
       "tags": [
         "Online Services/Search"
@@ -2087,8 +2087,8 @@
       "rank": 128,
       "name": "NAVER",
       "code": [
-        "!na",
-        "!ㄴ"
+        "!ㄴ",
+        "!na"
       ],
       "tags": [
         "Online Services/Search (non-US)"
@@ -2116,11 +2116,11 @@
       "rank": 130,
       "name": "Python",
       "code": [
-        "!py3k",
-        "!py3",
         "!py",
         "!python3",
-        "!python"
+        "!python",
+        "!py3",
+        "!py3k"
       ],
       "tags": [
         "Tech/Languages (python)"
@@ -2134,9 +2134,9 @@
       "rank": 131,
       "name": "ebay.co.uk",
       "code": [
+        "!euk",
         "!ebayuk",
-        "!ebuk",
-        "!euk"
+        "!ebuk"
       ],
       "tags": [
         "Shopping/Online (marketplace)"
@@ -2167,8 +2167,8 @@
       "rank": 133,
       "name": "PCGamingWiki",
       "code": [
-        "!pcgamingwiki",
-        "!pcgw"
+        "!pcgw",
+        "!pcgamingwiki"
       ],
       "tags": [
         "Entertainment/Games (general)"
@@ -2226,9 +2226,9 @@
       "rank": 137,
       "name": "Arch Linux Packages",
       "code": [
-        "!apkg",
+        "!pac",
         "!archpkg",
-        "!pac"
+        "!apkg"
       ],
       "tags": [
         "Tech/Sysadmin (Arch)"
@@ -2273,10 +2273,10 @@
       "rank": 140,
       "name": "Amazon.es",
       "code": [
-        "!a.es",
         "!aes",
         "!amazones",
         "!ames",
+        "!a.es",
         "!aze"
       ],
       "tags": [
@@ -2398,8 +2398,8 @@
       "rank": 148,
       "name": "DuckDuckGo News",
       "code": [
-        "!ddgn",
         "!n",
+        "!ddgn",
         "!news"
       ],
       "tags": [
@@ -2414,11 +2414,11 @@
       "rank": 149,
       "name": "Amazon.ca",
       "code": [
-        "!aca",
+        "!ca",
         "!amazonca",
+        "!aca",
         "!amca",
-        "!am.ca",
-        "!ca"
+        "!am.ca"
       ],
       "tags": [
         "Shopping/Online",
@@ -2447,9 +2447,9 @@
       "rank": 151,
       "name": "Wikipedia (NL)",
       "code": [
-        "!nlwi",
+        "!wnl",
         "!wikinl",
-        "!wnl"
+        "!nlwi"
       ],
       "tags": [
         "Multimedia/Docs",
@@ -2465,10 +2465,10 @@
       "name": "Amazon.co.jp",
       "code": [
         "!aj",
-        "!ajl",
-        "!ajp",
         "!amazonjp",
-        "!amjp"
+        "!ajp",
+        "!amjp",
+        "!ajl"
       ],
       "tags": [
         "Shopping/Online",
@@ -2498,9 +2498,9 @@
       "rank": 154,
       "name": "ebay.de",
       "code": [
+        "!ede",
         "!ebayde",
-        "!ebde",
-        "!ede"
+        "!ebde"
       ],
       "tags": [
         "Shopping/Online (marketplace)"
@@ -2545,12 +2545,12 @@
       "rank": 157,
       "name": "Encyclopaedia Metallum",
       "code": [
-        "!maband",
         "!mab",
-        "!march",
         "!metalarch",
         "!metal",
-        "!metallum"
+        "!metallum",
+        "!march",
+        "!maband"
       ],
       "tags": [
         "Multimedia/Music"
@@ -2564,10 +2564,10 @@
       "rank": 158,
       "name": "ProtonDB",
       "code": [
-        "!prdb",
+        "!ptn",
         "!protondb",
         "!proton",
-        "!ptn"
+        "!prdb"
       ],
       "tags": [
         "Entertainment/Games (general)"
@@ -2582,8 +2582,8 @@
       "name": "Docker Store",
       "code": [
         "!dk",
-        "!dkstore",
-        "!docker"
+        "!docker",
+        "!dkstore"
       ],
       "tags": [
         "Tech/Sysadmin"
@@ -2597,12 +2597,12 @@
       "rank": 160,
       "name": "Invidious",
       "code": [
-        "!dio",
         "!in",
+        "!invidious",
         "!invd",
         "!invid",
         "!invidio",
-        "!invidious"
+        "!dio"
       ],
       "tags": [
         "Multimedia/Video"
@@ -2674,8 +2674,8 @@
       "rank": 165,
       "name": "Know Your Meme",
       "code": [
-        "!knowyourmeme",
         "!kym",
+        "!knowyourmeme",
         "!meme"
       ],
       "tags": [
@@ -2718,9 +2718,9 @@
       "rank": 168,
       "name": "WordReference Definition",
       "code": [
+        "!wr",
         "!wren",
-        "!wrn",
-        "!wr"
+        "!wrn"
       ],
       "tags": [
         "Online Services/Tools",
@@ -2750,8 +2750,8 @@
       "name": "HowLongToBeat",
       "code": [
         "!hlb",
-        "!hltb",
-        "!howlongtobeat"
+        "!howlongtobeat",
+        "!hltb"
       ],
       "tags": [
         "Entertainment/Games (general)"
@@ -2793,10 +2793,10 @@
       "rank": 173,
       "name": "old reddit design",
       "code": [
+        "!rold",
         "!oldreddit",
         "!oldred",
-        "!redditold",
-        "!rold"
+        "!redditold"
       ],
       "tags": [
         "Entertainment/Forum",
@@ -2827,10 +2827,10 @@
       "name": "Debian Packages",
       "code": [
         "!deb",
-        "!debianpack",
         "!debpackages",
-        "!dpackages",
-        "!dpkg"
+        "!dpkg",
+        "!debianpack",
+        "!dpackages"
       ],
       "tags": [
         "Online Services/Search",
@@ -2847,9 +2847,9 @@
       "rank": 176,
       "name": "WordReference",
       "code": [
-        "!wenfr",
         "!wref",
-        "!wrenfr"
+        "!wrenfr",
+        "!wenfr"
       ],
       "tags": [
         "Online Services/Tools",
@@ -2951,10 +2951,10 @@
       "rank": 183,
       "name": "idealo",
       "code": [
+        "!id",
         "!idealode",
         "!idealo",
-        "!ide",
-        "!id"
+        "!ide"
       ],
       "tags": [
         "Shopping/Online",
@@ -2970,10 +2970,10 @@
       "rank": 184,
       "name": "Wiktionary french",
       "code": [
-        "!fr.wiktionary",
         "!wifr",
         "!wiktfr",
-        "!wtfr"
+        "!wtfr",
+        "!fr.wiktionary"
       ],
       "tags": [
         "Online Services/Tools",
@@ -2989,9 +2989,9 @@
       "rank": 185,
       "name": "Bandcamp",
       "code": [
+        "!bndc",
         "!bandcamp",
-        "!bcamp",
-        "!bndc"
+        "!bcamp"
       ],
       "tags": [
         "Multimedia/Music",
@@ -3006,8 +3006,8 @@
       "rank": 186,
       "name": "Wikipedia in Japanese",
       "code": [
-        "!jawiki",
-        "!wj"
+        "!wj",
+        "!jawiki"
       ],
       "tags": [
         "Research/Reference"
@@ -3136,8 +3136,8 @@
       "rank": 195,
       "name": "PHP.net",
       "code": [
-        "!phpnet",
-        "!php"
+        "!php",
+        "!phpnet"
       ],
       "tags": [
         "Tech/Languages (php)"
@@ -3196,8 +3196,8 @@
       "rank": 199,
       "name": "Amazon México",
       "code": [
-        "!amazonmx",
-        "!amx"
+        "!amx",
+        "!amazonmx"
       ],
       "tags": [
         "Shopping/Online"
@@ -3239,8 +3239,8 @@
       "rank": 202,
       "name": "IsThereAnyDeal",
       "code": [
-        "!isthereanydeal",
-        "!itad"
+        "!itad",
+        "!isthereanydeal"
       ],
       "tags": [
         "Shopping/Online (deals)"
@@ -3268,8 +3268,8 @@
       "rank": 204,
       "name": "Spotify",
       "code": [
-        "!spotify",
-        "!spy"
+        "!spy",
+        "!spotify"
       ],
       "tags": [
         "Entertainment/Audio",
@@ -3284,12 +3284,12 @@
       "rank": 205,
       "name": "Ultimate Guitar",
       "code": [
+        "!ug",
+        "!ultimateguitar",
+        "!tabs",
         "!chords",
         "!gtabs",
-        "!tabs",
-        "!ug",
-        "!ultimate-guitar",
-        "!ultimateguitar"
+        "!ultimate-guitar"
       ],
       "tags": [
         "Entertainment/Audio",
@@ -3365,9 +3365,9 @@
       "rank": 210,
       "name": "Runescape Wiki",
       "code": [
-        "!rscape",
         "!rs",
-        "!rswiki"
+        "!rswiki",
+        "!rscape"
       ],
       "tags": [
         "Entertainment/Games (specific)"
@@ -3381,8 +3381,8 @@
       "rank": 211,
       "name": "Danbooru",
       "code": [
-        "!danbooru",
-        "!dbr"
+        "!dbr",
+        "!danbooru"
       ],
       "tags": [
         "Multimedia/Images"
@@ -3411,10 +3411,10 @@
       "name": "SpanishDict",
       "code": [
         "!sdict",
-        "!spandict",
         "!spanishdict",
-        "!spanishd",
-        "!spanish"
+        "!spanish",
+        "!spandict",
+        "!spanishd"
       ],
       "tags": [
         "Online Services/Tools",
@@ -3457,8 +3457,8 @@
       "rank": 216,
       "name": "Oz Bargain",
       "code": [
-        "!ozbargain",
-        "!ozb"
+        "!ozb",
+        "!ozbargain"
       ],
       "tags": [
         "Shopping/Online (deals)"
@@ -3684,8 +3684,8 @@
       "name": "Etymonline",
       "code": [
         "!eo",
-        "!etym",
-        "!etymonline"
+        "!etymonline",
+        "!etym"
       ],
       "tags": [
         "Online Services/Tools",
@@ -3701,8 +3701,8 @@
       "rank": 233,
       "name": "Tureng",
       "code": [
-        "!tureng",
-        "!tur"
+        "!tur",
+        "!tureng"
       ],
       "tags": [
         "Research/Reference",
@@ -3732,9 +3732,9 @@
       "rank": 235,
       "name": "Google Cache",
       "code": [
-        "!cached",
+        "!cache",
         "!cachedview",
-        "!cache"
+        "!cached"
       ],
       "tags": [
         "Online Services/Google"
@@ -3807,9 +3807,9 @@
       "rank": 240,
       "name": "Dictionary.com",
       "code": [
-        "!cdi",
+        "!di",
         "!dcom",
-        "!di"
+        "!cdi"
       ],
       "tags": [
         "Online Services/Search",
@@ -3826,10 +3826,10 @@
       "name": "StackOverflow",
       "code": [
         "!ov",
-        "!sof",
-        "!so",
         "!stackoverflow",
-        "!stack"
+        "!so",
+        "!stack",
+        "!sof"
       ],
       "tags": [
         "Tech/Blogs",
@@ -3872,9 +3872,9 @@
       "rank": 244,
       "name": "Netflix",
       "code": [
+        "!nf",
         "!netflix",
-        "!net",
-        "!nf"
+        "!net"
       ],
       "tags": [
         "Entertainment/Movies"
@@ -4071,9 +4071,9 @@
       "rank": 258,
       "name": "Word Reference",
       "code": [
-        "!wfren",
         "!wrfe",
-        "!wrfren"
+        "!wrfren",
+        "!wfren"
       ],
       "tags": [
         "Online Services/Tools",
@@ -4176,8 +4176,8 @@
       "rank": 265,
       "name": "Anime News Network",
       "code": [
-        "!animenewsnetwork",
-        "!ann"
+        "!ann",
+        "!animenewsnetwork"
       ],
       "tags": [
         "Entertainment/Misc"
@@ -4219,8 +4219,8 @@
       "rank": 268,
       "name": "NetrunnerDB",
       "code": [
-        "!netrunner",
-        "!nrdb"
+        "!nrdb",
+        "!netrunner"
       ],
       "tags": [
         "Entertainment/Games (offline)"
@@ -4234,9 +4234,9 @@
       "rank": 269,
       "name": "GSMArena",
       "code": [
-        "!gsma",
+        "!gsm",
         "!gsmarena",
-        "!gsm"
+        "!gsma"
       ],
       "tags": [
         "Research/Reference",
@@ -4326,8 +4326,8 @@
       "rank": 275,
       "name": "The Official Minecraft Wiki",
       "code": [
-        "!mcwiki",
-        "!mcw"
+        "!mcw",
+        "!mcwiki"
       ],
       "tags": [
         "Entertainment/Games (Minecraft)",
@@ -4370,8 +4370,8 @@
       "rank": 278,
       "name": "JustWatch",
       "code": [
-        "!justwatch",
-        "!jwh"
+        "!jwh",
+        "!justwatch"
       ],
       "tags": [
         "Entertainment/Movies",
@@ -4443,8 +4443,8 @@
       "name": "Gentoo Packages",
       "code": [
         "!emerge",
-        "!genpkg",
         "!gentoopkg",
+        "!genpkg",
         "!gpackages"
       ],
       "tags": [
@@ -4489,8 +4489,8 @@
       "rank": 286,
       "name": "Wikivoyage",
       "code": [
-        "!wikivoyage",
-        "!wv"
+        "!wv",
+        "!wikivoyage"
       ],
       "tags": [
         "Research/Travel"
@@ -4546,8 +4546,8 @@
       "rank": 290,
       "name": "last.fm",
       "code": [
-        "!lastfmmusic",
-        "!lfm"
+        "!lfm",
+        "!lastfmmusic"
       ],
       "tags": [
         "Entertainment/Audio",
@@ -4576,9 +4576,9 @@
       "rank": 292,
       "name": "bing maps",
       "code": [
+        "!bm",
         "!bingmaps",
-        "!bmaps",
-        "!bm"
+        "!bmaps"
       ],
       "tags": [
         "Online Services/Maps",
@@ -4635,9 +4635,9 @@
       "rank": 296,
       "name": "Wikimedia Commons",
       "code": [
+        "!wim",
         "!commons",
-        "!wikic",
-        "!wim"
+        "!wikic"
       ],
       "tags": [
         "Multimedia/General",
@@ -4710,10 +4710,10 @@
       "rank": 301,
       "name": "PubMed",
       "code": [
-        "!pmd",
-        "!pmid",
         "!pm",
-        "!pubmed"
+        "!pubmed",
+        "!pmd",
+        "!pmid"
       ],
       "tags": [
         "Research/Academic",
@@ -4728,8 +4728,8 @@
       "rank": 302,
       "name": "Target",
       "code": [
-        "!target",
-        "!tgt"
+        "!tgt",
+        "!target"
       ],
       "tags": [
         "Shopping/Big box/department",
@@ -4800,10 +4800,10 @@
       "rank": 307,
       "name": "alternativeTo",
       "code": [
+        "!ato",
         "!alternativeto",
         "!alto",
-        "!altto",
-        "!ato"
+        "!altto"
       ],
       "tags": [
         "Online Services/Search",
@@ -4833,9 +4833,9 @@
       "rank": 309,
       "name": "Hackage",
       "code": [
+        "!hkg",
         "!hackage",
-        "!hckg",
-        "!hkg"
+        "!hckg"
       ],
       "tags": [
         "Tech/Languages (haskell)",
@@ -4850,8 +4850,8 @@
       "rank": 310,
       "name": "Mercado Livre Brasil",
       "code": [
-        "!mercadolivre",
-        "!mlbr"
+        "!mlbr",
+        "!mercadolivre"
       ],
       "tags": [
         "Online Services/Search (non-US)",
@@ -4908,8 +4908,8 @@
       "rank": 314,
       "name": "Fangraphs",
       "code": [
-        "!fangraphs",
-        "!fg"
+        "!fg",
+        "!fangraphs"
       ],
       "tags": [
         "Entertainment/Sports"
@@ -4951,8 +4951,8 @@
       "rank": 317,
       "name": "WowHead",
       "code": [
-        "!wowhead",
-        "!wowh"
+        "!wowh",
+        "!wowhead"
       ],
       "tags": [
         "Entertainment/Games (WOW)"
@@ -5181,8 +5181,8 @@
       "name": "Stardew Wiki",
       "code": [
         "!sdv",
-        "!stardew",
         "!stardewvalley",
+        "!stardew",
         "!svw"
       ],
       "tags": [
@@ -5213,8 +5213,8 @@
       "rank": 335,
       "name": "forecast.weather.gov",
       "code": [
-        "!noaa",
         "!nws",
+        "!noaa",
         "!wgov"
       ],
       "tags": [
@@ -5299,12 +5299,12 @@
       "rank": 341,
       "name": "Google Play",
       "code": [
-        "!gapp",
-        "!googleplay",
         "!gp",
-        "!gplay",
+        "!googleplay",
         "!play",
-        "!playstore"
+        "!gplay",
+        "!playstore",
+        "!gapp"
       ],
       "tags": [
         "Online Services/Google",
@@ -5365,8 +5365,8 @@
       "name": "Ecosia",
       "code": [
         "!ec",
-        "!eco",
-        "!ecosia"
+        "!ecosia",
+        "!eco"
       ],
       "tags": [
         "Online Services/Search",
@@ -5409,8 +5409,8 @@
       "rank": 348,
       "name": "Lazada",
       "code": [
-        "!lazadaph",
         "!laz",
+        "!lazadaph",
         "!lzd",
         "!lzdph"
       ],
@@ -5526,10 +5526,10 @@
       "rank": 356,
       "name": "cnrtl définitions",
       "code": [
-        "!cnrtl",
+        "!tlfi",
         "!cnrtld",
-        "!cntrl",
-        "!tlfi"
+        "!cnrtl",
+        "!cntrl"
       ],
       "tags": [
         "Online Services/Tools",
@@ -5575,8 +5575,8 @@
       "rank": 359,
       "name": "HotUKDeals",
       "code": [
-        "!hotukdeals",
-        "!hukd"
+        "!hukd",
+        "!hotukdeals"
       ],
       "tags": [
         "Shopping/Online (deals)"
@@ -5704,8 +5704,8 @@
       "name": "amazon.com.au",
       "code": [
         "!aau",
-        "!amau",
-        "!amazonau"
+        "!amazonau",
+        "!amau"
       ],
       "tags": [
         "Shopping/Online"
@@ -5734,9 +5734,9 @@
       "name": "MetaCPAN",
       "code": [
         "!cpan",
+        "!metacpan",
         "!cpanm",
-        "!mcpan",
-        "!metacpan"
+        "!mcpan"
       ],
       "tags": [
         "Tech/Languages (perl)"
@@ -5764,8 +5764,8 @@
       "rank": 372,
       "name": "Rap Genius",
       "code": [
-        "!rapgenius",
-        "!rg"
+        "!rg",
+        "!rapgenius"
       ],
       "tags": [
         "Multimedia/Music",
@@ -5940,8 +5940,8 @@
       "rank": 384,
       "name": "Spotify",
       "code": [
-        "!spotifysearch",
-        "!spt"
+        "!spt",
+        "!spotifysearch"
       ],
       "tags": [
         "Multimedia/Music"
@@ -6242,8 +6242,8 @@
       "rank": 405,
       "name": "Amazon.it",
       "code": [
-        "!amazon.it",
-        "!amazonit"
+        "!amazonit",
+        "!amazon.it"
       ],
       "tags": [
         "Shopping/Online",
@@ -6328,8 +6328,8 @@
       "rank": 411,
       "name": "Google Images (Safe Off)",
       "code": [
-        "!gisafeoff",
-        "!gisoff"
+        "!gisoff",
+        "!gisafeoff"
       ],
       "tags": [
         "Online Services/Google"
@@ -6385,9 +6385,9 @@
       "rank": 415,
       "name": "AllMusic",
       "code": [
-        "!allmus",
+        "!amg",
         "!allmusic",
-        "!amg"
+        "!allmus"
       ],
       "tags": [
         "Entertainment/Misc",
@@ -6403,8 +6403,8 @@
       "name": "Den Danske Ordbog",
       "code": [
         "!ddo",
-        "!dkord",
-        "!ordnet"
+        "!ordnet",
+        "!dkord"
       ],
       "tags": [
         "Online Services/Tools",
@@ -6563,8 +6563,8 @@
       "rank": 427,
       "name": "Mercado Libre Mexico",
       "code": [
-        "!mercadolibremx",
-        "!mlmx"
+        "!mlmx",
+        "!mercadolibremx"
       ],
       "tags": [],
       "urls": {
@@ -6577,9 +6577,9 @@
       "name": "Google Translate",
       "code": [
         "!gtfr",
+        "!gtrad",
         "!gt-french",
-        "!gtfrench",
-        "!gtrad"
+        "!gtfrench"
       ],
       "tags": [
         "Online Services/Google",
@@ -6594,8 +6594,8 @@
       "rank": 429,
       "name": "Setlist.fm",
       "code": [
-        "!setlist",
-        "!sl"
+        "!sl",
+        "!setlist"
       ],
       "tags": [
         "Entertainment/Audio",
@@ -6750,8 +6750,8 @@
       "rank": 440,
       "name": "Ebay Kleinanzeigen",
       "code": [
-        "!ebaykleinanzeigen",
-        "!eka"
+        "!eka",
+        "!ebaykleinanzeigen"
       ],
       "tags": [
         "Shopping/Online",
@@ -6808,9 +6808,9 @@
       "rank": 444,
       "name": "Roblox",
       "code": [
+        "!rspt",
         "!robloxg",
-        "!roblox",
-        "!rspt"
+        "!roblox"
       ],
       "tags": [
         "Entertainment/Games (general)",
@@ -6826,9 +6826,9 @@
       "name": "StackExchange",
       "code": [
         "!se",
+        "!sx",
         "!stackexchange",
-        "!stex",
-        "!sx"
+        "!stex"
       ],
       "tags": [
         "Online Services/Search",
@@ -6946,8 +6946,8 @@
       "rank": 453,
       "name": "Baseball-Reference",
       "code": [
-        "!baseballreference",
-        "!br"
+        "!br",
+        "!baseballreference"
       ],
       "tags": [
         "Research/Reference"
@@ -6961,8 +6961,8 @@
       "rank": 454,
       "name": "McMaster-Carr",
       "code": [
-        "!mcmaster",
-        "!mmc"
+        "!mmc",
+        "!mcmaster"
       ],
       "tags": [
         "Shopping/Online",
@@ -7033,8 +7033,8 @@
       "rank": 459,
       "name": "Google Contacts",
       "code": [
-        "!contacts",
         "!gc",
+        "!contacts",
         "!gcontact"
       ],
       "tags": [
@@ -7120,8 +7120,8 @@
       "rank": 465,
       "name": "CoinMarketCap",
       "code": [
-        "!cmcap",
-        "!cmc"
+        "!cmc",
+        "!cmcap"
       ],
       "tags": [
         "Online Services/Tools"
@@ -7150,10 +7150,10 @@
       "name": "Firefox Addons",
       "code": [
         "!fad",
-        "!ffa",
-        "!firefoxaddon",
         "!firefoxaddons",
-        "!mozaddon"
+        "!ffa",
+        "!mozaddon",
+        "!firefoxaddon"
       ],
       "tags": [
         "Online Services/Search",
@@ -7226,8 +7226,8 @@
       "name": "NixOs Wiki",
       "code": [
         "!nix",
-        "!nixos",
-        "!nixoswiki"
+        "!nixoswiki",
+        "!nixos"
       ],
       "tags": [
         "Tech/Sysadmin"
@@ -7399,8 +7399,8 @@
       "code": [
         "!wdr",
         "!wordreference",
-        "!wrensp",
-        "!wrs"
+        "!wrs",
+        "!wrensp"
       ],
       "tags": [
         "Research/Reference",
@@ -7416,8 +7416,8 @@
       "rank": 485,
       "name": "Baka-Updates Manga",
       "code": [
-        "!bakaupdatesmanga",
-        "!bum"
+        "!bum",
+        "!bakaupdatesmanga"
       ],
       "tags": [
         "Entertainment/Comics"
@@ -7431,8 +7431,8 @@
       "rank": 486,
       "name": "Songsterr",
       "code": [
-        "!songsterr",
-        "!stabs"
+        "!stabs",
+        "!songsterr"
       ],
       "tags": [
         "Entertainment/Music"
@@ -7460,10 +7460,10 @@
       "rank": 488,
       "name": "CanIUse",
       "code": [
+        "!cu",
         "!caniuse",
         "!ciu",
-        "!cius",
-        "!cu"
+        "!cius"
       ],
       "tags": [
         "Tech/Languages (html)",
@@ -7478,8 +7478,8 @@
       "rank": 489,
       "name": "Qwant",
       "code": [
-        "!qwant",
         "!qw",
+        "!qwant",
         "!qwt"
       ],
       "tags": [
@@ -7510,8 +7510,8 @@
       "name": "MagicCardMarket",
       "code": [
         "!mcm",
-        "!mkm",
-        "!mtgcm"
+        "!mtgcm",
+        "!mkm"
       ],
       "tags": [
         "Entertainment/Games (specific)",
@@ -7570,8 +7570,8 @@
       "rank": 495,
       "name": "golang.org",
       "code": [
-        "!gopkg",
-        "!gpk"
+        "!gpk",
+        "!gopkg"
       ],
       "tags": [
         "Tech/Languages (go)"
@@ -7701,8 +7701,8 @@
       "rank": 504,
       "name": "Github",
       "code": [
-        "!ghrepo",
         "!ghr",
+        "!ghrepo",
         "!ghus"
       ],
       "tags": [
@@ -7818,8 +7818,8 @@
       "name": "www.bitchute.com",
       "code": [
         "!bitc",
-        "!bitch",
-        "!bitchute"
+        "!bitchute",
+        "!bitch"
       ],
       "tags": [
         "Entertainment/Misc",
@@ -7919,8 +7919,8 @@
       "rank": 519,
       "name": "WordPress.org",
       "code": [
-        "!wordpress",
-        "!wp"
+        "!wp",
+        "!wordpress"
       ],
       "tags": [
         "Online Services/Tools"
@@ -7962,8 +7962,8 @@
       "rank": 522,
       "name": "Linguee",
       "code": [
-        "!linef",
-        "!lin"
+        "!lin",
+        "!linef"
       ],
       "tags": [
         "Research/Reference (words intl)",
@@ -7992,8 +7992,8 @@
       "rank": 524,
       "name": "Google translate fr-en",
       "code": [
-        "!fr2en",
-        "!fren"
+        "!fren",
+        "!fr2en"
       ],
       "tags": [
         "Online Services/Google"
@@ -8062,8 +8062,8 @@
       "rank": 529,
       "name": "Debian Manual Pages",
       "code": [
-        "!debman",
-        "!dman"
+        "!dman",
+        "!debman"
       ],
       "tags": [
         "Tech/Sysadmin (debian)"
@@ -8077,8 +8077,8 @@
       "rank": 530,
       "name": "Hex.pm",
       "code": [
-        "!hexpm",
-        "!hx"
+        "!hx",
+        "!hexpm"
       ],
       "tags": [
         "Tech/Languages (erlang)",
@@ -8107,8 +8107,8 @@
       "rank": 532,
       "name": "Team Liquid",
       "code": [
-        "!teamliquid",
-        "!tl"
+        "!tl",
+        "!teamliquid"
       ],
       "tags": [
         "Entertainment/Forum",
@@ -8137,8 +8137,8 @@
       "rank": 534,
       "name": "Jet.com",
       "code": [
-        "!jet",
-        "!j"
+        "!j",
+        "!jet"
       ],
       "tags": [
         "Shopping/Online",
@@ -8167,8 +8167,8 @@
       "rank": 536,
       "name": "Marktplaats",
       "code": [
-        "!marktplaats",
-        "!mar"
+        "!mar",
+        "!marktplaats"
       ],
       "tags": [
         "Shopping/Online (marketplace)"
@@ -8226,8 +8226,8 @@
       "rank": 540,
       "name": "OpenStreetMap Wiki (short)",
       "code": [
-        "!openstreetmapwiki",
-        "!osmwiki"
+        "!osmwiki",
+        "!openstreetmapwiki"
       ],
       "tags": [
         "Online Services/Maps"
@@ -8397,8 +8397,8 @@
       "name": "Larousse (Français)",
       "code": [
         "!fr",
-        "!lar",
-        "!larousse"
+        "!larousse",
+        "!lar"
       ],
       "tags": [
         "Online Services/Tools",
@@ -8442,8 +8442,8 @@
       "rank": 555,
       "name": "TradingView",
       "code": [
-        "!tradingview",
-        "!tview"
+        "!tview",
+        "!tradingview"
       ],
       "tags": [
         "News/Business",
@@ -8500,8 +8500,8 @@
       "rank": 559,
       "name": "Geizhals",
       "code": [
-        "!geizhals",
         "!giez",
+        "!geizhals",
         "!giezhals"
       ],
       "tags": [
@@ -8647,8 +8647,8 @@
       "rank": 569,
       "name": "nLab",
       "code": [
-        "!nlab",
-        "!nl"
+        "!nl",
+        "!nlab"
       ],
       "tags": [
         "Research/Academic (math/cs)"
@@ -8676,9 +8676,9 @@
       "rank": 571,
       "name": "Wikiwand",
       "code": [
+        "!ww",
         "!wikiwand",
-        "!wwen",
-        "!ww"
+        "!wwen"
       ],
       "tags": [
         "Research/Reference"
@@ -8762,8 +8762,8 @@
       "rank": 577,
       "name": "Stanford Encyclopedia of Philosophy",
       "code": [
-        "!plato",
-        "!sep"
+        "!sep",
+        "!plato"
       ],
       "tags": [
         "Research/Academic"
@@ -8847,8 +8847,8 @@
       "rank": 583,
       "name": "Google Translate",
       "code": [
-        "!en2fr",
         "!enfr",
+        "!en2fr",
         "!gtenfr"
       ],
       "tags": [
@@ -8895,8 +8895,8 @@
       "name": "ebay.com.au",
       "code": [
         "!eau",
-        "!ebau",
-        "!ebayau"
+        "!ebayau",
+        "!ebau"
       ],
       "tags": [
         "Shopping/Online (marketplace)"
@@ -8938,9 +8938,9 @@
       "rank": 589,
       "name": "Barnes and Noble",
       "code": [
+        "!bn",
         "!barnesandnoble",
-        "!b&n",
-        "!bn"
+        "!b&n"
       ],
       "tags": [
         "Shopping/Big box/department",
@@ -8969,8 +8969,8 @@
       "rank": 591,
       "name": "Deezer",
       "code": [
-        "!deezer",
-        "!dz"
+        "!dz",
+        "!deezer"
       ],
       "tags": [
         "Entertainment/Audio",
@@ -9239,9 +9239,9 @@
       "rank": 610,
       "name": "ebay.ca",
       "code": [
+        "!eca",
         "!ebayca",
-        "!ebca",
-        "!eca"
+        "!ebca"
       ],
       "tags": [
         "Shopping/Online (marketplace)"
@@ -9284,8 +9284,8 @@
       "name": "Linguee",
       "code": [
         "!les",
-        "!linesin",
-        "!lingues"
+        "!lingues",
+        "!linesin"
       ],
       "tags": [
         "Online Services/Tools",
@@ -9300,8 +9300,8 @@
       "rank": 614,
       "name": "Mac Rumors",
       "code": [
-        "!macrumors",
-        "!mr"
+        "!mr",
+        "!macrumors"
       ],
       "tags": [
         "Tech/Blogs"
@@ -9343,8 +9343,8 @@
       "rank": 617,
       "name": "Tweakers Pricewatch",
       "code": [
-        "!pricewatch",
         "!tpw",
+        "!pricewatch",
         "!twpw"
       ],
       "tags": [
@@ -9591,9 +9591,9 @@
       "rank": 634,
       "name": "ebay.it",
       "code": [
+        "!eit",
         "!ebayit",
-        "!ebit",
-        "!eit"
+        "!ebit"
       ],
       "tags": [
         "Shopping/Online (marketplace)"
@@ -9810,8 +9810,8 @@
       "rank": 649,
       "name": "Dejure",
       "code": [
-        "!dejure",
-        "!durhg"
+        "!durhg",
+        "!dejure"
       ],
       "tags": [
         "Research/Law"
@@ -9855,10 +9855,10 @@
       "rank": 652,
       "name": "JeuxVideo",
       "code": [
+        "!jv",
         "!jeux",
         "!jvcom",
-        "!jvd",
-        "!jv"
+        "!jvd"
       ],
       "tags": [
         "Entertainment/Games (general)",
@@ -9887,8 +9887,8 @@
       "rank": 654,
       "name": "Path of Exile Wiki",
       "code": [
-        "!poegp",
-        "!poe"
+        "!poe",
+        "!poegp"
       ],
       "tags": [
         "Entertainment/Games (specific)",
@@ -9932,8 +9932,8 @@
       "name": "SensCritique",
       "code": [
         "!scq",
-        "!scri",
-        "!senscritique"
+        "!senscritique",
+        "!scri"
       ],
       "tags": [
         "Entertainment/Misc",
@@ -10160,8 +10160,8 @@
       "rank": 673,
       "name": "Reverso",
       "code": [
-        "!refreb",
-        "!trad"
+        "!trad",
+        "!refreb"
       ],
       "tags": [
         "Online Services/Tools"
@@ -10175,8 +10175,8 @@
       "rank": 674,
       "name": "SemanticScholar",
       "code": [
-        "!semantic",
-        "!ssch"
+        "!ssch",
+        "!semantic"
       ],
       "tags": [
         "Research/Academic",
@@ -10191,8 +10191,8 @@
       "rank": 675,
       "name": "The Verge",
       "code": [
-        "!theverge",
-        "!verge"
+        "!verge",
+        "!theverge"
       ],
       "tags": [
         "News/International",
@@ -10221,9 +10221,9 @@
       "rank": 677,
       "name": "Detect language to Portuguese",
       "code": [
+        "!gtpt",
         "!gt-portuguese",
-        "!gtportuguese",
-        "!gtpt"
+        "!gtportuguese"
       ],
       "tags": [
         "Translation/Google"
@@ -10384,8 +10384,8 @@
       "name": "Google Maps DE",
       "code": [
         "!gmde",
-        "!gmnl",
-        "!mapsde"
+        "!mapsde",
+        "!gmnl"
       ],
       "tags": [
         "Online Services/Maps"
@@ -10514,8 +10514,8 @@
       "rank": 697,
       "name": "FreeBSD Man Pages",
       "code": [
-        "!bsdman",
-        "!fman"
+        "!fman",
+        "!bsdman"
       ],
       "tags": [
         "Tech/Sysadmin (FreeBSD)"
@@ -10585,8 +10585,8 @@
       "rank": 702,
       "name": "www.zalando.de",
       "code": [
-        "!zalandode",
-        "!z"
+        "!z",
+        "!zalandode"
       ],
       "tags": [
         "Shopping/Online"
@@ -10600,12 +10600,12 @@
       "rank": 703,
       "name": "Chrome Web Store",
       "code": [
+        "!cws",
+        "!cwebstore",
         "!chrome",
         "!chromestore",
         "!chromewebstore",
-        "!cstore",
-        "!cwebstore",
-        "!cws"
+        "!cstore"
       ],
       "tags": [
         "Online Services/Tools",
@@ -10620,8 +10620,8 @@
       "rank": 704,
       "name": "RhymeZone",
       "code": [
-        "!rhyme",
-        "!rz"
+        "!rz",
+        "!rhyme"
       ],
       "tags": [
         "Multimedia/Music (Lyrics)",
@@ -10721,8 +10721,8 @@
       "rank": 711,
       "name": "CoinGecko",
       "code": [
-        "!coingecko",
-        "!gecko"
+        "!gecko",
+        "!coingecko"
       ],
       "tags": [
         "Online Services/Tools"
@@ -10752,8 +10752,8 @@
       "rank": 713,
       "name": "Amazon Orders",
       "code": [
-        "!amazonorders",
-        "!ao"
+        "!ao",
+        "!amazonorders"
       ],
       "tags": [
         "Shopping/Online"
@@ -10767,8 +10767,8 @@
       "rank": 714,
       "name": "Common Sense Media",
       "code": [
-        "!commonsensemedia",
-        "!csm"
+        "!csm",
+        "!commonsensemedia"
       ],
       "tags": [
         "Entertainment/Misc"
@@ -10811,8 +10811,8 @@
       "name": "OMG! Ubuntu!",
       "code": [
         "!omg",
-        "!omgubuntu",
-        "!omgu"
+        "!omgu",
+        "!omgubuntu"
       ],
       "tags": [
         "News/Magazine",
@@ -10827,8 +10827,8 @@
       "rank": 718,
       "name": "Packagist",
       "code": [
-        "!packagist",
-        "!pack"
+        "!pack",
+        "!packagist"
       ],
       "tags": [
         "Tech/Languages (php)"
@@ -10871,8 +10871,8 @@
       "rank": 721,
       "name": "Derpibooru",
       "code": [
-        "!derpi",
-        "!dpb"
+        "!dpb",
+        "!derpi"
       ],
       "tags": [
         "Multimedia/Images"
@@ -10886,8 +10886,8 @@
       "rank": 722,
       "name": "Django Docs",
       "code": [
-        "!django",
-        "!dj"
+        "!dj",
+        "!django"
       ],
       "tags": [
         "Tech/Languages (python)",
@@ -10916,8 +10916,8 @@
       "rank": 724,
       "name": "etherscan",
       "code": [
-        "!etherscan",
-        "!eth"
+        "!eth",
+        "!etherscan"
       ],
       "tags": [
         "Online Services/Tools",
@@ -10932,8 +10932,8 @@
       "rank": 725,
       "name": "Le Monde",
       "code": [
-        "!lemonde",
-        "!monde"
+        "!monde",
+        "!lemonde"
       ],
       "tags": [
         "News/International",
@@ -10990,10 +10990,10 @@
       "rank": 729,
       "name": "WordReference (ES)",
       "code": [
+        "!wre",
         "!esdef",
-        "!wrdes",
         "!wres",
-        "!wre"
+        "!wrdes"
       ],
       "tags": [
         "Online Services/Tools",
@@ -11148,8 +11148,8 @@
       "rank": 740,
       "name": "shodan",
       "code": [
-        "!shodan",
-        "!sh"
+        "!sh",
+        "!shodan"
       ],
       "tags": [
         "Tech/Sysadmin"
@@ -11221,8 +11221,8 @@
       "rank": 745,
       "name": "Factorio Wiki",
       "code": [
-        "!factorio",
-        "!ftw"
+        "!ftw",
+        "!factorio"
       ],
       "tags": [
         "Entertainment/Games (general)",
@@ -11437,8 +11437,8 @@
       "rank": 760,
       "name": "Unsplash",
       "code": [
-        "!unsplash",
-        "!unspl"
+        "!unspl",
+        "!unsplash"
       ],
       "tags": [
         "Multimedia/Images"
@@ -11582,8 +11582,8 @@
       "rank": 770,
       "name": "Racket",
       "code": [
-        "!racket",
-        "!rkt"
+        "!rkt",
+        "!racket"
       ],
       "tags": [
         "Tech/Languages (other)",
@@ -11935,8 +11935,8 @@
       "rank": 795,
       "name": "Logeion",
       "code": [
-        "!logeion",
-        "!log"
+        "!log",
+        "!logeion"
       ],
       "tags": [
         "Research/Reference (words intl)"
@@ -11965,10 +11965,10 @@
       "name": "Wallhaven",
       "code": [
         "!walla",
-        "!wallbase",
         "!wallhaven",
-        "!wallheaven",
-        "!wallh"
+        "!wallh",
+        "!wallbase",
+        "!wallheaven"
       ],
       "tags": [
         "Multimedia/Images"
@@ -12141,8 +12141,8 @@
       "rank": 809,
       "name": "PrintFriendly",
       "code": [
-        "!pdfy",
-        "!pf"
+        "!pf",
+        "!pdfy"
       ],
       "tags": [
         "Online Services/Tools",
@@ -12300,9 +12300,9 @@
       "rank": 820,
       "name": "ebay.fr",
       "code": [
+        "!efr",
         "!ebayfr",
-        "!ebfr",
-        "!efr"
+        "!ebfr"
       ],
       "tags": [
         "Shopping/Online (marketplace)"
@@ -12317,9 +12317,9 @@
       "name": "Google Translate 2DE",
       "code": [
         "!gtde",
+        "!translatede",
         "!gt-german",
-        "!gtgerman",
-        "!translatede"
+        "!gtgerman"
       ],
       "tags": [
         "Online Services/Google",
@@ -12388,8 +12388,8 @@
       "rank": 826,
       "name": "Radiopaedia",
       "code": [
-        "!radio",
-        "!rad"
+        "!rad",
+        "!radio"
       ],
       "tags": [
         "Multimedia/General",
@@ -12502,9 +12502,9 @@
       "rank": 834,
       "name": "German",
       "code": [
+        "!de",
         "!bde",
         "!beolingus",
-        "!de",
         "!ding"
       ],
       "tags": [
@@ -12662,9 +12662,9 @@
       "rank": 845,
       "name": "Java Docs",
       "code": [
-        "!java9",
+        "!jdk",
         "!java",
-        "!jdk"
+        "!java9"
       ],
       "tags": [
         "Tech/Languages (java)"
@@ -12862,8 +12862,8 @@
       "rank": 859,
       "name": "How-To Geek",
       "code": [
-        "!howtogeek",
-        "!htg"
+        "!htg",
+        "!howtogeek"
       ],
       "tags": [
         "Tech/Blogs"
@@ -12891,8 +12891,8 @@
       "rank": 861,
       "name": "Novel Updates",
       "code": [
-        "!novelupdates",
-        "!nvu"
+        "!nvu",
+        "!novelupdates"
       ],
       "tags": [
         "Entertainment/Misc",
@@ -12951,8 +12951,8 @@
       "rank": 865,
       "name": "Sweetwater",
       "code": [
-        "!sweetwater",
-        "!swtr"
+        "!swtr",
+        "!sweetwater"
       ],
       "tags": [
         "Shopping/Online",
@@ -13080,9 +13080,9 @@
       "rank": 874,
       "name": "Google Sheets",
       "code": [
-        "!gsheet",
-        "!gsheets",
         "!gsh",
+        "!gsheets",
+        "!gsheet",
         "!gspreadsheets"
       ],
       "tags": [
@@ -13139,8 +13139,8 @@
       "rank": 878,
       "name": "PcPartPicker",
       "code": [
-        "!pcpartpicker",
-        "!pcpp"
+        "!pcpp",
+        "!pcpartpicker"
       ],
       "tags": [
         "Shopping/Tech"
@@ -13337,15 +13337,15 @@
       "rank": 892,
       "name": "DownForEveryone?",
       "code": [
+        "!down",
+        "!isitdown",
+        "!isup",
+        "!downfor",
         "!dfeojm",
         "!down4me",
-        "!down",
-        "!downfor",
         "!downforme",
-        "!isitdown",
         "!isoffline",
         "!isonline",
-        "!isup",
         "!offline",
         "!updown"
       ],
@@ -13393,8 +13393,8 @@
       "rank": 895,
       "name": "Here WeGo",
       "code": [
-        "!here",
-        "!hm"
+        "!hm",
+        "!here"
       ],
       "tags": [
         "Online Services/Maps"
@@ -13566,9 +13566,9 @@
       "rank": 907,
       "name": "The Free Thesaurus",
       "code": [
+        "!tft",
         "!freethesaurus",
-        "!fthes",
-        "!tft"
+        "!fthes"
       ],
       "tags": [
         "Online Services/Tools",
@@ -13700,9 +13700,9 @@
       "rank": 916,
       "name": "Flightradar24",
       "code": [
+        "!fr24",
         "!flightradar",
-        "!fr24f",
-        "!fr24"
+        "!fr24f"
       ],
       "tags": [
         "Online Services/Tracking",
@@ -13717,9 +13717,9 @@
       "rank": 917,
       "name": "Gentoo Portage Overlays",
       "code": [
+        "!gpo",
         "!ebuild",
-        "!ebuilds",
-        "!gpo"
+        "!ebuilds"
       ],
       "tags": [
         "Shopping/Online (marketplace)",
@@ -13850,8 +13850,8 @@
       "name": "wikiHow",
       "code": [
         "!wh",
-        "!whw",
-        "!wikihow"
+        "!wikihow",
+        "!whw"
       ],
       "tags": [
         "Research/Learning",
@@ -13908,12 +13908,12 @@
       "rank": 930,
       "name": "Википедия",
       "code": [
+        "!ш",
         "!ruwiki",
-        "!ruwk",
         "!wikiru",
+        "!ruwk",
         "!w.ru",
         "!вики",
-        "!ш",
         "!шру"
       ],
       "tags": [
@@ -13944,8 +13944,8 @@
       "rank": 932,
       "name": "Bokmålsordboka og Nynorskordboka",
       "code": [
-        "!norsk",
-        "!uib"
+        "!uib",
+        "!norsk"
       ],
       "tags": [
         "Research/Reference (words intl)",
@@ -13975,9 +13975,9 @@
       "rank": 934,
       "name": "Liquipedia Dota 2 Wiki",
       "code": [
+        "!tld",
         "!dota2",
-        "!ldota",
-        "!tld"
+        "!ldota"
       ],
       "tags": [
         "Entertainment/Games (specific)"
@@ -14120,9 +14120,9 @@
       "name": "Washington Post",
       "code": [
         "!twp",
+        "!wpost",
         "!wapo",
-        "!washingtonpost",
-        "!wpost"
+        "!washingtonpost"
       ],
       "tags": [
         "News/Newspaper"
@@ -14136,8 +14136,8 @@
       "rank": 945,
       "name": "WetterOnline",
       "code": [
-        "!wetteronline",
-        "!wo"
+        "!wo",
+        "!wetteronline"
       ],
       "tags": [
         "News/Weather"
@@ -14194,8 +14194,8 @@
       "name": "Amazon Smile",
       "code": [
         "!asm",
-        "!smam",
-        "!smile"
+        "!smile",
+        "!smam"
       ],
       "tags": [
         "Shopping/Online"
@@ -14281,8 +14281,8 @@
       "rank": 955,
       "name": "NameMC",
       "code": [
-        "!mcname",
-        "!nmc"
+        "!nmc",
+        "!mcname"
       ],
       "tags": [
         "Entertainment/Games (Minecraft)"
@@ -14310,9 +14310,9 @@
       "rank": 957,
       "name": "Nintendo Life",
       "code": [
+        "!nlife",
         "!ninlife",
-        "!nintendolife",
-        "!nlife"
+        "!nintendolife"
       ],
       "tags": [
         "Entertainment/Games (general)",
@@ -14355,8 +14355,8 @@
       "rank": 960,
       "name": "Slackbuilds",
       "code": [
-        "!sbopkg",
         "!sbo",
+        "!sbopkg",
         "!slackbuild",
         "!slackbuilds"
       ],
@@ -14373,8 +14373,8 @@
       "rank": 961,
       "name": "Ubuntuusers.de",
       "code": [
-        "!uude",
-        "!uu"
+        "!uu",
+        "!uude"
       ],
       "tags": [
         "Tech/Sysadmin (Ubuntu)"
@@ -14389,8 +14389,8 @@
       "name": "Allociné",
       "code": [
         "!ac",
-        "!allo",
         "!allocine",
+        "!allo",
         "!allociné"
       ],
       "tags": [
@@ -14576,9 +14576,9 @@
       "rank": 975,
       "name": "Rate My Professor",
       "code": [
+        "!rmp",
         "!ratemyprofessor",
-        "!rate",
-        "!rmp"
+        "!rate"
       ],
       "tags": [
         "Online Services/Tools",
@@ -14875,8 +14875,8 @@
       "rank": 996,
       "name": "Modarchive",
       "code": [
-        "!modarchive",
-        "!mod"
+        "!mod",
+        "!modarchive"
       ],
       "tags": [
         "Entertainment/Games (general)",
@@ -15060,8 +15060,8 @@
       "rank": 1009,
       "name": "Geizhals Österreich",
       "code": [
-        "!geizhalsat",
-        "!ghat"
+        "!ghat",
+        "!geizhalsat"
       ],
       "tags": [
         "Shopping/Online",
@@ -15076,8 +15076,8 @@
       "rank": 1010,
       "name": "Indeed",
       "code": [
-        "!indeed",
-        "!jobs"
+        "!jobs",
+        "!indeed"
       ],
       "tags": [
         "Online Services/Jobs"
@@ -15189,8 +15189,8 @@
       "rank": 1018,
       "name": "Project Gutenberg",
       "code": [
-        "!gutenberg",
         "!pg",
+        "!gutenberg",
         "!projectgutenberg"
       ],
       "tags": [
@@ -15262,9 +15262,9 @@
       "rank": 1023,
       "name": "Verkkokauppa.com",
       "code": [
-        "!verkkis",
+        "!verk",
         "!verkkokauppa",
-        "!verk"
+        "!verkkis"
       ],
       "tags": [
         "Shopping/Big box/department",
@@ -15337,8 +15337,8 @@
       "rank": 1028,
       "name": "Debian Package Tracker",
       "code": [
-        "!dpts",
-        "!dtr"
+        "!dtr",
+        "!dpts"
       ],
       "tags": [
         "Tech/Sysadmin (debian)"
@@ -15494,8 +15494,8 @@
       "rank": 1039,
       "name": "Ludwig",
       "code": [
-        "!ludwig",
-        "!lwg"
+        "!lwg",
+        "!ludwig"
       ],
       "tags": [
         "Online Services/Tools",
@@ -15623,8 +15623,8 @@
       "rank": 1048,
       "name": "Vikipedi (Turkish Wikipedia)",
       "code": [
-        "!vikipedi",
-        "!wtr"
+        "!wtr",
+        "!vikipedi"
       ],
       "tags": [
         "Research/Reference"
@@ -15666,8 +15666,8 @@
       "rank": 1051,
       "name": "Archlinux Forums",
       "code": [
-        "!archforums",
-        "!archlinux"
+        "!archlinux",
+        "!archforums"
       ],
       "tags": [
         "Tech/Languages (other)",
@@ -15710,9 +15710,9 @@
       "rank": 1054,
       "name": "ebay (ES)",
       "code": [
+        "!ees",
         "!ebayes",
-        "!ebes",
-        "!ees"
+        "!ebes"
       ],
       "tags": [
         "Shopping/Online (marketplace)"
@@ -15824,8 +15824,8 @@
       "rank": 1062,
       "name": "Perseus word study tool",
       "code": [
-        "!latin",
-        "!pla"
+        "!pla",
+        "!latin"
       ],
       "tags": [
         "Research/Reference (words intl)",
@@ -15980,8 +15980,8 @@
       "rank": 1073,
       "name": "Wikcionário (PT)",
       "code": [
-        "!wiktpt",
-        "!wtpt"
+        "!wtpt",
+        "!wiktpt"
       ],
       "tags": [
         "Research/Reference (words intl)",
