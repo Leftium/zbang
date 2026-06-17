@@ -10,8 +10,6 @@
 		wordwrap = $bindable(true),
 		enterNewlineRestored = $bindable(false),
 		enterNewlineFullscreen = $bindable(true),
-		iosKeyboardOpen = $bindable(false),
-		visualViewportOffsetTop = $bindable(0),
 		primaryAction,
 		secondaryActions,
 		onprimaryaction,
@@ -25,8 +23,6 @@
 		wordwrap?: boolean;
 		enterNewlineRestored?: boolean;
 		enterNewlineFullscreen?: boolean;
-		iosKeyboardOpen?: boolean;
-		visualViewportOffsetTop?: number;
 		primaryAction?: Snippet;
 		secondaryActions?: Snippet;
 		onprimaryaction?: () => void;
@@ -37,7 +33,6 @@
 	let charCount = $derived(value.trim().length);
 	let enterNewline = $derived(fullscreen ? enterNewlineFullscreen : enterNewlineRestored);
 	let growWrapElement = $state<HTMLElement>();
-	let updateIOSViewport: (() => void) | undefined;
 
 	function adjustHeight() {
 		if (!textareaElement) return;
@@ -96,7 +91,6 @@
 		void wordwrap;
 
 		requestAnimationFrame(adjustHeight);
-		requestAnimationFrame(() => updateIOSViewport?.());
 
 		return () => {
 			document.body.style.overflowY = 'auto';
@@ -112,50 +106,41 @@
 		const { signal } = controller;
 		const viewport = window.visualViewport;
 		let height = viewport?.height || 0;
-		let wasFullscreen = fullscreen;
+		let keyboardOpen = false;
 
 		function preventScrollDown(event: Event) {
-			if (fullscreen && iosKeyboardOpen && window.scrollY > 0) {
+			if (fullscreen && keyboardOpen && window.scrollY > 0) {
 				event.preventDefault();
 				window.scrollTo(0, 0);
 			}
 		}
 
-		updateIOSViewport = () => {
+		function resizeHandler() {
 			if (!growWrapElement || !viewport) return;
 
-			const keyboardOffset = Math.max(0, height - viewport.height - viewport.offsetTop);
-			const wasKeyboardOpen = iosKeyboardOpen;
-			const fullscreenChanged = fullscreen !== wasFullscreen;
-			wasFullscreen = fullscreen;
-			iosKeyboardOpen = keyboardOffset > 50;
-			visualViewportOffsetTop = viewport.offsetTop;
+			const offset = height - viewport.height;
+			const wasKeyboardOpen = keyboardOpen;
+			keyboardOpen = offset > 50;
 
 			if (!fullscreen) {
 				growWrapElement.style.bottom = '';
 				return;
 			}
 
-			if (iosKeyboardOpen === wasKeyboardOpen && !fullscreenChanged) return;
+			if (keyboardOpen === wasKeyboardOpen) return;
 
-			if (iosKeyboardOpen) {
-				growWrapElement.style.bottom = `${keyboardOffset}px`;
+			if (keyboardOpen) {
+				growWrapElement.style.bottom = `${offset}px`;
 			} else {
 				growWrapElement.style.bottom = '';
 				height = viewport.height;
 			}
-		};
+		}
 
-		updateIOSViewport();
-		window.visualViewport?.addEventListener('resize', updateIOSViewport, { signal });
+		window.visualViewport?.addEventListener('resize', resizeHandler, { signal });
 		window.addEventListener('scroll', preventScrollDown, { passive: false, signal });
 
-		return () => {
-			controller.abort();
-			updateIOSViewport = undefined;
-			iosKeyboardOpen = false;
-			visualViewportOffsetTop = 0;
-		};
+		return () => controller.abort();
 	});
 </script>
 
