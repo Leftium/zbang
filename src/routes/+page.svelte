@@ -366,13 +366,15 @@
 		const cursor = textarea.selectionStart;
 		const selectionEnd = textarea.selectionEnd;
 		const fragmentStart = bangEntry.triggerIndex + 1;
+		const whitespaceIndex = value.slice(fragmentStart).search(/\s/);
+		const tokenEnd = whitespaceIndex === -1 ? value.length : fragmentStart + whitespaceIndex;
 
-		if (cursor !== selectionEnd || cursor < fragmentStart) {
+		if (cursor !== selectionEnd || cursor < fragmentStart || cursor > tokenEnd) {
 			bangEntry = undefined;
 			return;
 		}
 
-		const token = value.slice(bangEntry.triggerIndex, cursor);
+		const token = value.slice(bangEntry.triggerIndex, tokenEnd);
 
 		if (!token.startsWith('!') || /\s/.test(token)) {
 			bangEntry = undefined;
