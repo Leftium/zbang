@@ -122,6 +122,19 @@ Composed state should be visible so users understand what pressing Enter will do
 
 The launcher should decide which actions appear first based on the current input and context.
 
+Ranking should use a two-level scoring model by default:
+
+- Plugins score and order their own result items relative to other items from the same plugin.
+- The app scores and orders plugin result groups relative to other plugin result groups.
+
+Plugin item scores are local to that plugin and should not be treated as globally comparable unless the plugin explicitly declares that its scores are normalized for cross-plugin comparison. This keeps noisy or optimistic plugins from dominating the launcher just because they use a different scoring scale.
+
+The app owns plugin-level relevance because it has the broader launcher context: current mode, explicit scopes, user preferences, permissions, recent usage, available UI space, and global heuristics. Plugins may return optional relevance hints, confidence values, or metadata, but those should be inputs to app scoring rather than final authority.
+
+The default presentation should group results by plugin. Plugin groups are sorted by app-computed plugin score, while items inside each group are sorted by plugin-computed item score. The UI should be able to show only the top N items for each plugin and let the user expand a plugin group to see more items.
+
+Mixed cross-plugin item ordering may be supported as an explicit mode, but it should require either globally normalized plugin item scores or an app-owned reranking step. Raw plugin-local item scores should not be mixed directly across plugin types.
+
 Ranking should eventually consider:
 
 - Whether the input is empty.
@@ -131,6 +144,8 @@ Ranking should eventually consider:
 - Whether the action is safe to run as the primary Enter action.
 - User behavior over time, especially frecency.
 - Explicit scopes or constraints selected by the user.
+- App-level plugin weights, boosts, and suppressions.
+- Plugin-provided relevance hints or confidence metadata.
 
 The project should experiment with `compromise` for natural-language heuristics. These experiments should help identify useful signals, not force plugins to depend directly on one NLP library.
 
@@ -177,7 +192,7 @@ Modes should be URL-addressable so a user or developer can open a focused launch
 
 The current mode should be visible in the UI. Users should understand why certain plugins or actions are not appearing, and they should have a clear way back to the default all-mode.
 
-Modes may limit plugins, boost plugins, or adjust scoring criteria. Modes and temporary constraints should share the same underlying concept where practical, but modes are durable and URL-addressable while constraints are usually temporary and query-specific.
+Modes may limit plugins, boost plugins, or adjust app-owned plugin-level scoring criteria. Modes and temporary constraints should share the same underlying concept where practical, but modes are durable and URL-addressable while constraints are usually temporary and query-specific.
 
 A mode may choose a specialized view when a focused UI is more useful than the default action list. For example, notes mode may use a notes search/editing view, history mode may use a history list, and compromise mode may use an NLP visualization.
 
