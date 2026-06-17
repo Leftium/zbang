@@ -101,6 +101,9 @@
 	let loadedBangProvider = $state<BangProviderId>();
 	let textareaElement = $state<HTMLTextAreaElement>();
 	let bangEntry = $state<{ triggerIndex: number; fragment: string }>();
+	let fullscreen = $state(false);
+	let enterNewlineRestored = $state(false);
+	let selectedPrimaryItemId = $state<string>();
 
 	const mode = $derived(getMode(page.url.searchParams.get('mode')));
 	const inspect = $derived(getInspectPanelId(page.url.searchParams.get('inspect')));
@@ -132,13 +135,17 @@
 			? launcherItems.filter((item) => item.pluginId === 'compromise')
 			: launcherItems
 	);
+	const selectablePrimaryItems = $derived(
+		mode === 'compromise' ? [] : visibleLauncherItems.filter((item) => item.kind === 'action' && item.run)
+	);
 	const primaryLauncherItem = $derived(
-		mode === 'compromise'
-			? undefined
-			: visibleLauncherItems.find((item) => item.safeForEnter && item.run)
+		selectablePrimaryItems.find((item) => item.id === selectedPrimaryItemId) ??
+		selectablePrimaryItems.find((item) => item.safeForEnter)
 	);
 	const secondaryLauncherItems = $derived(
-		visibleLauncherItems.filter((item) => item.id !== primaryLauncherItem?.id)
+		fullscreen
+			? visibleLauncherItems.filter((item) => item.id !== primaryLauncherItem?.id)
+			: visibleLauncherItems
 	);
 
 	onMount(() => {
@@ -273,6 +280,8 @@
 	function handleLauncherKeydown(event: KeyboardEvent) {
 		const textarea = event.currentTarget as HTMLTextAreaElement;
 
+		if (handlePrimaryNavigation(event)) return;
+
 		if (event.key === 'Escape') {
 			bangEntry = undefined;
 			return;
@@ -303,6 +312,31 @@
 		const previous = input[index - 1];
 
 		return previous === undefined || /\s/.test(previous);
+	}
+
+	function handlePrimaryNavigation(event: KeyboardEvent) {
+		if (fullscreen || enterNewlineRestored || !['ArrowUp', 'ArrowDown'].includes(event.key)) {
+			return false;
+		}
+
+		const currentIndex = primaryLauncherItem
+			? selectablePrimaryItems.findIndex((item) => item.id === primaryLauncherItem.id)
+			: -1;
+		const nextIndex = Math.max(
+			0,
+			Math.min(
+				selectablePrimaryItems.length - 1,
+				event.key === 'ArrowUp' ? currentIndex - 1 : currentIndex + 1
+			)
+		);
+		const nextItem = selectablePrimaryItems[nextIndex];
+
+		if (!nextItem) return false;
+
+		event.preventDefault();
+		selectedPrimaryItemId = nextItem.id;
+
+		return true;
 	}
 
 	function createBangCodeMap(catalog: ZbangCatalog | undefined) {
@@ -890,6 +924,8 @@
 	<ExpandingTextarea
 		bind:textareaElement
 		bind:value
+		bind:fullscreen
+		bind:enterNewlineRestored
 		autofocus
 		spellcheck="false"
 		autocomplete="off"
@@ -902,7 +938,7 @@
 		onprimaryaction={runPrimaryAction}
 	>
 		{#snippet primaryAction()}
-			{#if primaryLauncherItem}
+			{#if fullscreen && primaryLauncherItem}
 				<button class="launcher-item action-item primary" onclick={runPrimaryAction}>
 					<span>
 						<strong>{@render highlightedText(primaryLauncherItem.titleSegments, primaryLauncherItem.title)}</strong>
@@ -1051,6 +1087,11 @@
 		border: 1px solid var(--nc-border);
 		border-radius: var(--nc-radius);
 		color: var(--nc-tx-1);
+		transition:
+			background-color 120ms ease,
+			border-color 120ms ease,
+			box-shadow 120ms ease,
+			transform 120ms ease;
 	}
 
 	.action-item.primary {
@@ -1059,6 +1100,8 @@
 
 		background: color-mix(in srgb, var(--nc-primary) 14%, var(--nc-surface-1));
 		border-color: var(--nc-primary);
+		box-shadow: 0 0.375rem 1rem color-mix(in srgb, var(--nc-primary) 16%, transparent);
+		transform: translateY(-1px);
 	}
 
 	.insight-item {
