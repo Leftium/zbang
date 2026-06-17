@@ -333,6 +333,12 @@ Possible history actions include:
 
 History data should eventually support frecency-based ranking across actions and plugins.
 
+## Keyboard And Virtual Focus
+
+The launcher should preserve textarea-first input and fast one-shot action activation. Future keyboard or repeated-key navigation may add a virtual focused action row, but it should not require moving real DOM focus out of the textarea for normal use.
+
+If virtual focus is added, it should be visible, predictable, and compatible with existing stable shortcut snapshots. Normal typing, bang insertion, and non-navigating action execution should return the user to an editing-ready state.
+
 ## Future Considerations
 
 - Local or user-installed plugins.

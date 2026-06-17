@@ -124,6 +124,41 @@ Useful takeaways:
 - Plugin-provided commands need consistent labels and descriptions.
 - Scoped command palettes can help users focus on one domain.
 
+## Virtual Focus And Mobile-Friendly Shortcuts
+
+The launcher should remain textarea-first: typed characters should continue to feel like they go directly into the input, especially on mobile. However, richer action rows may eventually need a way to select a row, expand options, cycle variants, or run secondary commands without moving real DOM focus away from the textarea.
+
+One possible pattern is virtual focus. The textarea keeps real browser focus, while launcher state tracks an active action row. The active row is visibly highlighted and may expose a compact command strip such as `QQ Run`, `WW Expand`, or `EE Variant`.
+
+Potential benefits:
+
+- Mobile keyboards often lack arrow keys, but they do have letter keys.
+- Virtual focus can reuse the existing repeated-key shortcut language instead of adding desktop-only navigation.
+- Keeping real focus in the textarea preserves fast typing, shortcut entry, and post-action text editing.
+- Focused rows can support richer interaction such as expand/collapse, provider variants, advanced sub-options, or grouped results.
+
+Tradeoffs:
+
+- Reusing `QQ` through `PP` for different meanings can become surprising unless the current mode is visually obvious.
+- Changing existing `QQ` behavior from immediate activation to focus-first would slow down common one-shot actions.
+- Triple-key patterns such as `QQQ` may be harder to time and explain than repeating the same double-key chord while a row is already selected.
+- Modal behavior can feel brittle if normal typing, bang insertion, and action execution do not reliably clear or preserve virtual focus in predictable ways.
+
+Safer exploratory model:
+
+- Preserve current repeated-key shortcuts as immediate activation in normal mode.
+- Enter virtual-focus/action mode through an explicit gesture, desktop arrow navigation, or a future dedicated shortcut.
+- Inside virtual-focus mode, repurpose repeated-key chords for row-local commands and show the available commands directly on the active row.
+- Use the same stable visible-action snapshot for virtual focus that shortcut activation uses, so filtering after the first shortcut tap does not retarget the action.
+- After inserting a bang or running an action that returns to editing, clear virtual focus and keep or restore textarea focus.
+
+Open questions:
+
+- Should tapping an action focus it first or activate it immediately?
+- Should desktop `ArrowUp` and `ArrowDown` enter the same virtual-focus mode, or should they remain purely text-editing keys unless a modifier is held?
+- Should `Left` and `Right` map to group expansion and variant selection on desktop while mobile uses repeated-key commands for the same operations?
+- Is there a discoverable dedicated action-mode shortcut that does not conflict with existing fast activation shortcuts?
+
 ## Composition Vocabulary
 
 The launcher can be understood as composing a sentence:
