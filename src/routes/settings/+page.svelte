@@ -1,10 +1,16 @@
 <script lang="ts">
+	import { dev } from '$app/environment';
+	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
 
 	import {
 		BANG_SOURCES,
-		downloadBangSources,
+		readBangCatalogStatuses,
 		readBangSourceStatuses,
+		refreshBangData,
+		type BangCatalogGenerationResult,
+		type BangCatalogStatus,
+		type BangProviderId,
 		type BangSourceDownloadResult,
 		type BangSourceId,
 		type BangSourceStatus
@@ -27,36 +33,53 @@
 
 	let bangSourceStatuses = $state<BangSourceStatus[]>([]);
 	let bangSourceErrors = $state<Partial<Record<BangSourceId, string>>>({});
+	let bangCatalogStatuses = $state<BangCatalogStatus[]>([]);
+	let bangCatalogErrors = $state<Partial<Record<BangProviderId, string>>>({});
 	let bangSourceMessage = $state('');
-	let isRefreshingBangSources = $state(false);
+	let isRefreshingBangData = $state(false);
 
 	onMount(() => {
-		void loadBangSourceStatuses();
+		void loadBangDataStatuses();
 	});
 
-	async function loadBangSourceStatuses() {
+	async function loadBangDataStatuses() {
 		bangSourceStatuses = await readBangSourceStatuses();
+		bangCatalogStatuses = await readBangCatalogStatuses();
 	}
 
-	async function refreshBangSources() {
-		isRefreshingBangSources = true;
+	async function refreshLocalBangData() {
+		isRefreshingBangData = true;
 		bangSourceErrors = {};
-		bangSourceMessage = 'Downloading bang sources...';
+		bangCatalogErrors = {};
+		bangSourceMessage = 'Refreshing bang data...';
 
-		const results = await downloadBangSources();
-		const failed = results.filter(
-			(result): result is Extract<BangSourceDownloadResult, { ok: false }> => !result.ok
-		);
+		try {
+			const { sources, catalogs } = await refreshBangData();
+			const failedSources = sources.filter(
+				(result): result is Extract<BangSourceDownloadResult, { ok: false }> => !result.ok
+			);
+			const failedCatalogs = catalogs.filter(
+				(result): result is Extract<BangCatalogGenerationResult, { ok: false }> => !result.ok
+			);
+			const savedSources = sources.length - failedSources.length;
+			const savedCatalogs = catalogs.length - failedCatalogs.length;
 
-		bangSourceStatuses = getSuccessfulStatuses(results, bangSourceStatuses);
-		bangSourceErrors = getBangSourceErrors(failed);
-		bangSourceMessage = failed.length
-			? `Saved ${results.length - failed.length} of ${results.length} bang sources.`
-			: `Saved ${results.length} bang sources.`;
-		isRefreshingBangSources = false;
+			bangSourceStatuses = getSuccessfulSourceStatuses(sources, bangSourceStatuses);
+			bangCatalogStatuses = getSuccessfulCatalogStatuses(catalogs, bangCatalogStatuses);
+			bangSourceErrors = getBangSourceErrors(failedSources);
+			bangCatalogErrors = getBangCatalogErrors(failedCatalogs);
+			bangSourceMessage =
+				failedSources.length || failedCatalogs.length
+					? `Saved ${savedSources} of ${sources.length} sources and generated ${savedCatalogs} of ${catalogs.length} catalogs.`
+					: `Saved ${savedSources} sources and generated ${savedCatalogs} catalogs.`;
+		} catch (error) {
+			bangSourceMessage = error instanceof Error ? error.message : 'Failed to refresh bang data.';
+		} finally {
+			isRefreshingBangData = false;
+		}
 	}
 
-	function getSuccessfulStatuses(
+	function getSuccessfulSourceStatuses(
 		results: BangSourceDownloadResult[],
 		currentStatuses: BangSourceStatus[]
 	) {
@@ -80,14 +103,48 @@
 		});
 	}
 
+	function getSuccessfulCatalogStatuses(
+		results: BangCatalogGenerationResult[],
+		currentStatuses: BangCatalogStatus[]
+	) {
+		const statuses = [...currentStatuses];
+
+		for (const result of results) {
+			if (result.ok) {
+				const index = statuses.findIndex((status) => status.provider === result.catalog.provider);
+
+				if (index === -1) {
+					statuses.push(result.catalog);
+				} else {
+					statuses[index] = result.catalog;
+				}
+			}
+		}
+
+		return BANG_CATALOGS.flatMap((provider) => {
+			const status = statuses.find((status) => status.provider === provider.value);
+			return status ? [status] : [];
+		});
+	}
+
 	function getBangSourceErrors(
 		results: Extract<BangSourceDownloadResult, { ok: false }>[]
 	): Partial<Record<BangSourceId, string>> {
 		return Object.fromEntries(results.map((result) => [result.id, result.error]));
 	}
 
+	function getBangCatalogErrors(
+		results: Extract<BangCatalogGenerationResult, { ok: false }>[]
+	): Partial<Record<BangProviderId, string>> {
+		return Object.fromEntries(results.map((result) => [result.provider, result.error]));
+	}
+
 	function getBangSourceStatus(id: BangSourceId) {
 		return bangSourceStatuses.find((status) => status.id === id);
+	}
+
+	function getBangCatalogStatus(provider: BangProviderId) {
+		return bangCatalogStatuses.find((status) => status.provider === provider);
 	}
 
 	function formatByteLength(byteLength: number) {
@@ -103,12 +160,21 @@
 		return bangCount === undefined ? 'Unknown' : new Intl.NumberFormat().format(bangCount);
 	}
 
+	function formatRecordCount(recordCount: number) {
+		return new Intl.NumberFormat().format(recordCount);
+	}
+
 	function formatFetchedAt(fetchedAt: string) {
 		return new Intl.DateTimeFormat(undefined, {
 			dateStyle: 'medium',
 			timeStyle: 'short'
 		}).format(new Date(fetchedAt));
 	}
+
+	const BANG_CATALOGS: { value: BangProviderId; label: string }[] = [
+		{ value: 'kagi', label: 'Kagi' },
+		{ value: 'duckduckgo', label: 'DuckDuckGo' }
+	];
 </script>
 
 <main>
@@ -150,16 +216,16 @@
 		<section class="bang-sources" aria-labelledby="bang-sources-heading">
 			<div class="setting bang-source-actions">
 				<div>
-					<h2 id="bang-sources-heading">Bang sources</h2>
-					<p>Download and persist raw Kagi and DuckDuckGo bang source files locally.</p>
+					<h2 id="bang-sources-heading">Bang data</h2>
+					<p>Download source files and generate local Kagi and DuckDuckGo catalogs.</p>
 				</div>
 
 				<button
 					class="secondary outline"
-					disabled={isRefreshingBangSources}
-					onclick={refreshBangSources}
+					disabled={isRefreshingBangData}
+					onclick={refreshLocalBangData}
 				>
-					{isRefreshingBangSources ? 'Downloading...' : 'Download bang sources'}
+					{isRefreshingBangData ? 'Refreshing...' : 'Refresh bang data'}
 				</button>
 			</div>
 
@@ -167,7 +233,50 @@
 				<p class="refresh-message" aria-live="polite">{bangSourceMessage}</p>
 			{/if}
 
+			{#if dev}
+				<p class="dev-link">
+					Dev tool: <a href={resolve('/dev/bootstrap-bangs')}>generate bootstrap bang files</a>
+				</p>
+			{/if}
+
 			<div class="source-list">
+				{#each BANG_CATALOGS as catalog (catalog.value)}
+					{@const status = getBangCatalogStatus(catalog.value)}
+					<article class="source-card">
+						<div>
+							<h3>{catalog.label} catalog</h3>
+							<p>Generated provider-native bang data.</p>
+						</div>
+
+						{#if status}
+							<dl>
+								<div>
+									<dt>Generated</dt>
+									<dd>{formatFetchedAt(status.generatedAt)}</dd>
+								</div>
+								<div>
+									<dt>Records</dt>
+									<dd>{formatRecordCount(status.recordCount)}</dd>
+								</div>
+								<div>
+									<dt>Generator</dt>
+									<dd>v{status.generatorVersion}</dd>
+								</div>
+								<div>
+									<dt>Sources</dt>
+									<dd>{status.sources.length}</dd>
+								</div>
+							</dl>
+						{:else}
+							<p class="muted">Not generated yet.</p>
+						{/if}
+
+						{#if bangCatalogErrors[catalog.value]}
+							<p class="source-error">{bangCatalogErrors[catalog.value]}</p>
+						{/if}
+					</article>
+				{/each}
+
 				{#each BANG_SOURCES as source (source.id)}
 					{@const status = getBangSourceStatus(source.id)}
 					<article class="source-card">

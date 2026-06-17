@@ -54,6 +54,8 @@ Source URLs:
 
 The first implementation attempted direct browser downloads, but browser testing showed CORS failures for the source URLs. Source downloads now go through a SvelteKit same-origin route that fetches the upstream files server-side and returns them to the client.
 
+The settings UI exposes one manual refresh flow. Refreshing bang data downloads the source files, persists the raw source text, generates provider-native Kagi and DuckDuckGo catalogs from those sources, and persists the generated catalogs. There is intentionally no separate public “generate from existing sources” action in the initial implementation.
+
 Generate separate provider-native catalogs:
 
 - `zbang.kagi.json`
@@ -78,7 +80,7 @@ First run -> empty bootstrap -> client downloads sources -> client generates ful
 
 After full catalogs have been generated and persisted, visit a dev-only app route to derive minimal bootstrap files from the generated local data.
 
-Example route:
+Implemented route:
 
 ```text
 /dev/bootstrap-bangs
@@ -88,7 +90,7 @@ That route should:
 
 1. Read the persisted generated Kagi and DDG catalogs.
 2. Select records above a minimum `ddgr` threshold for each provider.
-3. Render or download static JSON files that can be checked in.
+3. Render and download static JSON files that can be checked in.
 
 Use `ddgr >= 25` as the initial bootstrap threshold. In the current generated catalog this keeps roughly 800 popular records, which is close to a top-1000 target without pulling in too much long-tail data. The durable setting should remain a minimum `ddgr` because DDG `r`/`ddgr` represents query volume/popularity rather than an arbitrary list position.
 
@@ -116,21 +118,21 @@ Normalize Kagi records to the existing zbang-like shape:
 
 ```json
 {
-  "provider": "kagi",
-  "generatedAt": "2026-06-17T00:00:00.000Z",
-  "generatorVersion": 1,
-  "items": [
-    {
-      "rank": 1,
-      "ddgr": 1693724,
-      "name": "Google",
-      "code": ["!g", "!google"],
-      "tags": [],
-      "urls": {
-        "s": "https://google.com/search?q=%s"
-      }
-    }
-  ]
+	"provider": "kagi",
+	"generatedAt": "2026-06-17T00:00:00.000Z",
+	"generatorVersion": 1,
+	"items": [
+		{
+			"rank": 1,
+			"ddgr": 1693724,
+			"name": "Google",
+			"code": ["!g", "!google"],
+			"tags": [],
+			"urls": {
+				"s": "https://google.com/search?q=%s"
+			}
+		}
+	]
 }
 ```
 
@@ -171,6 +173,8 @@ Provider-local deduplication should be URL-identity based for both Kagi and DDG:
 
 This is close to the current Kagi dedupe behavior: the grouping rule is conservative, while the aliases/rank/tags are combined only after URL identity has established that the records share a target.
 
+URL fragments are part of URL identity. Some providers encode behavior in fragments, such as Google Translate language pairs in `#source/target/query`, so stripping fragments would incorrectly merge distinct bang targets.
+
 ### DuckDuckGo
 
 DuckDuckGo source data is the source of truth for DDG bang semantics.
@@ -179,21 +183,21 @@ Normalize DDG records independently:
 
 ```json
 {
-  "provider": "duckduckgo",
-  "generatedAt": "2026-06-17T00:00:00.000Z",
-  "generatorVersion": 1,
-  "items": [
-    {
-      "rank": 1,
-      "ddgr": 1693724,
-      "name": "Google",
-      "code": ["!g"],
-      "tags": ["Online Services/Search"],
-      "urls": {
-        "s": "https://google.com/search?q=%s"
-      }
-    }
-  ]
+	"provider": "duckduckgo",
+	"generatedAt": "2026-06-17T00:00:00.000Z",
+	"generatorVersion": 1,
+	"items": [
+		{
+			"rank": 1,
+			"ddgr": 1693724,
+			"name": "Google",
+			"code": ["!g"],
+			"tags": ["Online Services/Search"],
+			"urls": {
+				"s": "https://google.com/search?q=%s"
+			}
+		}
+	]
 }
 ```
 
@@ -210,7 +214,7 @@ Brave is supported as a search provider, not initially as a bang provider.
 Reason: Brave's public `/bangs` page embeds a list of bang rows, but the data appears limited to:
 
 ```ts
-type BraveBangRow = [trigger: string, faviconUrl: string, name: string]
+type BraveBangRow = [trigger: string, faviconUrl: string, name: string];
 ```
 
 It does not include URL templates, so Brave bangs cannot be locally resolved, deduplicated reliably, or adapted to another search provider.
@@ -324,27 +328,27 @@ Catalog-level shape:
 
 ```ts
 type ZbangCatalog = {
-  provider: 'kagi' | 'duckduckgo'
-  generatedAt: string
-  generatorVersion: number
-  sources: Array<{
-    url: string
-    fetchedAt: string
-    hash?: string
-  }>
-  items: Zbang[]
-}
+	provider: 'kagi' | 'duckduckgo';
+	generatedAt: string;
+	generatorVersion: number;
+	sources: Array<{
+		url: string;
+		fetchedAt: string;
+		hash?: string;
+	}>;
+	items: Zbang[];
+};
 
 type Zbang = {
-  rank: number
-  ddgr?: number
-  name: string
-  code: string[]
-  tags: string[]
-  urls: {
-    s: string
-  }
-}
+	rank: number;
+	ddgr?: number;
+	name: string;
+	code: string[];
+	tags: string[];
+	urls: {
+		s: string;
+	};
+};
 ```
 
 ## Migration Decisions
@@ -352,6 +356,7 @@ type Zbang = {
 - Do not keep a compatibility `zbangs.json` file during migration. The implementation is expected to start from a fresh SvelteKit template.
 - The special bootstrap route is only needed during development.
 - Source downloads use the same-origin SvelteKit route because direct browser fetches hit CORS errors for the initial DDG and Kagi source URLs.
+- Parsing and normalization are triggered by the same manual refresh action as source downloads to keep the local-data model simple.
 - Kagi inherits DDG rank using the compatibility rules described above.
 - Generated catalogs are sorted by `rank`.
 - Refresh is manual, with optional stale-data notification later.
