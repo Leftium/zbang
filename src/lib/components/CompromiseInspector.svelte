@@ -255,9 +255,22 @@
 
 	function runExpression(expression = draftExpression) {
 		const nextExpression = expression.trim() || panels[0].expression;
-		const params = new URLSearchParams({ mode: 'compromise', q: text, expr: nextExpression });
+		const nextPanel = panels.find((panel) => panel.expression === nextExpression);
+		const params = new URLSearchParams();
 
-		void goto(resolve(`/?${params}`), { replaceState: true, noScroll: true, keepFocus: true });
+		if (text) params.set('q', text);
+
+		if (nextPanel) {
+			params.set('inspect', nextPanel.id);
+		} else {
+			params.set('expr', nextExpression);
+		}
+
+		void goto(resolve(`/compromise?${params}`), {
+			replaceState: true,
+			noScroll: true,
+			keepFocus: true
+		});
 	}
 
 	function runExpressionShortcut(event: KeyboardEvent) {
@@ -364,7 +377,7 @@
 	<div class="inspect-value">
 		<Inspect
 			value={inspectedValue}
-			name={evaluatedExpression}
+			name="result"
 			borderless
 			expandLevel={2}
 			noanimate

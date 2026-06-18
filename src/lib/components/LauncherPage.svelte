@@ -41,8 +41,10 @@
 		type SearchProvider
 	} from '$lib/settings.svelte';
 
-	let { modeId = 'everything' }: { modeId?: LauncherModeId } = $props();
-	let value = $derived(page.url.searchParams.get('q') ?? '');
+	let {
+		modeId = 'everything',
+		value = $bindable(page.url.searchParams.get('q') ?? '')
+	}: { modeId?: LauncherModeId; value?: string } = $props();
 
 	const searchProviderLabels: Record<SearchProvider, string> = {
 		kagi: 'Kagi',
