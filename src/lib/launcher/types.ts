@@ -26,6 +26,8 @@ export type LauncherGroup = {
 	pluginId: string;
 	title: string;
 	description?: string;
+	titleSegments?: BangHighlightSegment[];
+	descriptionSegments?: BangHighlightSegment[];
 	items: LauncherItem[];
 	collapsedItemLimit?: number;
 	matchedCount?: number;
@@ -45,13 +47,13 @@ export type LauncherPlugin = {
 	getGroups?: (context: LauncherContext) => LauncherGroup[];
 };
 
-export type LauncherModeId = 'everything' | 'bangs' | 'compromise' | 'search';
+export type LauncherModeId = 'everything' | 'bangs' | 'compromise' | 'search' | 'settings';
 
 export type LauncherMode = {
 	id: LauncherModeId;
 	label: string;
 	description: string;
-	path: '/' | '/search' | '/bang' | '/nlp';
+	path: '/' | '/search' | '/bang' | '/nlp' | '/settings';
 	pluginIds: readonly string[];
 	keywords: readonly string[];
 };

@@ -37,7 +37,7 @@
 		LauncherModeId,
 		LauncherPlugin
 	} from '$lib/launcher/types';
-	import { settings, type SearchProvider } from '$lib/settings.svelte';
+	import { settings, type ColorScheme, type SearchProvider } from '$lib/settings.svelte';
 	import { loadShippedBangCatalog } from '$lib/shipped-bang-catalog';
 
 	const initialUrlQuery = page.url.searchParams.get('q') ?? '';
@@ -51,16 +51,96 @@
 		duckduckgo: 'DuckDuckGo',
 		google: 'Google'
 	};
+	const colorSchemeLabels: Record<ColorScheme, string> = {
+		'': 'Auto (System)',
+		dark: 'Dark',
+		light: 'Light'
+	};
+	const bangProviderLabels: Record<BangProviderId, string> = {
+		kagi: 'Kagi',
+		duckduckgo: 'DuckDuckGo'
+	};
 	const searchProviders = Object.keys(searchProviderLabels) as SearchProvider[];
+	const colorSchemes = Object.keys(colorSchemeLabels) as ColorScheme[];
+	const bangProviders = Object.keys(bangProviderLabels) as BangProviderId[];
 	const shortcutLabels = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'] as const;
 	const shortcutKeys = new Set(['F', 'L', 'N', 'M', '.', ' ', ...shortcutLabels]);
 	const shortcutDelay = 250;
+	const settingsMatchThreshold = 0.4;
 	const launcherGroupItemLimits: Record<string, number> = {
 		'bangs.my': 8,
 		'bangs.provider': 8
 	};
 	type InputFrame = { data: string | null; inputType: string; ts: number };
 	type KeyFrame = { key: string; ts: number };
+	type SettingOption = {
+		id: string;
+		label: string;
+		description: string;
+		aliases: readonly string[];
+	};
+	type SettingGroupDefinition = {
+		id: string;
+		title: string;
+		description: string;
+		aliases: readonly string[];
+		currentLabel: () => string;
+		options: readonly SettingOption[];
+	};
+	type ScoredSettingOption = SettingOption & {
+		score: number;
+		titleResult: Fuzzysort.Result | null;
+		descriptionResult: Fuzzysort.Result | null;
+	};
+	type ScoredSettingGroup = Omit<SettingGroupDefinition, 'options'> & {
+		score: number;
+		titleResult: Fuzzysort.Result | null;
+		descriptionResult: Fuzzysort.Result | null;
+		options: ScoredSettingOption[];
+	};
+	const settingGroups: readonly SettingGroupDefinition[] = [
+		{
+			id: 'color-scheme',
+			title: 'Color scheme',
+			description: 'Theme preference for the launcher UI.',
+			aliases: ['theme', 'appearance', 'dark mode', 'light mode', 'system theme'],
+			currentLabel: () => colorSchemeLabels[settings.colorScheme],
+			options: colorSchemes.map((value) => ({
+				id: value || 'auto',
+				label: colorSchemeLabels[value],
+				description: value
+					? `Use the ${colorSchemeLabels[value].toLowerCase()} theme.`
+					: 'Follow the system theme.',
+				aliases: value ? [value, `${value} theme`] : ['auto', 'system', 'system theme']
+			}))
+		},
+		{
+			id: 'search-provider',
+			title: 'Default search provider',
+			description: 'Provider used for regular web searches.',
+			aliases: ['search engine', 'web search', 'provider'],
+			currentLabel: () => searchProviderLabels[settings.searchProvider],
+			options: searchProviders.map((value) => ({
+				id: value,
+				label: searchProviderLabels[value],
+				description: `Use ${searchProviderLabels[value]} for default web searches.`,
+				aliases: [value, searchProviderLabels[value], 'search engine']
+			}))
+		},
+		{
+			id: 'bang-provider',
+			title: 'Bang catalog provider',
+			description: 'Provider catalog used to populate available bangs.',
+			aliases: ['bang catalog', 'bangs catalog', 'shortcut catalog', 'catalog provider'],
+			currentLabel: () => bangProviderLabels[settings.bangProvider],
+			options: bangProviders.map((value) => ({
+				id: value,
+				label: bangProviderLabels[value],
+				description: `Load bang shortcuts from ${bangProviderLabels[value]}.`,
+				aliases: [value, bangProviderLabels[value], 'bang catalog']
+			}))
+		}
+	];
 	let bangCatalog = $state<ZbangCatalog>();
 	let loadedBangProvider = $state<BangProviderId>();
 	let textareaElement = $state<HTMLTextAreaElement>();
@@ -169,6 +249,12 @@
 
 		if (loadedBangProvider !== provider && loadingBangProvider !== provider) {
 			void loadBangCatalog(provider);
+		}
+	});
+
+	$effect(() => {
+		if (mode.id === 'settings' && !hasValue && Object.keys(expandedLauncherGroups).length) {
+			expandedLauncherGroups = {};
 		}
 	});
 
@@ -668,8 +754,18 @@
 			group.id === 'bangs.my' && (mode.id === 'bangs' || bangPickerActive);
 		const isSuppressedProviderGroup =
 			group.id === 'bangs.provider' && bangPickerActive && myBangResults.items.length > 0;
+		const isMatchedSettingsGroup =
+			group.pluginId === 'settings' &&
+			mode.id === 'settings' &&
+			hasValue &&
+			group.matchedCount !== undefined;
 
-		return group.items.length > 0 || isEmptyMyBangsGroup || isSuppressedProviderGroup;
+		return (
+			group.items.length > 0 ||
+			isEmptyMyBangsGroup ||
+			isSuppressedProviderGroup ||
+			isMatchedSettingsGroup
+		);
 	}
 
 	function getBangGroupCollapsedLimit(items: LauncherItem[]) {
@@ -826,6 +922,12 @@
 				}
 			},
 			{
+				id: 'settings',
+				getGroups(context) {
+					return getSettingsGroups(context);
+				}
+			},
+			{
 				id: 'compromise',
 				getItems(context) {
 					return getCompromiseItems(context);
@@ -844,8 +946,129 @@
 		if (mode.id === 'compromise') {
 			return 'Text sample... (NLP signals will be extracted from this text)';
 		}
+		if (mode.id === 'settings') {
+			return 'Filter settings... (settings are read-only for now)';
+		}
 
 		return 'Filter term... (modes will be filtered and sorted based on this term)';
+	}
+
+	function getSettingsGroups(context: LauncherContext): LauncherGroup[] {
+		const groups = context.hasValue
+			? settingGroups
+					.map((group) => scoreSettingGroup(group, context.text))
+					.filter((group) => group.score > 0)
+			: settingGroups.map((group, index) => ({
+					...group,
+					score: 100 - index,
+					titleResult: null,
+					descriptionResult: null,
+					options: group.options.map((option) => ({
+						...option,
+						score: 100 - index,
+						titleResult: null,
+						descriptionResult: null
+					}))
+				}));
+
+		return groups
+			.sort((a, b) => b.score - a.score)
+			.map((group) => ({
+				id: `settings.${group.id}`,
+				pluginId: 'settings',
+				title: group.title,
+				description: `Current: ${group.currentLabel()} | ${group.description}`,
+				titleSegments: getFuzzyHighlightSegments(group.title, group.titleResult),
+				descriptionSegments: getSettingGroupDescriptionSegments(group),
+				items: group.options.map((option, index) => createSettingItem(group, option, index)),
+				collapsedItemLimit: context.hasValue ? group.options.length : 0,
+				matchedCount: context.hasValue ? group.options.length : undefined,
+				totalCount: group.options.length
+			}));
+	}
+
+	function scoreSettingGroup(group: SettingGroupDefinition, query: string): ScoredSettingGroup {
+		const groupText = getSettingSearchText(group.title, group.description, group.aliases);
+		const titleResult = getSettingFuzzyResult(query, group.title);
+		const descriptionResult = getSettingFuzzyResult(query, group.description);
+		const groupResult = getSettingFuzzyResult(query, groupText);
+		const groupScore = normalizeFuzzyScore(groupResult);
+		const options = group.options
+			.map((option) => scoreSettingOption(option, query))
+			.filter((option) => option.score > 0);
+
+		return {
+			...group,
+			score: Math.max(groupScore, ...options.map((option) => option.score), 0),
+			titleResult,
+			descriptionResult,
+			options
+		};
+	}
+
+	function scoreSettingOption(option: SettingOption, query: string): ScoredSettingOption {
+		const optionText = getSettingSearchText(option.label, option.description, option.aliases);
+		const titleResult = getSettingFuzzyResult(query, option.label);
+		const descriptionResult = getSettingFuzzyResult(query, option.description);
+		const optionResult = getSettingFuzzyResult(query, optionText);
+
+		return {
+			...option,
+			score: normalizeFuzzyScore(optionResult),
+			titleResult,
+			descriptionResult
+		};
+	}
+
+	function getSettingSearchText(title: string, description: string, aliases: readonly string[]) {
+		return `${title} ${description} ${aliases.join(' ')}`;
+	}
+
+	function getSettingFuzzyResult(query: string, target: string) {
+		const result = fuzzysort.single(query, target);
+
+		return result && result.score >= settingsMatchThreshold ? result : null;
+	}
+
+	function normalizeFuzzyScore(result: Fuzzysort.Result | null) {
+		return result ? Math.max(1, Math.round(result.score * 100)) : 0;
+	}
+
+	function createSettingItem(
+		group: ScoredSettingGroup,
+		option: ScoredSettingOption,
+		index: number
+	): LauncherItem {
+		const selected = option.label === group.currentLabel();
+
+		return {
+			id: `settings.${group.id}.${option.id}`,
+			pluginId: 'settings',
+			kind: 'action',
+			title: option.label,
+			description: `${selected ? 'Current value' : 'Available option'} | ${option.description}`,
+			titleSegments: getFuzzyHighlightSegments(option.label, option.titleResult),
+			descriptionSegments: getSettingDescriptionSegments(
+				selected ? 'Current value' : 'Available option',
+				option
+			),
+			score: option.score,
+			sortOrder: index
+		};
+	}
+
+	function getSettingDescriptionSegments(prefix: string, option: ScoredSettingOption) {
+		return [
+			{ text: `${prefix} | `, matched: false },
+			...getFuzzyHighlightSegments(option.description, option.descriptionResult)
+		];
+	}
+
+	function getSettingGroupDescriptionSegments(group: ScoredSettingGroup) {
+		return [
+			{ text: `Current: ${group.currentLabel()} | `, matched: false },
+			...getFuzzyHighlightSegments(group.description, group.descriptionResult)
+		];
 	}
 
 	function getModeListItems(context: LauncherContext): LauncherItem[] {
@@ -1277,9 +1500,13 @@
 		<button class="launcher-group-header" onclick={() => toggleLauncherGroup(group.id)}>
 			<span class="item-text">
 				<span class="item-heading">
-					<strong id={`${group.id}-heading`}>{group.title}</strong>
+					<strong id={`${group.id}-heading`}
+						>{@render highlightedText(group.titleSegments, group.title)}</strong
+					>
 				</span>
-				{#if group.description}<small class="group-description">{group.description}</small>{/if}
+				{#if group.description}<small class="group-description"
+						>{@render highlightedText(group.descriptionSegments, group.description)}</small
+					>{/if}
 				{#if mobileCountLabel}
 					<small class="group-mobile-count">{mobileCountLabel}</small>
 				{/if}

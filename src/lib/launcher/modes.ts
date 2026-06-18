@@ -32,6 +32,14 @@ export const launcherModes = [
 		path: '/nlp',
 		pluginIds: ['compromise', 'clipboard'],
 		keywords: ['nlp', 'language', 'tokens', 'inspect']
+	},
+	{
+		id: 'settings',
+		label: 'Settings',
+		description: 'Review configured launcher preferences.',
+		path: '/settings',
+		pluginIds: ['settings'],
+		keywords: ['preferences', 'configuration', 'options']
 	}
 ] as const satisfies readonly LauncherMode[];
 
