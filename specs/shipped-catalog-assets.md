@@ -161,14 +161,15 @@ Completed:
 - Removed launcher stale-catalog reminders.
 - Removed obsolete dev bootstrap generation route and bootstrap JSON artifacts.
 - Removed settings refresh UI and stale reminder settings state.
+- Removed runtime source refresh, source API route, and non-user IndexedDB stores.
 
 Remaining:
 
-- Remove runtime source refresh, non-user IndexedDB stores, and related API routes.
+- Keep or move `myBangs` persistence into a smaller user-data persistence module.
 
 ## API and Store Cleanup
 
-Remove app routes and stores that exist only for runtime source refresh or non-user catalog persistence:
+Removed app routes and stores that existed only for runtime source refresh or non-user catalog persistence:
 
 - `/api/bang-sources/[id]`, if no other production code needs it
 - `bangSources` IndexedDB store
@@ -179,7 +180,9 @@ Remove app routes and stores that exist only for runtime source refresh or non-u
 - provider catalog writes
 - source writes
 
-Keep or move the `myBangs` persistence code into a smaller user-data persistence module.
+`myBangs` persistence remains in `src/lib/bang-data.ts`. It can move into a smaller user-data persistence module later if the current compatibility re-export module becomes confusing.
+
+The IndexedDB schema was bumped to delete legacy non-user stores for existing browsers while preserving `myBangs`.
 
 ## Cache Verification
 
@@ -212,6 +215,6 @@ Compare before and after the refactor:
 4. Add the `$catalogs` alias. Done.
 5. Switch launcher loading to `?url` fetched catalogs on mount. Done.
 6. Add runtime catalog validation and graceful failure handling. Done.
-7. Remove runtime source refresh, stale reminders, and settings refresh UI. In progress; settings UI and stale reminder state are removed.
-8. Remove non-user IndexedDB stores and APIs.
+7. Remove runtime source refresh, stale reminders, and settings refresh UI. Done.
+8. Remove non-user IndexedDB stores and APIs. Done.
 9. Verify build output and deployed asset cache headers.

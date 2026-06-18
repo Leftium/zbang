@@ -82,10 +82,6 @@ export const BANG_SOURCES: BangSourceDefinition[] = [
 	}
 ];
 
-export function getBangSource(id: string) {
-	return BANG_SOURCES.find((source) => source.id === id);
-}
-
 export function generateDuckDuckGoCatalog(source: PersistedBangSource): ZbangCatalog {
 	const records = parseSourceRecords(source);
 	const normalized = records.flatMap((record) => normalizeSourceRecord(record, 'duckduckgo'));

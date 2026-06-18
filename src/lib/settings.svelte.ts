@@ -57,5 +57,4 @@ export function initSettings() {
 	if (storedBangProvider === 'kagi' || storedBangProvider === 'duckduckgo') {
 		settings.bangProvider = storedBangProvider;
 	}
-
 }
