@@ -88,13 +88,18 @@
 	$effect(() => {
 		document.body.style.overflowY = fullscreen ? 'hidden' : 'auto';
 		if (!fullscreen && growWrapElement) growWrapElement.style.bottom = '';
-		void wordwrap;
-
-		requestAnimationFrame(adjustHeight);
 
 		return () => {
 			document.body.style.overflowY = 'auto';
 		};
+	});
+
+	$effect(() => {
+		void value;
+		void wordwrap;
+		void fullscreen;
+
+		requestAnimationFrame(adjustHeight);
 	});
 
 	onMount(() => {
