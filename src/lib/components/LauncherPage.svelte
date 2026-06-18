@@ -415,12 +415,13 @@
 			inputType === 'insertText' &&
 			data &&
 			interval < shortcutDelay &&
+			isShortcutInitiator(lastInput?.data) &&
 			lastInput?.data?.toLowerCase() === data.toLowerCase()
 		) {
 			doubleKeypress = lastInput.data;
 		}
 
-		if (!doubleKeypress && inputType === 'insertText' && data) {
+		if (!doubleKeypress && inputType === 'insertText' && isShortcutInitiator(data)) {
 			captureShortcutSnapshot(data);
 		}
 
@@ -503,6 +504,8 @@
 			return false;
 		}
 
+		if (!isShortcutInitiator(lastKey?.key)) return false;
+
 		doubleKeypress = lastKey.key;
 
 		if (!shortcutKeys.has(doubleKeypress)) return false;
@@ -550,10 +553,17 @@
 	}
 
 	function captureShortcutSnapshot(shortcutKey: string) {
-		if (!shortcutKeys.has(shortcutKey)) return;
+		if (!isShortcutInitiator(shortcutKey)) return;
 
 		pendingShortcutLauncherItems = shortcutLauncherItems;
 		pendingShortcutPrimaryItem = primaryLauncherItem;
+	}
+
+	function isShortcutInitiator(key: string | null | undefined) {
+		if (!key || !shortcutKeys.has(key)) return false;
+
+		// Requiring the first letter to be shifted avoids accidental triggers while typing plain text.
+		return key === ' ' || key === '.' || key.toLocaleUpperCase() === key;
 	}
 
 	function resetShortcutState() {
@@ -588,7 +598,7 @@
 		const index = shortcutItemIds.get(item.id);
 		const label = index === undefined ? undefined : shortcutLabels[index];
 
-		return label ? `${label}${label}` : undefined;
+		return label;
 	}
 
 	function handleLauncherCursorChange(event: Event) {
@@ -1580,21 +1590,30 @@
 	}
 
 	.shortcut-label {
-		min-width: 2.75rem;
-		padding: 0.125rem 0.375rem;
-		text-align: center;
+		display: inline-grid;
+		place-items: center;
+		min-width: 1.05rem;
+		height: 1.05rem;
+		padding: 0 0.1875rem;
+		margin-inline: 0.125rem;
 		font-family: monospace;
-		font-size: var(--font-size-0);
+		font-size: 0.74rem;
 		font-weight: 700;
-		line-height: 1.4;
+		line-height: 1;
 		color: var(--nc-tx-2);
 		background: var(--nc-surface-2);
 		border: 1px solid var(--nc-border);
-		border-radius: calc(var(--nc-radius) * 0.75);
+		border-radius: calc(var(--nc-radius) * 0.55);
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 52%, transparent),
+			0 1px 2px color-mix(in srgb, black 12%, transparent);
 	}
 
 	.action-item.primary .shortcut-label {
 		color: var(--nc-primary);
+	}
+
+	.action-item.primary .shortcut-label {
 		border-color: color-mix(in srgb, var(--nc-primary) 55%, var(--nc-border));
 	}
 
@@ -1661,11 +1680,6 @@
 		.item-run.has-shortcut .item-aside {
 			grid-column: 2;
 			grid-row: 1;
-		}
-
-		.shortcut-label {
-			min-width: 2rem;
-			padding: 0 0.25rem;
 		}
 
 		.meta {
