@@ -1,6 +1,6 @@
 import fuzzysort from 'fuzzysort';
 
-import type { Zbang, ZbangCatalog } from '$lib/bang-data';
+import type { Zbang } from '$lib/bang-data';
 
 export type BangFilterResult = {
 	item: Zbang;
@@ -51,8 +51,8 @@ const FUZZYSORT_BASE_KEYS = [
 	'code.9'
 ];
 
-export function prepareBangCatalog(catalog: ZbangCatalog | undefined): PreparedZbang[] {
-	return (catalog?.items ?? []).map((item) => ({
+export function prepareBangs(items: Zbang[]): PreparedZbang[] {
+	return items.map((item) => ({
 		...item,
 		name: fuzzysort.prepare(item.name),
 		code: item.code.map(fuzzysort.prepare),

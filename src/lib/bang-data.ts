@@ -84,11 +84,18 @@ type DuckDuckGoRank = {
 };
 
 const DB_NAME = 'zbang';
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const GENERATOR_VERSION = 1;
 const SOURCE_STORE = 'bangSources';
 const CATALOG_STORE = 'bangCatalogs';
+const MY_BANG_STORE = 'myBangs';
+const MY_BANG_COLLECTION_KEY = 'items';
 const textEncoder = new TextEncoder();
+
+type MyBangCollection = {
+	id: typeof MY_BANG_COLLECTION_KEY;
+	items: Zbang[];
+};
 
 export const BANG_SOURCES: BangSourceDefinition[] = [
 	{
@@ -139,6 +146,31 @@ export async function readBangCatalog(provider: BangProviderId): Promise<ZbangCa
 
 	try {
 		return await getFromStore<ZbangCatalog>(db, CATALOG_STORE, provider);
+	} finally {
+		db.close();
+	}
+}
+
+export async function readMyBangs(): Promise<Zbang[]> {
+	const db = await openBangDb();
+
+	try {
+		const collection = await getFromStore<MyBangCollection>(
+			db,
+			MY_BANG_STORE,
+			MY_BANG_COLLECTION_KEY
+		);
+		return collection?.items ?? [];
+	} finally {
+		db.close();
+	}
+}
+
+export async function writeMyBangs(items: Zbang[]): Promise<void> {
+	const db = await openBangDb();
+
+	try {
+		await putInStore(db, MY_BANG_STORE, { id: MY_BANG_COLLECTION_KEY, items });
 	} finally {
 		db.close();
 	}
@@ -724,6 +756,10 @@ function openBangDb(): Promise<IDBDatabase> {
 
 			if (!db.objectStoreNames.contains(CATALOG_STORE)) {
 				db.createObjectStore(CATALOG_STORE, { keyPath: 'provider' });
+			}
+
+			if (!db.objectStoreNames.contains(MY_BANG_STORE)) {
+				db.createObjectStore(MY_BANG_STORE, { keyPath: 'id' });
 			}
 		};
 

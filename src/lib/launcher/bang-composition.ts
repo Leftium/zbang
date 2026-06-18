@@ -1,10 +1,10 @@
-import type { Zbang, ZbangCatalog } from '$lib/bang-data';
+import type { Zbang } from '$lib/bang-data';
 import type { BangComposition, BangCompositionTarget, BangEntry } from './types';
 
-export function createBangCodeMap(catalog: ZbangCatalog | undefined) {
+export function createBangCodeMap(items: Zbang[]) {
 	const codeMap = new Map<string, Zbang>();
 
-	for (const item of catalog?.items ?? []) {
+	for (const item of items) {
 		for (const code of item.code) {
 			codeMap.set(normalizeBangCode(code), item);
 		}

@@ -8,6 +8,8 @@
 
 	import {
 		readBangCatalog,
+		readMyBangs,
+		writeMyBangs,
 		type BangProviderId,
 		type Zbang,
 		type ZbangCatalog
@@ -15,7 +17,7 @@
 	import {
 		applyBang,
 		filterBangs,
-		prepareBangCatalog,
+		prepareBangs,
 		type BangFilterResult,
 		type BangHighlightSegment
 	} from '$lib/bang-filter';
@@ -59,6 +61,7 @@
 	const bangDataStaleDays = 30;
 	const bangDataReminderSnoozeDays = 30;
 	const launcherGroupItemLimits: Record<string, number> = {
+		'bangs.my': 8,
 		'bangs.provider': 8
 	};
 	type InputFrame = { data: string | null; inputType: string; ts: number };
@@ -76,21 +79,31 @@
 	let keyHistory: KeyFrame[] = [];
 	let pendingShortcutLauncherItems: LauncherItem[] = [];
 	let pendingShortcutPrimaryItem: LauncherItem | undefined;
+	let myBangWrite = Promise.resolve();
 	let doubleKeypress = $state<string>();
 	let isPeriodShortcut = $state(false);
 	let isMobilePeriodShortcut = $state(false);
 	let expandedLauncherGroups = $state<Record<string, boolean>>({});
+	let myBangs = $state<Zbang[]>([]);
 
 	const mode = $derived(getLauncherMode(modeId));
 	const hasValue = $derived(Boolean(value.trim()));
 	// Keep NLP signals in the shared launcher context so plugins can score and enrich items.
 	const compromiseSignals = $derived(getCompromiseSignals(value));
-	const preparedBangs = $derived(prepareBangCatalog(bangCatalog));
-	const bangCodeMap = $derived(createBangCodeMap(bangCatalog));
+	const myBangCodes = $derived(new Set(myBangs.flatMap((item) => item.code.map(normalizeBangCode))));
+	const providerBangs = $derived(
+		(bangCatalog?.items ?? []).filter((item) => !hasBangCodeOverlap(item, myBangCodes))
+	);
+	const allBangs = $derived([...myBangs, ...providerBangs]);
+	const preparedMyBangs = $derived(prepareBangs(myBangs));
+	const preparedProviderBangs = $derived(prepareBangs(providerBangs));
+	const providerBangCount = $derived(bangCatalog?.items.length ?? 0);
+	const bangCodeMap = $derived(createBangCodeMap(allBangs));
 	const bangComposition = $derived(parseBangComposition(value, bangCodeMap, bangEntry));
 	const bangPickerActive = $derived(Boolean(bangEntry));
 	const bangFilterInput = $derived(bangEntry ? `!${bangEntry.fragment}` : value);
-	const bangResults = $derived(filterBangs(bangFilterInput, preparedBangs));
+	const myBangResults = $derived(filterBangs(bangFilterInput, preparedMyBangs));
+	const providerBangResults = $derived(filterBangs(bangFilterInput, preparedProviderBangs));
 	const bangDataAgeDays = $derived(
 		bangCatalog ? getElapsedDays(bangCatalog.generatedAt) : undefined
 	);
@@ -123,7 +136,7 @@
 		launcherItems.filter((item) => mode.pluginIds.includes(item.pluginId))
 	);
 	const visibleLauncherGroups = $derived(
-		launcherGroups.filter((group) => mode.pluginIds.includes(group.pluginId) && group.items.length)
+		launcherGroups.filter((group) => mode.pluginIds.includes(group.pluginId) && shouldRenderGroup(group))
 	);
 	const visibleGroupedLauncherItems = $derived(
 		visibleLauncherGroups.flatMap((group) => getVisibleGroupItems(group))
@@ -152,6 +165,7 @@
 
 	onMount(() => {
 		void loadBangCatalog(settings.bangProvider);
+		void loadMyBangs();
 	});
 
 	$effect(() => {
@@ -273,6 +287,10 @@
 		loadedBangProvider = provider;
 	}
 
+	async function loadMyBangs() {
+		myBangs = await readMyBangs();
+	}
+
 	async function loadBootstrapBangCatalog(provider: BangProviderId): Promise<ZbangCatalog> {
 		if (provider === 'duckduckgo') {
 			return (await import('$lib/data/zbang.bootstrap.duckduckgo.json')).default as ZbangCatalog;
@@ -295,6 +313,62 @@
 		}
 
 		value = applyBang(value, code);
+	}
+
+	async function addMyBang(item: Zbang) {
+		if (hasBangCodeOverlap(item, myBangCodes)) return;
+
+		const nextMyBangs = [...myBangs, cloneBang(item)];
+		myBangs = nextMyBangs;
+		await persistMyBangs(nextMyBangs);
+	}
+
+	async function removeMyBang(item: Zbang) {
+		const index = myBangs.findIndex((myBang) => isSameBang(myBang, item));
+
+		if (index === -1) return;
+
+		const nextMyBangs = [...myBangs.slice(0, index), ...myBangs.slice(index + 1)];
+		myBangs = nextMyBangs;
+		await persistMyBangs(nextMyBangs);
+	}
+
+	async function persistMyBangs(items: Zbang[]) {
+		const persistedItems = items.map(cloneBang);
+		myBangWrite = myBangWrite.catch(() => undefined).then(() => writeMyBangs(persistedItems));
+		await myBangWrite;
+	}
+
+	function cloneBang(item: Zbang): Zbang {
+		return {
+			rank: item.rank,
+			name: item.name,
+			code: [...item.code],
+			tags: [...item.tags],
+			urls: { s: item.urls.s }
+		};
+	}
+
+	function isSameBang(a: Zbang, b: Zbang) {
+		return (
+			a.rank === b.rank &&
+			a.name === b.name &&
+			a.urls.s === b.urls.s &&
+			arrayEquals(a.code, b.code) &&
+			arrayEquals(a.tags, b.tags)
+		);
+	}
+
+	function arrayEquals(a: string[], b: string[]) {
+		return a.length === b.length && a.every((value, index) => value === b[index]);
+	}
+
+	function hasBangCodeOverlap(item: Zbang, codes: Set<string>) {
+		return item.code.some((code) => codes.has(normalizeBangCode(code)));
+	}
+
+	function normalizeBangCode(code: string) {
+		return (code.startsWith('!') ? code : `!${code}`).toLowerCase();
 	}
 
 	function removeTextBeforeCursor(length: number) {
@@ -592,6 +666,14 @@
 		return group.collapsedItemLimit ?? launcherGroupItemLimits[group.id] ?? 5;
 	}
 
+	function shouldRenderGroup(group: LauncherGroup) {
+		const isEmptyMyBangsGroup = group.id === 'bangs.my' && (mode.id === 'bangs' || bangPickerActive);
+		const isSuppressedProviderGroup =
+			group.id === 'bangs.provider' && bangPickerActive && myBangResults.items.length > 0;
+
+		return group.items.length > 0 || isEmptyMyBangsGroup || isSuppressedProviderGroup;
+	}
+
 	function getBangGroupCollapsedLimit(items: LauncherItem[]) {
 		return mode.id === 'bangs' ? launcherGroupItemLimits['bangs.provider'] : items.length;
 	}
@@ -682,31 +764,30 @@
 				getGroups() {
 					if (!bangPickerActive && mode.id !== 'bangs') return [];
 
-					const items = bangResults.items.map(({ item, score, highlights }, index) => ({
-						id: `bangs.${item.rank}`,
-						pluginId: 'bangs',
-						kind: 'action' as const,
-						title: item.name,
-						description: `${item.code.join(' ')} | ${formatBangUrl(item.urls.s)}`,
-						titleSegments: highlights.name,
-						descriptionSegments: getBangDescriptionSegments(highlights),
-						rank: item.rank,
-						score,
-						sortOrder: index,
-						safeForEnter: mode.id !== 'bangs',
-						...(mode.id === 'bangs' ? {} : { run: () => insertBang(item.code[0]) })
-					}));
+					const myItems = createBangLauncherItems(myBangResults.items, 'my');
+					const providerItems = createBangLauncherItems(providerBangResults.items, 'provider');
+					const visibleProviderItems = mode.id !== 'bangs' && myItems.length ? [] : providerItems;
 
 					return [
+						{
+							id: 'bangs.my',
+							pluginId: 'bangs',
+							title: 'My bangs',
+							description: 'Local editable bangs that shadow provider bangs by code.',
+							items: myItems,
+							collapsedItemLimit: getBangGroupCollapsedLimit(myItems),
+							matchedCount: myBangResults.total,
+							totalCount: myBangs.length
+						},
 						{
 							id: 'bangs.provider',
 							pluginId: 'bangs',
 							title: 'Provider bangs',
 							description: 'Forward to your configured bang provider unless added to My bangs.',
-							items,
-							collapsedItemLimit: getBangGroupCollapsedLimit(items),
-							matchedCount: bangResults.total,
-							totalCount: preparedBangs.length
+							items: visibleProviderItems,
+							collapsedItemLimit: getBangGroupCollapsedLimit(visibleProviderItems),
+							matchedCount: providerBangResults.total,
+							totalCount: providerBangCount
 						}
 					];
 				}
@@ -798,6 +879,40 @@
 					titleSegments: getFuzzyHighlightSegments(mode.label, titleResult)
 				});
 			});
+	}
+
+	function createBangLauncherItems(
+		results: BangFilterResult[],
+		source: 'my' | 'provider'
+	): LauncherItem[] {
+		return results.map(({ item, score, highlights }, index) => ({
+			id: `bangs.${source}.${index}.${item.code[0] ?? item.rank}`,
+			pluginId: 'bangs',
+			kind: 'action' as const,
+			title: item.name,
+			description: getBangItemDescription(item, source),
+			titleSegments: highlights.name,
+			descriptionSegments:
+				mode.id === 'bangs' ? undefined : getBangDescriptionSegments(highlights),
+			rank: item.rank,
+			score,
+			sortOrder: index,
+			safeForEnter: mode.id !== 'bangs',
+			run:
+				mode.id === 'bangs'
+					? () => (source === 'my' ? removeMyBang(item) : addMyBang(item))
+					: () => insertBang(item.code[0])
+		}));
+	}
+
+	function getBangModeActionLabel(source: 'my' | 'provider') {
+		return source === 'my' ? 'Remove from My bangs' : 'Add to My bangs';
+	}
+
+	function getBangItemDescription(item: Zbang, source: 'my' | 'provider') {
+		const description = `${item.code.join(' ')} | ${formatBangUrl(item.urls.s)}`;
+
+		return mode.id === 'bangs' ? `${getBangModeActionLabel(source)} | ${description}` : description;
 	}
 
 	function createModeListItem(
