@@ -270,6 +270,78 @@ Examples:
 - QR code view.
 - Bang discovery view.
 
+### Everything
+
+The broad default launcher scope. Everything is not necessarily an exhaustive list; it is the app-owned combined strategy for showing the most useful next results across modes, plugins, settings, saved data, and actions.
+
+The root route can use Everything as its underlying scope while still feeling like a home state. Empty or vague input should bias toward mode discovery. Specific input should let other plugins join the list or outrank the mode list when they have stronger evidence.
+
+Possible root results include:
+
+- Modes such as Bangs, Search, Notes, History, Bookmarks, Compromise, and Settings.
+- Direct actions for the current text.
+- Matching notes, history items, bookmarks, or settings.
+- Contextual maintenance items such as stale bang data.
+
+`Everything` is preferable product language to `All` because it suggests broad search and action across the system without promising that every possible row is shown at once.
+
+### Mode List
+
+A plugin or plugin-like result group that lists available modes. It should dominate the root empty state, filter by the textarea value, and yield when another plugin has stronger evidence for a specific query.
+
+Useful behavior:
+
+- Empty input shows the main modes as orientation cards or rows.
+- Short mode-like input filters modes by label, aliases, and descriptions.
+- Exact mode matches navigate directly to the focused route.
+- Query text can be carried into a focused mode when useful.
+- The mode list can coexist with other plugins instead of making the root route a separate static portal.
+
+The mode list should read from the same registry used by routing so built-in and user-installed modes appear consistently.
+
+### Mode Routes
+
+Modes are durable URL-addressable launcher scopes. Stable built-in modes can use explicit top-level routes for clean URLs, while installed or dynamic plugin modes should use a namespaced route such as `/m/[modeId]`.
+
+Suggested shape:
+
+- `/` for Everything/home.
+- `/bangs`, `/compromise`, `/search`, `/notes`, `/history`, `/bookmarks`, and `/settings` for stable built-in modes.
+- `/m/[modeId]` for installed or dynamic modes.
+- `/settings/[pluginId]` or equivalent later if plugin-specific settings need deep links.
+
+Avoid using a catch-all top-level optional mode route as the main strategy unless plugin modes intentionally own the entire first path segment namespace. A namespace prevents collisions with app routes, API routes, callbacks, note slugs, bookmark slugs, and future first-party pages.
+
+### Mode Registry
+
+A shared registry should describe all available modes rather than hard-coding mode lists in individual pages.
+
+Potential fields:
+
+- Stable mode ID.
+- Human label and description.
+- Search aliases.
+- Canonical route.
+- Owning plugin, if any.
+- Built-in vs installed/source metadata.
+- Default view or componentized view choice.
+- Plugin groups to include, exclude, boost, or suppress.
+- Scoring hints and eligibility gates used by mode discovery.
+
+This lets one installed plugin provide zero, one, or many modes. A plugin route, if added, should describe or manage the plugin itself; user-facing workflows should usually route to modes.
+
+### Settings Mode
+
+A control-surface mode where each setting is represented as a launcher item. Collapsed setting rows should show the setting title, a short description, and the current value. Expanded rows may render mode-specific controls while keeping the same list, filtering, keyboard, and route model as other modes.
+
+Examples:
+
+- `Color scheme` with current value `System`, expanded into System, Light, and Dark choices.
+- `Bang data` with provider and age, expanded into provider selection, refresh, and reminder controls.
+- `Search provider` with current default, expanded into provider choices.
+
+Settings should be searchable from Settings mode. Individual setting items may also appear in Everything when a query strongly matches them or when a contextual warning deserves attention.
+
 ## Benefits Of Composability
 
 - Reuse: the same action can work with many subjects or targets.

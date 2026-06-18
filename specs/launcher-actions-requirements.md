@@ -131,6 +131,10 @@ Plugin item scores are local to that plugin and should not be treated as globall
 
 The app owns plugin-level relevance because it has the broader launcher context: current mode, explicit scopes, user preferences, permissions, recent usage, available UI space, and global heuristics. Plugins may return optional relevance hints, confidence values, or metadata, but those should be inputs to app scoring rather than final authority.
 
+Scoring hints should be modeled as evidence rather than direct global scores. A plugin or item may emit positive, negative, or neutral hint results such as `input has text`, `query matches setting alias`, `mode is bangs`, or `provider is preferred`. The app combines those hints with app-owned weights, mode boosts, safety rules, and usage history. Missing evidence should usually be neutral; only explicit contradictions should lower a score.
+
+Eligibility gates should be separate from scoring hints. Some tests are absolute requirements: if they fail, the plugin group or item cannot appear in the list regardless of score. Examples include `clipboard API is available`, `input has text`, `setting exists`, `bang data is loaded`, or `action is installed`. Failed gates should be inspectable in development/debug views so hidden items can explain why they were excluded.
+
 The default presentation should group results by plugin. Plugin groups are sorted by app-computed plugin score, while items inside each group are sorted by plugin-computed item score. The UI should be able to show only the top N items for each plugin and let the user expand a plugin group to see more items.
 
 Mixed cross-plugin item ordering may be supported as an explicit mode, but it should require either globally normalized plugin item scores or an app-owned reranking step. Raw plugin-local item scores should not be mixed directly across plugin types.
@@ -191,11 +195,21 @@ Modes should support both users and development workflows. Examples include sear
 
 Modes should be URL-addressable so a user or developer can open a focused launcher state directly.
 
-The current mode should be visible in the UI. Users should understand why certain plugins or actions are not appearing, and they should have a clear way back to the default all-mode.
+The root route should remain textarea-first. Its default behavior should act like an Everything home state: when the input is empty or vague, a mode-list plugin should dominate the list so users can discover focused modes; when the input is specific or actionable, other plugins may join or outrank the mode list. The root route may therefore share the same broad scope as an `everything` or legacy `all` mode, but its empty-state design should prioritize orientation and mode discovery rather than an undifferentiated action dump.
+
+Focused routes such as `/bangs`, `/compromise`, `/search`, `/notes`, `/history`, `/bookmarks`, and `/settings` should constrain or boost the relevant plugin groups and views. Query-parameter modes may remain useful during transition, but path routes should become the durable URL shape for direct entry into a mode.
+
+Built-in modes may use explicit top-level routes when they are stable product concepts. User-installed or otherwise dynamic plugin modes should use a reserved namespace such as `/m/[modeId]` rather than competing for every top-level path segment. This avoids collisions with built-in routes, API routes, dev routes, future app pages, provider callbacks, note slugs, and bookmark slugs.
+
+Mode discovery and routing should be registry-driven. A mode registry should describe built-in and installed modes with IDs, labels, aliases, route paths, owning plugins, view choices, and scoring/ranking behavior. The root mode-list plugin and dynamic mode route should use the same registry so installed modes become discoverable and URL-addressable without requiring new SvelteKit route files.
+
+The current mode should be visible in the UI. Users should understand why certain plugins or actions are not appearing, and they should have a clear way back to the default Everything state.
 
 Modes may limit plugins, boost plugins, or adjust app-owned plugin-level scoring criteria. Modes and temporary constraints should share the same underlying concept where practical, but modes are durable and URL-addressable while constraints are usually temporary and query-specific.
 
 A mode may choose a specialized view when a focused UI is more useful than the default action list. For example, notes mode may use a notes search/editing view, history mode may use a history list, and compromise mode may use an NLP visualization.
+
+Settings can be a mode if it follows the same launcher item model. Each setting should appear as a searchable item with a title, description, and current value. Expanding a setting item may reveal richer controls such as segmented choices, toggles, inputs, or action buttons. Individual settings may also surface in Everything when the query strongly matches them or when the app has a contextual reason to show them, such as stale bang data.
 
 Compromise/NLP mode should remain a development-friendly place to explore composition. Its expression evaluator may evolve
 into either layered mode-specific inputs or a single shareable scratchpad that contains both sample text and evaluator code.
