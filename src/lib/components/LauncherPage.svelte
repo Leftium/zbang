@@ -37,7 +37,14 @@
 		LauncherModeId,
 		LauncherPlugin
 	} from '$lib/launcher/types';
-	import { settings, type ColorScheme, type SearchProvider } from '$lib/settings.svelte';
+	import {
+		setBangProvider,
+		setColorScheme,
+		setSearchProvider,
+		settings,
+		type ColorScheme,
+		type SearchProvider
+	} from '$lib/settings.svelte';
 	import { loadShippedBangCatalog } from '$lib/shipped-bang-catalog';
 
 	const initialUrlQuery = page.url.searchParams.get('q') ?? '';
@@ -78,7 +85,11 @@
 		label: string;
 		description: string;
 		aliases: readonly string[];
+		run: () => void;
 	};
+	type PrimaryLauncherTarget =
+		| { id: string; kind: 'item'; item: LauncherItem; run: () => void | Promise<void> }
+		| { id: string; kind: 'group'; group: LauncherGroup; run: () => void };
 	type SettingGroupDefinition = {
 		id: string;
 		title: string;
@@ -97,6 +108,7 @@
 		titleResult: Fuzzysort.Result | null;
 		descriptionResult: Fuzzysort.Result | null;
 		options: ScoredSettingOption[];
+		allOptions: ScoredSettingOption[];
 	};
 	const settingGroups: readonly SettingGroupDefinition[] = [
 		{
@@ -111,7 +123,8 @@
 				description: value
 					? `Use the ${colorSchemeLabels[value].toLowerCase()} theme.`
 					: 'Follow the system theme.',
-				aliases: value ? [value, `${value} theme`] : ['auto', 'system', 'system theme']
+				aliases: value ? [value, `${value} theme`] : ['auto', 'system', 'system theme'],
+				run: () => setColorScheme(value)
 			}))
 		},
 		{
@@ -124,7 +137,8 @@
 				id: value,
 				label: searchProviderLabels[value],
 				description: `Use ${searchProviderLabels[value]} for default web searches.`,
-				aliases: [value, searchProviderLabels[value], 'search engine']
+				aliases: [value, searchProviderLabels[value], 'search engine'],
+				run: () => setSearchProvider(value)
 			}))
 		},
 		{
@@ -137,7 +151,8 @@
 				id: value,
 				label: bangProviderLabels[value],
 				description: `Load bang shortcuts from ${bangProviderLabels[value]}.`,
-				aliases: [value, bangProviderLabels[value], 'bang catalog']
+				aliases: [value, bangProviderLabels[value], 'bang catalog'],
+				run: () => setBangProvider(value)
 			}))
 		}
 	];
@@ -152,8 +167,8 @@
 	let selectedPrimaryItemId = $state<string>();
 	let inputHistory = $state<InputFrame[]>([]);
 	let keyHistory: KeyFrame[] = [];
-	let pendingShortcutLauncherItems: LauncherItem[] = [];
-	let pendingShortcutPrimaryItem: LauncherItem | undefined;
+	let pendingShortcutLauncherTargets: PrimaryLauncherTarget[] = [];
+	let pendingShortcutPrimaryTarget: PrimaryLauncherTarget | undefined;
 	let myBangWrite = Promise.resolve();
 	let loadingBangProvider = $state<BangProviderId>();
 	let doubleKeypress = $state<string>();
@@ -162,6 +177,7 @@
 	let expandedLauncherGroups = $state<Record<string, boolean>>({});
 	let myBangs = $state<Zbang[]>([]);
 	let lastUrlQuery = $state(initialUrlQuery);
+	let hadSettingsFilter = false;
 
 	$effect(() => {
 		const urlQuery = page.url.searchParams.get('q') ?? '';
@@ -219,20 +235,19 @@
 	);
 	const visibleActionItems = $derived([...visibleLauncherItems, ...visibleGroupedLauncherItems]);
 	const textareaPlaceholder = $derived(getTextareaPlaceholder());
-	const selectablePrimaryItems = $derived(
-		visibleActionItems.filter((item) => item.kind === 'action' && item.run)
+	const selectablePrimaryTargets = $derived(getSelectablePrimaryTargets());
+	const shortcutLauncherTargets = $derived(
+		selectablePrimaryTargets.slice(0, shortcutLabels.length)
 	);
-	const shortcutLauncherItems = $derived(
-		visibleActionItems
-			.filter((item) => item.kind === 'action' && item.run)
-			.slice(0, shortcutLabels.length)
+	const shortcutTargetIds = $derived(
+		new Map(shortcutLauncherTargets.map((target, index) => [target.id, index]))
 	);
-	const shortcutItemIds = $derived(
-		new Map(shortcutLauncherItems.map((item, index) => [item.id, index]))
+	const primaryLauncherTarget = $derived(
+		selectablePrimaryTargets.find((target) => target.id === selectedPrimaryItemId) ??
+			selectablePrimaryTargets.find((target) => target.kind === 'item' && target.item.safeForEnter)
 	);
 	const primaryLauncherItem = $derived(
-		selectablePrimaryItems.find((item) => item.id === selectedPrimaryItemId) ??
-			selectablePrimaryItems.find((item) => item.safeForEnter)
+		primaryLauncherTarget?.kind === 'item' ? primaryLauncherTarget.item : undefined
 	);
 	const secondaryLauncherItems = $derived(
 		fullscreen
@@ -253,9 +268,21 @@
 	});
 
 	$effect(() => {
-		if (mode.id === 'settings' && !hasValue && Object.keys(expandedLauncherGroups).length) {
+		if (mode.id !== 'settings') {
+			hadSettingsFilter = false;
+			return;
+		}
+
+		if (hasValue) {
+			hadSettingsFilter = true;
+			return;
+		}
+
+		if (hadSettingsFilter && Object.keys(expandedLauncherGroups).length) {
 			expandedLauncherGroups = {};
 		}
+
+		hadSettingsFilter = false;
 	});
 
 	function getSearchUrl(provider: SearchProvider, query: string) {
@@ -612,23 +639,25 @@
 		}
 
 		if (shortcutKey === '.' || shortcutKey === 'M') {
-			void (pendingShortcutPrimaryItem ?? primaryLauncherItem)?.run?.();
+			void (pendingShortcutPrimaryTarget ?? primaryLauncherTarget)?.run();
 			return;
 		}
 
 		const index = shortcutLabels.findIndex((label) => label === shortcutKey);
-		const item = (
-			pendingShortcutLauncherItems.length ? pendingShortcutLauncherItems : shortcutLauncherItems
+		const target = (
+			pendingShortcutLauncherTargets.length
+				? pendingShortcutLauncherTargets
+				: shortcutLauncherTargets
 		)[index];
 
-		if (item) void item.run?.();
+		if (target) void target.run();
 	}
 
 	function captureShortcutSnapshot(shortcutKey: string) {
 		if (!isShortcutInitiator(shortcutKey)) return;
 
-		pendingShortcutLauncherItems = shortcutLauncherItems;
-		pendingShortcutPrimaryItem = primaryLauncherItem;
+		pendingShortcutLauncherTargets = shortcutLauncherTargets;
+		pendingShortcutPrimaryTarget = primaryLauncherTarget;
 	}
 
 	function isShortcutInitiator(key: string | null | undefined) {
@@ -642,8 +671,8 @@
 		doubleKeypress = undefined;
 		inputHistory = [];
 		keyHistory = [];
-		pendingShortcutLauncherItems = [];
-		pendingShortcutPrimaryItem = undefined;
+		pendingShortcutLauncherTargets = [];
+		pendingShortcutPrimaryTarget = undefined;
 		isPeriodShortcut = false;
 		isMobilePeriodShortcut = false;
 	}
@@ -666,8 +695,8 @@
 		if (document.visibilityState === 'visible') focusInput();
 	}
 
-	function getShortcutLabel(item: LauncherItem) {
-		const index = shortcutItemIds.get(item.id);
+	function getShortcutLabel(targetId: string) {
+		const index = shortcutTargetIds.get(targetId);
 		const label = index === undefined ? undefined : shortcutLabels[index];
 
 		return label;
@@ -688,22 +717,22 @@
 			return false;
 		}
 
-		const currentIndex = primaryLauncherItem
-			? selectablePrimaryItems.findIndex((item) => item.id === primaryLauncherItem.id)
+		const currentIndex = primaryLauncherTarget
+			? selectablePrimaryTargets.findIndex((target) => target.id === primaryLauncherTarget.id)
 			: -1;
 		const nextIndex = Math.max(
 			0,
 			Math.min(
-				selectablePrimaryItems.length - 1,
+				selectablePrimaryTargets.length - 1,
 				event.key === 'ArrowUp' ? currentIndex - 1 : currentIndex + 1
 			)
 		);
-		const nextItem = selectablePrimaryItems[nextIndex];
+		const nextTarget = selectablePrimaryTargets[nextIndex];
 
-		if (!nextItem) return false;
+		if (!nextTarget) return false;
 
 		event.preventDefault();
-		selectedPrimaryItemId = nextItem.id;
+		selectedPrimaryItemId = nextTarget.id;
 
 		return true;
 	}
@@ -742,7 +771,28 @@
 	}
 
 	function runPrimaryAction() {
-		void primaryLauncherItem?.run?.();
+		void primaryLauncherTarget?.run();
+	}
+
+	function getSelectablePrimaryTargets(): PrimaryLauncherTarget[] {
+		return [
+			...visibleLauncherItems.flatMap(createSelectableItemTarget),
+			...visibleLauncherGroups.flatMap((group) => [
+				{
+					id: group.id,
+					kind: 'group' as const,
+					group,
+					run: () => activateLauncherGroup(group.id)
+				},
+				...getVisibleGroupItems(group).flatMap(createSelectableItemTarget)
+			])
+		];
+	}
+
+	function createSelectableItemTarget(item: LauncherItem): PrimaryLauncherTarget[] {
+		if (item.kind !== 'action' || !item.run) return [];
+
+		return [{ id: item.id, kind: 'item', item, run: item.run }];
 	}
 
 	function getGroupCollapsedLimit(group: LauncherGroup) {
@@ -773,7 +823,7 @@
 	}
 
 	function getVisibleGroupItems(group: LauncherGroup) {
-		if (expandedLauncherGroups[group.id]) return group.items;
+		if (expandedLauncherGroups[group.id]) return group.allItems ?? group.items;
 
 		return group.items.slice(0, getGroupCollapsedLimit(group));
 	}
@@ -784,20 +834,32 @@
 		return fullscreen ? items.filter((item) => item.id !== primaryLauncherItem?.id) : items;
 	}
 
-	function toggleLauncherGroup(groupId: string) {
-		expandedLauncherGroups = {
-			...expandedLauncherGroups,
-			[groupId]: !expandedLauncherGroups[groupId]
-		};
+	function activateLauncherGroup(groupId: string) {
+		expandedLauncherGroups = expandedLauncherGroups[groupId] ? {} : { [groupId]: true };
 	}
 
 	function getGroupCountLabel(group: LauncherGroup) {
-		const parts = [`${group.items.length} loaded`];
+		const parts = [`${(group.allItems ?? group.items).length} loaded`];
 
 		if (group.matchedCount !== undefined) parts.push(`${group.matchedCount} matched`);
 		if (group.totalCount !== undefined) parts.push(`${group.totalCount} total`);
 
 		return parts.join(' | ');
+	}
+
+	function getGroupToggleLabel(group: LauncherGroup, hiddenCount: number, expanded: boolean) {
+		if (
+			group.allItems &&
+			group.matchedCount !== undefined &&
+			group.matchedCount !== group.allItems.length
+		) {
+			return expanded ? 'Show matched' : 'Show all';
+		}
+
+		if (hiddenCount > 0) return `Show ${hiddenCount} more`;
+		if (expanded) return 'Collapse';
+
+		return '';
 	}
 
 	function getGroupMobileCountLabel(group: LauncherGroup) {
@@ -968,6 +1030,12 @@
 						score: 100 - index,
 						titleResult: null,
 						descriptionResult: null
+					})),
+					allOptions: group.options.map((option) => ({
+						...option,
+						score: 100 - index,
+						titleResult: null,
+						descriptionResult: null
 					}))
 				}));
 
@@ -977,13 +1045,17 @@
 				id: `settings.${group.id}`,
 				pluginId: 'settings',
 				title: group.title,
-				description: `Current: ${group.currentLabel()} | ${group.description}`,
+				titleValue: group.currentLabel(),
+				description: group.description,
 				titleSegments: getFuzzyHighlightSegments(group.title, group.titleResult),
 				descriptionSegments: getSettingGroupDescriptionSegments(group),
 				items: group.options.map((option, index) => createSettingItem(group, option, index)),
+				allItems: context.hasValue
+					? group.allOptions.map((option, index) => createSettingItem(group, option, index))
+					: undefined,
 				collapsedItemLimit: context.hasValue ? group.options.length : 0,
 				matchedCount: context.hasValue ? group.options.length : undefined,
-				totalCount: group.options.length
+				totalCount: group.allOptions.length
 			}));
 	}
 
@@ -996,13 +1068,15 @@
 		const options = group.options
 			.map((option) => scoreSettingOption(option, query))
 			.filter((option) => option.score > 0);
+		const allOptions = group.options.map((option) => scoreSettingOption(option, query));
 
 		return {
 			...group,
 			score: Math.max(groupScore, ...options.map((option) => option.score), 0),
 			titleResult,
 			descriptionResult,
-			options
+			options,
+			allOptions
 		};
 	}
 
@@ -1046,29 +1120,22 @@
 			pluginId: 'settings',
 			kind: 'action',
 			title: option.label,
-			description: `${selected ? 'Current value' : 'Available option'} | ${option.description}`,
+			selected,
+			description: option.description,
 			titleSegments: getFuzzyHighlightSegments(option.label, option.titleResult),
-			descriptionSegments: getSettingDescriptionSegments(
-				selected ? 'Current value' : 'Available option',
-				option
-			),
+			descriptionSegments: getSettingDescriptionSegments(option),
 			score: option.score,
-			sortOrder: index
+			sortOrder: index,
+			run: option.run
 		};
 	}
 
-	function getSettingDescriptionSegments(prefix: string, option: ScoredSettingOption) {
-		return [
-			{ text: `${prefix} | `, matched: false },
-			...getFuzzyHighlightSegments(option.description, option.descriptionResult)
-		];
+	function getSettingDescriptionSegments(option: ScoredSettingOption) {
+		return getFuzzyHighlightSegments(option.description, option.descriptionResult);
 	}
 
 	function getSettingGroupDescriptionSegments(group: ScoredSettingGroup) {
-		return [
-			{ text: `Current: ${group.currentLabel()} | `, matched: false },
-			...getFuzzyHighlightSegments(group.description, group.descriptionResult)
-		];
+		return getFuzzyHighlightSegments(group.description, group.descriptionResult);
 	}
 
 	function getModeListItems(context: LauncherContext): LauncherItem[] {
@@ -1405,6 +1472,7 @@
 	}
 
 	function formatItemMeta(item: LauncherItem) {
+		if (item.pluginId === 'settings') return '';
 		if (item.pluginId === 'bang-data') return '';
 
 		return [item.pluginId, item.rank ? `rank ${formatCount(item.rank)}` : undefined, item.score]
@@ -1446,6 +1514,17 @@
 		>
 			<span class="item-text">
 				<span class="item-heading">
+					{#if item.pluginId === 'settings'}
+						<svg
+							class:checked={item.selected}
+							class="radio-indicator"
+							viewBox="0 0 16 16"
+							aria-hidden="true"
+						>
+							<circle class="radio-ring" cx="8" cy="8" r="6" />
+							<circle class="radio-dot" cx="8" cy="8" r="3" />
+						</svg>
+					{/if}
 					<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
 				</span>
 				{#if item.description}<small
@@ -1489,20 +1568,32 @@
 {#snippet launcherGroup(group: LauncherGroup)}
 	{@const visibleItems = getVisibleGroupItems(group)}
 	{@const renderedItems = getRenderedGroupItems(group)}
-	{@const hiddenCount = group.items.length - visibleItems.length}
+	{@const hiddenCount = (group.allItems ?? group.items).length - visibleItems.length}
 	{@const expanded = Boolean(expandedLauncherGroups[group.id])}
+	{@const toggleLabel = getGroupToggleLabel(group, hiddenCount, expanded)}
 	{@const mobileCountLabel = getGroupMobileCountLabel(group)}
+	{@const shortcutLabel = getShortcutLabel(group.id)}
 	<section
 		class:empty-group={renderedItems.length === 0}
 		class="launcher-group"
 		aria-labelledby={`${group.id}-heading`}
 	>
-		<button class="launcher-group-header" onclick={() => toggleLauncherGroup(group.id)}>
+		<button
+			class:primary={primaryLauncherTarget?.kind === 'group' &&
+				primaryLauncherTarget.id === group.id}
+			class:has-shortcut={Boolean(shortcutLabel)}
+			class="launcher-group-header"
+			onclick={() => activateLauncherGroup(group.id)}
+		>
 			<span class="item-text">
 				<span class="item-heading">
 					<strong id={`${group.id}-heading`}
-						>{@render highlightedText(group.titleSegments, group.title)}</strong
+						>{@render highlightedText(
+							group.titleSegments,
+							group.title
+						)}{#if group.titleValue}:{/if}</strong
 					>
+					{#if group.titleValue}<span class="group-title-value">{group.titleValue}</span>{/if}
 				</span>
 				{#if group.description}<small class="group-description"
 						>{@render highlightedText(group.descriptionSegments, group.description)}</small
@@ -1512,11 +1603,10 @@
 				{/if}
 			</span>
 			<span class="item-aside">
+				{#if shortcutLabel}<span class="shortcut-label">{shortcutLabel}</span>{/if}
 				<span class="meta">{getGroupCountLabel(group)}</span>
-				{#if hiddenCount > 0 || expanded}
-					<span class="group-toggle-label"
-						>{expanded ? 'Collapse' : `Show ${hiddenCount} more`}</span
-					>
+				{#if toggleLabel}
+					<span class="group-toggle-label">{toggleLabel}</span>
 				{/if}
 			</span>
 		</button>
@@ -1524,7 +1614,7 @@
 		<div class="launcher-group-items">
 			{#each renderedItems as item (item.id)}
 				{#if item.kind === 'action'}
-					{@const shortcutLabel = getShortcutLabel(item)}
+					{@const shortcutLabel = getShortcutLabel(item.id)}
 					{@render actionItem(item, shortcutLabel)}
 				{:else}
 					{@render insightItem(item)}
@@ -1559,7 +1649,7 @@
 		>
 			{#snippet primaryAction()}
 				{#if fullscreen && primaryLauncherItem}
-					{@render actionItem(primaryLauncherItem, getShortcutLabel(primaryLauncherItem))}
+					{@render actionItem(primaryLauncherItem, getShortcutLabel(primaryLauncherItem.id))}
 				{/if}
 			{/snippet}
 		</ExpandingTextarea>
@@ -1584,7 +1674,7 @@
 	<section class="launcher-list" aria-label="Launcher actions and insights">
 		{#each secondaryLauncherItems as item (item.id)}
 			{#if item.kind === 'action'}
-				{@const shortcutLabel = getShortcutLabel(item)}
+				{@const shortcutLabel = getShortcutLabel(item.id)}
 				{@render actionItem(item, shortcutLabel)}
 			{:else}
 				{@render insightItem(item)}
@@ -1649,6 +1739,12 @@
 		box-shadow: none;
 	}
 
+	.launcher-group-header.primary {
+		background: color-mix(in srgb, var(--nc-primary) 14%, var(--nc-surface-2));
+		border-color: var(--nc-primary);
+		box-shadow: 0 0.375rem 1rem color-mix(in srgb, var(--nc-primary) 16%, transparent);
+	}
+
 	.launcher-group-items {
 		display: grid;
 		gap: 0;
@@ -1668,6 +1764,19 @@
 		font-size: var(--font-size-0);
 		font-weight: 700;
 		white-space: nowrap;
+	}
+
+	.group-title-value {
+		flex: 0 1 auto;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-weight: 400;
+	}
+
+	.launcher-group-header .item-heading strong {
+		flex: 0 1 auto;
 	}
 
 	.group-mobile-count {
@@ -1816,6 +1925,37 @@
 		min-width: 0;
 	}
 
+	.radio-indicator {
+		flex: 0 0 auto;
+		width: 1rem;
+		height: 1rem;
+		color: color-mix(in srgb, var(--nc-tx-2) 82%, var(--nc-border));
+		overflow: visible;
+	}
+
+	.radio-ring {
+		fill: var(--nc-surface-1);
+		stroke: currentColor;
+		stroke-width: 2;
+	}
+
+	.radio-dot {
+		fill: var(--nc-primary);
+		opacity: 0;
+	}
+
+	.radio-indicator.checked {
+		color: var(--nc-primary);
+	}
+
+	.radio-indicator.checked .radio-dot {
+		opacity: 1;
+	}
+
+	.action-item.primary .radio-ring {
+		fill: color-mix(in srgb, var(--nc-primary) 6%, var(--nc-surface-1));
+	}
+
 	.item-aside {
 		flex: 0 0 auto;
 		display: grid;
@@ -1843,11 +1983,13 @@
 			0 1px 2px color-mix(in srgb, black 12%, transparent);
 	}
 
-	.action-item.primary .shortcut-label {
+	.action-item.primary .shortcut-label,
+	.launcher-group-header.primary .shortcut-label {
 		color: var(--nc-primary);
 	}
 
-	.action-item.primary .shortcut-label {
+	.action-item.primary .shortcut-label,
+	.launcher-group-header.primary .shortcut-label {
 		border-color: color-mix(in srgb, var(--nc-primary) 55%, var(--nc-border));
 	}
 

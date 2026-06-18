@@ -9,6 +9,7 @@ export type LauncherItem = {
 	description?: string;
 	titleSegments?: BangHighlightSegment[];
 	descriptionSegments?: BangHighlightSegment[];
+	selected?: boolean;
 	rank?: number;
 	score: number;
 	sortOrder?: number;
@@ -25,10 +26,12 @@ export type LauncherGroup = {
 	id: string;
 	pluginId: string;
 	title: string;
+	titleValue?: string;
 	description?: string;
 	titleSegments?: BangHighlightSegment[];
 	descriptionSegments?: BangHighlightSegment[];
 	items: LauncherItem[];
+	allItems?: LauncherItem[];
 	collapsedItemLimit?: number;
 	matchedCount?: number;
 	totalCount?: number;
