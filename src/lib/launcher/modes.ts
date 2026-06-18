@@ -39,6 +39,6 @@ export const modeById = new Map<LauncherModeId, LauncherMode>(
 	launcherModes.map((mode) => [mode.id, mode])
 );
 
-export function getLauncherMode(id: LauncherModeId) {
+export function getLauncherMode(id: LauncherModeId): LauncherMode {
 	return modeById.get(id) ?? launcherModes[0];
 }

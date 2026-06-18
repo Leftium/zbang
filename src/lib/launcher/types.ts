@@ -51,7 +51,7 @@ export type LauncherMode = {
 	id: LauncherModeId;
 	label: string;
 	description: string;
-	path: string;
+	path: '/' | '/search' | '/bangs' | '/nlp';
 	pluginIds: readonly string[];
 	keywords: readonly string[];
 };

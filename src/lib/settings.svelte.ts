@@ -1,4 +1,5 @@
 import type { BangProviderId } from '$lib/bang-data';
+import { SvelteDate } from 'svelte/reactivity';
 
 export type ColorScheme = '' | 'dark' | 'light';
 export type SearchProvider = 'kagi' | 'duckduckgo' | 'google';
@@ -40,7 +41,7 @@ export function setBangProvider(bangProvider: BangProviderId) {
 }
 
 export function dismissBangDataReminder(days: number) {
-	const dismissedUntil = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
+	const dismissedUntil = new SvelteDate(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
 	settings.bangDataReminderDismissedUntil = dismissedUntil;
 	localStorage.setItem('bangDataReminderDismissedUntil', dismissedUntil);
 }

@@ -171,6 +171,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import Inspect from 'svelte-inspect-value';
 
 	import { createCompromiseDoc, nlp } from '$lib/compromise';
@@ -256,7 +257,7 @@
 	function runExpression(expression = draftExpression) {
 		const nextExpression = expression.trim() || panels[0].expression;
 		const nextPanel = panels.find((panel) => panel.expression === nextExpression);
-		const params = new URLSearchParams();
+		const params = new SvelteURLSearchParams();
 
 		if (text) params.set('q', text);
 

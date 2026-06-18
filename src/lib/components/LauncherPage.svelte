@@ -38,11 +38,7 @@
 		LauncherModeId,
 		LauncherPlugin
 	} from '$lib/launcher/types';
-	import {
-		dismissBangDataReminder,
-		settings,
-		type SearchProvider
-	} from '$lib/settings.svelte';
+	import { dismissBangDataReminder, settings, type SearchProvider } from '$lib/settings.svelte';
 
 	let {
 		modeId = 'everything',
@@ -90,7 +86,9 @@
 	const hasValue = $derived(Boolean(value.trim()));
 	// Keep NLP signals in the shared launcher context so plugins can score and enrich items.
 	const compromiseSignals = $derived(getCompromiseSignals(value));
-	const myBangCodes = $derived(new Set(myBangs.flatMap((item) => item.code.map(normalizeBangCode))));
+	const myBangCodes = $derived(
+		new Set(myBangs.flatMap((item) => item.code.map(normalizeBangCode)))
+	);
 	const providerBangs = $derived(
 		(bangCatalog?.items ?? []).filter((item) => !hasBangCodeOverlap(item, myBangCodes))
 	);
@@ -136,7 +134,9 @@
 		launcherItems.filter((item) => mode.pluginIds.includes(item.pluginId))
 	);
 	const visibleLauncherGroups = $derived(
-		launcherGroups.filter((group) => mode.pluginIds.includes(group.pluginId) && shouldRenderGroup(group))
+		launcherGroups.filter(
+			(group) => mode.pluginIds.includes(group.pluginId) && shouldRenderGroup(group)
+		)
 	);
 	const visibleGroupedLauncherItems = $derived(
 		visibleLauncherGroups.flatMap((group) => getVisibleGroupItems(group))
@@ -421,7 +421,7 @@
 			doubleKeypress = lastInput.data;
 		}
 
-		if (!doubleKeypress && inputType === 'insertText' && isShortcutInitiator(data)) {
+		if (!doubleKeypress && inputType === 'insertText' && data && isShortcutInitiator(data)) {
 			captureShortcutSnapshot(data);
 		}
 
@@ -678,7 +678,8 @@
 	}
 
 	function shouldRenderGroup(group: LauncherGroup) {
-		const isEmptyMyBangsGroup = group.id === 'bangs.my' && (mode.id === 'bangs' || bangPickerActive);
+		const isEmptyMyBangsGroup =
+			group.id === 'bangs.my' && (mode.id === 'bangs' || bangPickerActive);
 		const isSuppressedProviderGroup =
 			group.id === 'bangs.provider' && bangPickerActive && myBangResults.items.length > 0;
 
@@ -926,8 +927,7 @@
 			title: item.name,
 			description: getBangItemDescription(item, source),
 			titleSegments: highlights.name,
-			descriptionSegments:
-				mode.id === 'bangs' ? undefined : getBangDescriptionSegments(highlights),
+			descriptionSegments: mode.id === 'bangs' ? undefined : getBangDescriptionSegments(highlights),
 			rank: item.rank,
 			score,
 			sortOrder: index,
@@ -1253,7 +1253,12 @@
 		class:primary={item.id === primaryLauncherItem?.id}
 		class="launcher-item action-item"
 	>
-		<button class:has-shortcut={hasShortcut} class="item-run" disabled={!item.run} onclick={() => item.run?.()}>
+		<button
+			class:has-shortcut={hasShortcut}
+			class="item-run"
+			disabled={!item.run}
+			onclick={() => item.run?.()}
+		>
 			<span class="item-text">
 				<span class="item-heading">
 					<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
@@ -1288,7 +1293,8 @@
 			<span class="item-heading">
 				<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
 			</span>
-			{#if item.description}<small>{@render highlightedText(item.descriptionSegments, item.description)}</small
+			{#if item.description}<small
+					>{@render highlightedText(item.descriptionSegments, item.description)}</small
 				>{/if}
 		</span>
 		<span class="meta">{formatItemMeta(item)}</span>
@@ -1319,7 +1325,9 @@
 			<span class="item-aside">
 				<span class="meta">{getGroupCountLabel(group)}</span>
 				{#if hiddenCount > 0 || expanded}
-					<span class="group-toggle-label">{expanded ? 'Collapse' : `Show ${hiddenCount} more`}</span>
+					<span class="group-toggle-label"
+						>{expanded ? 'Collapse' : `Show ${hiddenCount} more`}</span
+					>
 				{/if}
 			</span>
 		</button>
@@ -1397,7 +1405,6 @@
 			{@render launcherGroup(group)}
 		{/each}
 	</section>
-
 </main>
 
 <style>
