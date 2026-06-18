@@ -607,6 +607,33 @@ mode bang completion, Provider bangs can show the filter's full result set becau
 bangs exists, matching My bangs should appear first; Provider bangs can collapse to zero visible rows when My bangs has
 matches, while retaining a header with counts and an explicit expansion path.
 
+My bangs should reuse the current zbang-shaped item model rather than introducing a separate shadow or alias model:
+
+```ts
+type Zbang = {
+	rank: number;
+	name: string;
+	code: string[];
+	tags: string[];
+	urls: {
+		s: string;
+	};
+};
+```
+
+The edit UI can still be compact. Show one whitespace-delimited trigger input, parse it into `code: string[]`, and show
+one URL template input backed by `urls.s`. Additional codes are normal editable triggers for the same bang, not hidden
+metadata. This keeps the UI simple while preserving the existing zbang schema and the ability for one bang to own several
+provider triggers.
+
+Moving a bang from Provider bangs to My bangs means copying the provider item locally and then suppressing provider rows
+with conflicting codes. Suppression should use normalized code matches across all My bang `code[]` entries. Do not persist
+provider bang ids for this because provider updates may destabilize ids. A copied Provider bang should keep its copied
+`rank`, `name`, `code`, `tags`, and `urls.s`; My bang editing can expose `rank` as the user-controlled sorting field.
+
+`ddgr` should not be part of the My bang model. DuckDuckGo popularity can remain an internal provider-generation signal
+for computing `rank` and bootstrap subsets, but runtime and editing behavior should rely on `rank`.
+
 ## Notes UX
 
 The notes plugin should draw heavily from nvAlt and Notational Velocity.

@@ -324,6 +324,33 @@ focused `/bangs` management route, groups should support configurable collapsed 
 share a compact area. Once My bangs exists, Provider bangs may collapse to zero visible rows when My bangs has matches,
 while still showing a header with match counts and an expand affordance.
 
+My bangs should preserve the existing zbang item shape instead of introducing a parallel model:
+
+```ts
+type Zbang = {
+	rank: number;
+	name: string;
+	code: string[];
+	tags: string[];
+	urls: {
+		s: string;
+	};
+};
+```
+
+The My bangs editor should expose `code` as one whitespace-delimited trigger input and parse it into `code: string[]`.
+Extra code entries are not hidden aliases or shadow rules; they are editable triggers for the same bang. `urls.s` remains
+the single URL template field for now, even though the object shape leaves room for future typed query templates.
+
+Saving a Provider bang to My bangs should copy the provider item into local storage, including `rank`, `name`, `code`,
+`tags`, and `urls.s`. My bangs should not store provider bang ids because provider catalogs may regenerate unstable
+identifiers. Provider suppression should be code-based: a Provider bang is hidden when any normalized provider code
+matches any normalized code on any My bang. Removing the My bang allows the Provider bang to reappear.
+
+My bangs do not need `ddgr`. `rank` is the local and provider-facing ordering field. DuckDuckGo popularity may be used
+inside provider catalog generation to assign ranks or choose bootstrap records, but it should not be part of the runtime
+My bang editing model.
+
 ## Notes
 
 Notes should be treated as plugin-like capabilities.

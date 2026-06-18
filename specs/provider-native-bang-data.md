@@ -28,7 +28,7 @@ That file is primarily Kagi data:
 
 DuckDuckGo data is only used for popularity/rank signals:
 
-- DDG `r` becomes `ddgr` when the primary trigger matches and appears compatible
+- DDG `r` may be used as internal generation metadata when the primary trigger matches and appears compatible
 - DDG `u` is used for domain comparison to avoid copying rank across obvious trigger collisions
 - DDG names, categories, aliases, URL templates, and DDG-only bangs are not included
 
@@ -89,10 +89,10 @@ Implemented route:
 That route should:
 
 1. Read the persisted generated Kagi and DDG catalogs.
-2. Select records above a minimum `ddgr` threshold for each provider.
+2. Select records above a minimum internal DDG popularity threshold for each provider.
 3. Render and download static JSON files that can be checked in.
 
-Use `ddgr >= 25` as the initial bootstrap threshold. In the current generated catalog this keeps roughly 800 popular records, which is close to a top-1000 target without pulling in too much long-tail data. The durable setting should remain a minimum `ddgr` because DDG `r`/`ddgr` represents query volume/popularity rather than an arbitrary list position.
+Use DDG popularity `r >= 25` as the initial bootstrap threshold. In the current generated catalog this keeps roughly 800 popular records, which is close to a top-1000 target without pulling in too much long-tail data. The durable setting should remain a minimum DDG popularity threshold because DDG `r` represents query volume/popularity rather than an arbitrary list position. This popularity signal can remain generation/bootstrap metadata and does not need to be emitted on runtime `Zbang` records.
 
 Example generated files:
 
@@ -124,7 +124,6 @@ Normalize Kagi records to the existing zbang-like shape:
 	"items": [
 		{
 			"rank": 1,
-			"ddgr": 1693724,
 			"name": "Google",
 			"code": ["!g", "!google"],
 			"tags": [],
@@ -191,7 +190,6 @@ Normalize DDG records independently:
 	"items": [
 		{
 			"rank": 1,
-			"ddgr": 1693724,
 			"name": "Google",
 			"code": ["!g"],
 			"tags": ["Online Services/Search"],
@@ -203,7 +201,7 @@ Normalize DDG records independently:
 }
 ```
 
-DDG records use DDG rank directly.
+DDG records use DDG rank directly to assign emitted `rank` values.
 
 DDG records should not be enhanced with Kagi names, aliases, or URL semantics in provider-native mode.
 
@@ -343,7 +341,6 @@ type ZbangCatalog = {
 
 type Zbang = {
 	rank: number;
-	ddgr?: number;
 	name: string;
 	code: string[];
 	tags: string[];
