@@ -10,7 +10,7 @@ The first version should support the three existing enum settings while leaving 
 
 ## Goals
 
-- Keep `/settings` as a dedicated route during development.
+- Keep `/settings` as a dedicated Settings mode route.
 - Render settings through the existing launcher mode and grouped-item model.
 - Reuse existing group behavior where practical, especially the group expansion pattern used by the bangs plugin.
 - Show each setting's current value in its group header.
@@ -30,15 +30,13 @@ The first version should support the three existing enum settings while leaving 
 
 ## Route Behavior
 
-During development, `/settings` remains a URL-addressable route.
-
-The route should eventually render Settings mode with the shared launcher component:
+`/settings` renders Settings mode with the shared launcher component:
 
 ```svelte
 <LauncherPage modeId="settings" />
 ```
 
-The visible settings link may continue to point to `/settings` during development. A later change can decide whether the link should route directly to Settings mode, open Settings from Everything mode, or use another transition pattern.
+The legacy editable settings form remains available at `/settings/form`. The visible header settings link points to `/settings/form` while Settings mode stays available directly at `/settings`.
 
 ## Settings In Scope
 
@@ -56,15 +54,15 @@ When the launcher textarea is empty:
 
 - All settings groups are closed.
 - Groups appear in stable, intentional order.
-- Each group header shows the setting name and current value.
+- Each group header shows the setting name and current value as `Setting name: value`.
 - Enum options are hidden until their group is opened.
 
 Example:
 
 ```text
-Color scheme                         Auto (System)
-Default search provider              Kagi
-Bang catalog provider                Kagi
+Color scheme: Auto (System)
+Default search provider: Kagi
+Bang catalog provider: Kagi
 ```
 
 ## Group Expansion
@@ -76,15 +74,15 @@ Opening one settings group should close any other open settings group. This keep
 When a group is open, its enum options are shown beneath the header:
 
 ```text
-Color scheme                         Auto (System)
-  Auto (System)                      Selected
-  Dark                               Set color scheme to Dark
-  Light                              Set color scheme to Light
-Default search provider              Kagi
-Bang catalog provider                Kagi
+Color scheme: Auto (System)
+  (selected) Auto (System)           Follow the system theme.
+  (option)   Dark                    Use the dark theme.
+  (option)   Light                   Use the light theme.
+Default search provider: Kagi
+Bang catalog provider: Kagi
 ```
 
-Selecting an option immediately applies that value. Selecting the already-current option should be safe and effectively a no-op.
+Selecting an option immediately applies that value while keeping Settings mode open. Selecting the already-current option should be safe and effectively a no-op. The current option should be indicated visually, such as with a radio-style selected indicator, rather than duplicating current/available status text in the description.
 
 ## Filtering
 
@@ -96,14 +94,15 @@ Filtering should score both groups and options:
 - A group with the best match or best matching option should rise to the top.
 - Matching options should be visible under their parent group even if the group was closed before filtering.
 - Users should be able to search directly for an option and select it without manually opening the group first.
+- Activating a filtered group header should toggle that group between its directly matching options and all of its options.
 
 Example query: `duck`
 
 ```text
-Default search provider              Kagi
-  DuckDuckGo                         Set default search provider to DuckDuckGo
-Bang catalog provider                Kagi
-  DuckDuckGo                         Set bang catalog provider to DuckDuckGo
+Default search provider: Kagi
+  DuckDuckGo                         Use DuckDuckGo for default web searches.
+Bang catalog provider: Kagi
+  DuckDuckGo                         Load bang shortcuts from DuckDuckGo.
 ```
 
 When the textarea is empty, use stable group order instead of score-based ordering.
@@ -122,6 +121,7 @@ This is not required for the first version. The initial settings plugin should s
 - Opening a settings group should not trap keyboard navigation.
 - Header activation should explicitly open or close the group rather than expanding automatically on active selection.
 - Direct option actions should participate in the existing launcher item navigation and shortcut behavior when visible.
+- Group headers should also participate in launcher navigation and repeated-key shortcuts when visible.
 
 ## Data Model Direction
 
@@ -159,11 +159,15 @@ The exact implementation can change, but settings should be data-driven enough t
 
 - Visiting `/settings` shows the launcher in Settings mode.
 - Empty Settings mode shows the three settings as closed groups in stable order.
-- Each setting group header displays the current value.
+- Each setting group header displays the current value as `Setting name: value`.
 - Activating a closed setting group opens it and closes other settings groups.
 - Activating an open setting group closes it.
 - Open enum options are selectable actions.
 - Selecting an enum option immediately updates the setting and persisted value.
+- Selecting an enum option keeps Settings mode open.
+- The current enum option is visually indicated without adding current/available status text to option descriptions.
 - Filtering by setting name, current value, keyword, or option label returns relevant settings.
 - Filtered results sort setting groups by best match quality.
 - Filtered results expose matching options without requiring manual group expansion.
+- Activating a filtered setting group toggles between matched options and all options.
+- Setting group headers are keyboard-selectable and shortcut-targetable.
