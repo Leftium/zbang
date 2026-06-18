@@ -62,7 +62,7 @@ type DuckDuckGoRank = {
 	domain: string;
 };
 
-const GENERATOR_VERSION = 1;
+const GENERATOR_VERSION = 2;
 
 export const BANG_SOURCES: BangSourceDefinition[] = [
 	{

@@ -98,6 +98,8 @@ Catalog generation is manual only. Generated catalog changes should be reviewed 
 
 Generated catalog artifacts should be deterministic when upstream source content is unchanged. Do not include generation-time timestamps such as top-level `generatedAt` or per-source `fetchedAt` in shipped catalog JSON. Source URLs and hashes are enough to identify the upstream inputs, and Git history records when the generated artifact changed.
 
+`generatorVersion` tracks the generated catalog schema and generation semantics. Bump it when output shape, normalization, ranking, or dedupe behavior changes.
+
 ## JSON Formatting
 
 Prefer readable pretty JSON initially. Readable diffs help review catalog generation changes and provider-data churn.
