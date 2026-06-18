@@ -441,7 +441,7 @@
 									<dd>{formatByteLength(status.byteLength)}</dd>
 								</div>
 								<div>
-									<dt>Bangs</dt>
+									<dt>Bang</dt>
 									<dd>
 										{formatBangCount(status.bangCount)}
 										{#if bangSourceCountChanges[status.id] !== undefined}

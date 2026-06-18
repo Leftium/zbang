@@ -11,12 +11,12 @@
 
 <LauncherPage modeId="compromise" bind:value={text} />
 
-<main class="compromise-inspector-shell">
+<main class="nlp-inspector-shell">
 	<CompromiseInspector {text} {inspect} {expression} />
 </main>
 
 <style>
-	.compromise-inspector-shell {
+	.nlp-inspector-shell {
 		width: min(calc(var(--nc-content-width) + 2 * var(--nc-spacing)), 100%);
 		margin-inline: auto;
 		padding-inline: var(--nc-spacing);

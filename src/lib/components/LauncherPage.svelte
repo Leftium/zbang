@@ -977,7 +977,7 @@
 					id: 'compromise.empty',
 					pluginId: 'compromise',
 					kind: 'insight',
-					title: 'Compromise inspector',
+					title: 'NLP inspector',
 					description: 'Enter text to inspect NLP signals for launcher ranking.',
 					score: 50
 				}
@@ -1596,8 +1596,7 @@
 	}
 
 	.match-highlight {
-		color: hsl(15 94% 45%);
-		background: hsl(15 94% 62% / 0.18);
+		color: rgb(255 62 0 / 0.76);
 		border-radius: 0.2em;
 		font-weight: 700;
 		padding-inline: 0.08em;

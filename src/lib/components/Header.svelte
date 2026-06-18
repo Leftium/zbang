@@ -3,14 +3,15 @@
 	import { page } from '$app/state';
 
 	let { modeLabel }: { modeLabel?: string } = $props();
+
+	const modeTitle = $derived(modeLabel === 'Everything' ? '' : (modeLabel ?? ''));
 </script>
 
 <header>
 	<a class="brand" href={resolve('/')}>
-		<span class="logo">[z!]</span>
-		<span class="brand-secondary">whi</span><span class="brand-primary">zBang</span>
-		{#if modeLabel}
-			<span class="mode-separator">/</span><span class="mode-label">{modeLabel}</span>
+		<span class="brand-secondary">whi</span><span class="brand-primary">z!</span>
+		{#if modeTitle}
+			<span class="mode-label">{modeTitle}</span>
 		{/if}
 	</a>
 
@@ -33,31 +34,16 @@
 		font-weight: var(--font-weight-9);
 	}
 
-	.logo {
+	.brand-primary {
 		color: #ff3e00;
 	}
 
-	.brand-primary {
-		color: hsl(15 94% 62%);
+	.mode-label {
+		color: rgb(255 62 0 / 0.76);
 	}
 
 	.brand-secondary {
 		color: var(--gray-5);
-	}
-
-	.mode-separator,
-	.mode-label {
-		font-size: var(--font-size-2);
-		font-weight: var(--font-weight-6);
-	}
-
-	.mode-separator {
-		margin-inline: 0.375rem;
-		color: var(--gray-5);
-	}
-
-	.mode-label {
-		color: hsl(15 70% 66%);
 	}
 
 	a {

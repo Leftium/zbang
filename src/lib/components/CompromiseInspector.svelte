@@ -266,7 +266,7 @@
 			params.set('expr', nextExpression);
 		}
 
-		void goto(resolve(`/compromise?${params}`), {
+		void goto(resolve(`/nlp?${params}`), {
 			replaceState: true,
 			noScroll: true,
 			keepFocus: true

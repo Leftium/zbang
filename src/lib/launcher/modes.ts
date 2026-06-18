@@ -19,7 +19,7 @@ export const launcherModes = [
 	},
 	{
 		id: 'bangs',
-		label: 'Bangs',
+		label: 'Bang',
 		description: 'Filter and explore available bang shortcuts.',
 		path: '/bangs',
 		pluginIds: ['bang-data', 'bangs'],
@@ -27,9 +27,9 @@ export const launcherModes = [
 	},
 	{
 		id: 'compromise',
-		label: 'Compromise',
+		label: 'NLP',
 		description: 'Inspect NLP signals that can guide launcher ranking.',
-		path: '/compromise',
+		path: '/nlp',
 		pluginIds: ['compromise', 'clipboard'],
 		keywords: ['nlp', 'language', 'tokens', 'inspect']
 	}
