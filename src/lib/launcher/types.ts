@@ -14,6 +14,11 @@ export type LauncherItem = {
 	sortOrder?: number;
 	safeForEnter?: boolean;
 	run?: () => void | Promise<void>;
+	secondaryAction?: {
+		label: string;
+		title?: string;
+		run: () => void | Promise<void>;
+	};
 };
 
 export type LauncherContext = {

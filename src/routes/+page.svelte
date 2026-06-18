@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 	import { SvelteURL } from 'svelte/reactivity';
@@ -33,7 +35,11 @@
 		LauncherMode,
 		LauncherPlugin
 	} from '$lib/launcher/types';
-	import { settings, type SearchProvider } from '$lib/settings.svelte';
+	import {
+		dismissBangDataReminder,
+		settings,
+		type SearchProvider
+	} from '$lib/settings.svelte';
 
 	let value = $derived(page.url.searchParams.get('q') ?? '');
 
@@ -46,6 +52,8 @@
 	const shortcutLabels = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'] as const;
 	const shortcutKeys = new Set(['F', 'L', 'N', 'M', '.', ' ', ...shortcutLabels]);
 	const shortcutDelay = 250;
+	const bangDataStaleDays = 30;
+	const bangDataReminderSnoozeDays = 30;
 	type InputFrame = { data: string | null; inputType: string; ts: number };
 	type KeyFrame = { key: string; ts: number };
 	let bangCatalog = $state<ZbangCatalog>();
@@ -78,6 +86,21 @@
 	const bangFilterInput = $derived(bangEntry ? `!${bangEntry.fragment}` : value);
 	const bangResults = $derived(filterBangs(bangFilterInput, preparedBangs));
 	const bangTotalCount = $derived(bangCatalog?.items.length ?? 0);
+	const bangDataAgeDays = $derived(
+		bangCatalog ? getElapsedDays(bangCatalog.generatedAt) : undefined
+	);
+	const bangDataReminderDismissed = $derived(
+		Boolean(
+			settings.bangDataReminderDismissedUntil &&
+			new Date(settings.bangDataReminderDismissedUntil).getTime() > Date.now()
+		)
+	);
+	const showBangDataReminder = $derived(
+		bangDataAgeDays !== undefined &&
+			bangDataAgeDays >= bangDataStaleDays &&
+			!bangDataReminderDismissed &&
+			!bangPickerActive
+	);
 	const launcherContext = $derived({
 		text: value.trim(),
 		hasValue,
@@ -220,6 +243,18 @@
 		const payload = composition.payloadText ? ` for "${composition.payloadText}"` : '';
 
 		return `${targets}${payload}`;
+	}
+
+	function openBangSettings() {
+		window.location.assign(resolve('/settings') + '#bang-sources-heading');
+	}
+
+	function dismissStaleBangDataReminder() {
+		dismissBangDataReminder(bangDataReminderSnoozeDays);
+	}
+
+	function getElapsedDays(date: string) {
+		return Math.floor((Date.now() - new Date(date).getTime()) / (24 * 60 * 60 * 1000));
 	}
 
 	async function loadBangCatalog(provider: BangProviderId) {
@@ -554,6 +589,30 @@
 	function createPlugins(): LauncherPlugin[] {
 		return [
 			{
+				id: 'bang-data',
+				getItems(context) {
+					if (!showBangDataReminder || bangDataAgeDays === undefined) return [];
+
+					return [
+						{
+							id: 'bang-data.refresh',
+							pluginId: 'bang-data',
+							kind: 'action',
+							title: 'Visit Settings to update bang data',
+							description: `Current bang data is ${bangDataAgeDays} days old.`,
+							score: context.hasValue ? 99 : 130,
+							safeForEnter: !context.hasValue,
+							run: openBangSettings,
+							secondaryAction: {
+								label: `Snooze for ${bangDataReminderSnoozeDays} days`,
+								title: `Snooze for ${bangDataReminderSnoozeDays} days`,
+								run: dismissStaleBangDataReminder
+							}
+						}
+					];
+				}
+			},
+			{
 				id: 'bang-compose',
 				getItems(context) {
 					if (bangEntry || !context.bangComposition.hasTargets) return [];
@@ -879,6 +938,8 @@
 	}
 
 	function formatItemMeta(item: LauncherItem) {
+		if (item.pluginId === 'bang-data') return '';
+
 		return [item.pluginId, item.rank ? `rank ${formatCount(item.rank)}` : undefined, item.score]
 			.filter(Boolean)
 			.join(' | ');
@@ -898,6 +959,38 @@
 	{:else}
 		{fallback}
 	{/if}
+{/snippet}
+
+{#snippet actionItem(item: LauncherItem, shortcutLabel: string | undefined)}
+	{@const itemMeta = formatItemMeta(item)}
+	<div
+		class:notification-item={item.pluginId === 'bang-data'}
+		class:primary={item.id === primaryLauncherItem?.id}
+		class="launcher-item action-item"
+	>
+		<button class="item-run" onclick={() => item.run?.()}>
+			<span class="item-text">
+				<span class="item-heading">
+					{#if shortcutLabel}<span class="shortcut-label">{shortcutLabel}</span>{/if}
+					<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
+				</span>
+				{#if item.description}<small
+						>{@render highlightedText(item.descriptionSegments, item.description)}</small
+					>{/if}
+			</span>
+			{#if itemMeta}<span class="meta">{itemMeta}</span>{/if}
+		</button>
+
+		{#if item.secondaryAction}
+			<button
+				class="secondary-action"
+				title={item.secondaryAction.title}
+				onclick={() => item.secondaryAction?.run()}
+			>
+				{item.secondaryAction.label}
+			</button>
+		{/if}
+	</div>
 {/snippet}
 
 <main>
@@ -935,28 +1028,7 @@
 		>
 			{#snippet primaryAction()}
 				{#if fullscreen && primaryLauncherItem}
-					<button class="launcher-item action-item primary" onclick={runPrimaryAction}>
-						<span class="item-text">
-							<span class="item-heading">
-								{#if getShortcutLabel(primaryLauncherItem)}
-									<span class="shortcut-label">{getShortcutLabel(primaryLauncherItem)}</span>
-								{/if}
-								<strong
-									>{@render highlightedText(
-										primaryLauncherItem.titleSegments,
-										primaryLauncherItem.title
-									)}</strong
-								>
-							</span>
-							{#if primaryLauncherItem.description}<small
-									>{@render highlightedText(
-										primaryLauncherItem.descriptionSegments,
-										primaryLauncherItem.description
-									)}</small
-								>{/if}
-						</span>
-						<span class="meta">{formatItemMeta(primaryLauncherItem)}</span>
-					</button>
+					{@render actionItem(primaryLauncherItem, getShortcutLabel(primaryLauncherItem))}
 				{/if}
 			{/snippet}
 		</ExpandingTextarea>
@@ -982,22 +1054,7 @@
 		{#each secondaryLauncherItems as item (item.id)}
 			{#if item.kind === 'action'}
 				{@const shortcutLabel = getShortcutLabel(item)}
-				<button
-					class:primary={item.id === primaryLauncherItem?.id}
-					class="launcher-item action-item"
-					onclick={() => item.run?.()}
-				>
-					<span class="item-text">
-						<span class="item-heading">
-							{#if shortcutLabel}<span class="shortcut-label">{shortcutLabel}</span>{/if}
-							<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
-						</span>
-						{#if item.description}<small
-								>{@render highlightedText(item.descriptionSegments, item.description)}</small
-							>{/if}
-					</span>
-					<span class="meta">{formatItemMeta(item)}</span>
-				</button>
+				{@render actionItem(item, shortcutLabel)}
 			{:else}
 				<article class="launcher-item insight-item">
 					<span class="item-text">
@@ -1116,6 +1173,35 @@
 			transform 120ms ease;
 	}
 
+	.item-run {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--size-3);
+		flex: 1 1 auto;
+		min-width: 0;
+		margin: 0;
+		padding: 0;
+		color: inherit;
+		text-align: left;
+		background: transparent;
+		border: none;
+		box-shadow: none;
+	}
+
+	.item-run:hover,
+	.item-run:focus {
+		background: transparent;
+		box-shadow: none;
+	}
+
+	.secondary-action {
+		flex: 0 0 auto;
+		margin: 0;
+		padding: 0.25rem 0.5rem;
+		font-size: var(--font-size-0);
+	}
+
 	.action-item.primary {
 		--buttonBg: color-mix(in srgb, var(--nc-primary) 14%, var(--nc-surface-1));
 		--buttonText: var(--nc-tx-1);
@@ -1124,6 +1210,17 @@
 		border-color: var(--nc-primary);
 		box-shadow: 0 0.375rem 1rem color-mix(in srgb, var(--nc-primary) 16%, transparent);
 		transform: translateY(-1px);
+	}
+
+	.notification-item {
+		background: color-mix(in srgb, var(--yellow-2) 72%, var(--nc-surface-1));
+		border-color: var(--yellow-6);
+	}
+
+	.notification-item.primary {
+		background: color-mix(in srgb, var(--yellow-3) 78%, var(--nc-surface-1));
+		border-color: var(--yellow-7);
+		box-shadow: 0 0.375rem 1rem color-mix(in srgb, var(--yellow-6) 20%, transparent);
 	}
 
 	.insight-item {

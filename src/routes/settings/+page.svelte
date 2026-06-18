@@ -18,6 +18,7 @@
 	} from '$lib/bang-data';
 	import Header from '$lib/components/Header.svelte';
 	import {
+		clearBangDataReminderDismissal,
 		resetColorScheme,
 		setBangProvider,
 		setSearchProvider,
@@ -38,6 +39,8 @@
 	let bangCatalogErrors = $state<Partial<Record<BangProviderId, string>>>({});
 	let bangSourceCountChanges = $state<Partial<Record<BangSourceId, number>>>({});
 	let bangCatalogCountChanges = $state<Partial<Record<BangProviderId, number>>>({});
+	let bangSourceHashChanges = $state<Partial<Record<BangSourceId, boolean>>>({});
+	let bangCatalogHashChanges = $state<Partial<Record<BangProviderId, boolean>>>({});
 	let bangSourceMessage = $state('');
 	let isRefreshingBangData = $state(false);
 	let isClearingBangData = $state(false);
@@ -80,6 +83,14 @@
 				previousCatalogStatuses,
 				bangCatalogStatuses
 			);
+			bangSourceHashChanges = getBangSourceHashChanges(previousSourceStatuses, bangSourceStatuses);
+			bangCatalogHashChanges = getBangCatalogHashChanges(
+				previousCatalogStatuses,
+				bangCatalogStatuses
+			);
+			if (savedCatalogs > 0) {
+				clearBangDataReminderDismissal();
+			}
 			bangSourceErrors = getBangSourceErrors(failedSources);
 			bangCatalogErrors = getBangCatalogErrors(failedCatalogs);
 			bangSourceMessage =
@@ -105,6 +116,8 @@
 			bangCatalogErrors = {};
 			bangSourceCountChanges = {};
 			bangCatalogCountChanges = {};
+			bangSourceHashChanges = {};
+			bangCatalogHashChanges = {};
 			bangSourceMessage = 'Cleared persisted bang data.';
 		} catch (error) {
 			bangSourceMessage = error instanceof Error ? error.message : 'Failed to clear bang data.';
@@ -201,6 +214,44 @@
 		);
 	}
 
+	function getBangSourceHashChanges(
+		previousStatuses: BangSourceStatus[],
+		currentStatuses: BangSourceStatus[]
+	): Partial<Record<BangSourceId, boolean>> {
+		return Object.fromEntries(
+			currentStatuses.flatMap((status) => {
+				const previous = previousStatuses.find((item) => item.id === status.id)?.hash;
+				return previous === undefined ? [] : [[status.id, status.hash !== previous]];
+			})
+		);
+	}
+
+	function getBangCatalogHashChanges(
+		previousStatuses: BangCatalogStatus[],
+		currentStatuses: BangCatalogStatus[]
+	): Partial<Record<BangProviderId, boolean>> {
+		return Object.fromEntries(
+			currentStatuses.flatMap((status) => {
+				const previous = previousStatuses.find((item) => item.provider === status.provider);
+
+				if (!previous) {
+					return [];
+				}
+
+				return [
+					[
+						status.provider,
+						getCatalogSourceHashSignature(status) !== getCatalogSourceHashSignature(previous)
+					]
+				];
+			})
+		);
+	}
+
+	function getCatalogSourceHashSignature(status: BangCatalogStatus) {
+		return status.sources.map((source) => `${source.url}:${source.hash}`).join('|');
+	}
+
 	function getBangSourceStatus(id: BangSourceId) {
 		return bangSourceStatuses.find((status) => status.id === id);
 	}
@@ -238,6 +289,10 @@
 		return new Intl.NumberFormat(undefined, {
 			signDisplay: 'always'
 		}).format(change);
+	}
+
+	function formatHashChange(change: boolean | undefined) {
+		return change === undefined ? '' : change ? 'changed' : 'unchanged';
 	}
 
 	function formatFetchedAt(fetchedAt: string) {
@@ -380,7 +435,14 @@
 								</div>
 								<div>
 									<dt>Sources</dt>
-									<dd>{status.sources.length}</dd>
+									<dd>
+										{status.sources.length}
+										{#if bangCatalogHashChanges[status.provider] !== undefined}
+											<span class:changed={bangCatalogHashChanges[status.provider]} class="hash-change">
+												{formatHashChange(bangCatalogHashChanges[status.provider])}
+											</span>
+										{/if}
+									</dd>
 								</div>
 							</dl>
 						{:else}
@@ -424,7 +486,14 @@
 								</div>
 								<div>
 									<dt>SHA-256</dt>
-									<dd><code>{status.hash.slice(0, 16)}</code></dd>
+									<dd>
+										<code>{status.hash.slice(0, 16)}</code>
+										{#if bangSourceHashChanges[status.id] !== undefined}
+											<span class:changed={bangSourceHashChanges[status.id]} class="hash-change">
+												{formatHashChange(bangSourceHashChanges[status.id])}
+											</span>
+										{/if}
+									</dd>
 								</div>
 							</dl>
 						{:else}
@@ -570,6 +639,15 @@
 	.count-change {
 		margin-inline-start: var(--size-1);
 		color: var(--gray-6);
+	}
+
+	.hash-change {
+		margin-inline-start: var(--size-1);
+		color: var(--gray-6);
+	}
+
+	.hash-change.changed {
+		color: var(--orange-7);
 	}
 
 	.refresh-message,
