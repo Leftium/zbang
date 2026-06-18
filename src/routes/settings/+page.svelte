@@ -19,11 +19,11 @@
 	import Header from '$lib/components/Header.svelte';
 	import {
 		clearBangDataReminderDismissal,
-		resetColorScheme,
 		setBangProvider,
+		setColorScheme,
 		setSearchProvider,
 		settings,
-		toggleColorScheme,
+		type ColorScheme,
 		type SearchProvider
 	} from '$lib/settings.svelte';
 
@@ -31,6 +31,12 @@
 		{ value: 'kagi', label: 'Kagi' },
 		{ value: 'duckduckgo', label: 'DuckDuckGo' },
 		{ value: 'google', label: 'Google' }
+	];
+
+	const colorSchemes: { value: ColorScheme; label: string }[] = [
+		{ value: '', label: 'Auto (System)' },
+		{ value: 'dark', label: 'Dark' },
+		{ value: 'light', label: 'Light' }
 	];
 
 	let bangSourceStatuses = $state<BangSourceStatus[]>([]);
@@ -314,16 +320,24 @@
 	<section aria-labelledby="settings-heading">
 		<h1 id="settings-heading">Settings</h1>
 
-		<div class="setting">
-			<div>
-				<h2>Color scheme</h2>
-				<p>Click to toggle dark/light. Double-click to reset to auto.</p>
-			</div>
+		<fieldset class="setting provider-setting">
+			<legend>Color scheme</legend>
 
-			<button class="secondary outline" onclick={toggleColorScheme} ondblclick={resetColorScheme}>
-				colors: {settings.colorScheme || 'auto'}
-			</button>
-		</div>
+			<div class="providers">
+				{#each colorSchemes as colorScheme (colorScheme.value)}
+					<label>
+						<input
+							type="radio"
+							name="color-scheme"
+							value={colorScheme.value}
+							checked={settings.colorScheme === colorScheme.value}
+							onchange={() => setColorScheme(colorScheme.value)}
+						/>
+						<span>{colorScheme.label}</span>
+					</label>
+				{/each}
+			</div>
+		</fieldset>
 
 		<fieldset class="setting provider-setting">
 			<legend>Default search provider</legend>

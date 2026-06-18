@@ -25,12 +25,8 @@ function applyColorScheme(colorScheme: ColorScheme) {
 	localStorage.setItem('theme', colorScheme);
 }
 
-export function toggleColorScheme() {
-	applyColorScheme(settings.colorScheme === 'dark' ? 'light' : 'dark');
-}
-
-export function resetColorScheme() {
-	applyColorScheme('');
+export function setColorScheme(colorScheme: ColorScheme) {
+	applyColorScheme(colorScheme);
 }
 
 export function setSearchProvider(searchProvider: SearchProvider) {
