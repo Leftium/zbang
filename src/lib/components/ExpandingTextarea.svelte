@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { Snippet } from 'svelte';
-	import type { HTMLTextareaAttributes, FormEventHandler, KeyboardEventHandler } from 'svelte/elements';
+	import type {
+		HTMLTextareaAttributes,
+		FormEventHandler,
+		KeyboardEventHandler
+	} from 'svelte/elements';
 
 	let {
 		textareaElement = $bindable(),
@@ -156,15 +160,15 @@
 		bind:value
 		oninput={handleInput}
 		onkeydown={handleKeydown}
-		{...props}
-	></textarea>
+		{...props}></textarea>
 
 	<div class="status-bar">
 		<div>
 			<button class="secondary outline" onclick={() => (fullscreen = !fullscreen)}>
 				{fullscreen ? 'Restore' : 'Fullscreen'}
 			</button>
-			<label title="wrap lines"><input type="checkbox" bind:checked={wordwrap} /> <b>wrap</b></label>
+			<label title="wrap lines"><input type="checkbox" bind:checked={wordwrap} /> <b>wrap</b></label
+			>
 		</div>
 
 		<div class="counts">

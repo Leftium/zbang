@@ -276,7 +276,10 @@ function normalizeKagiRecord(
 	});
 }
 
-function getKagiRecordDdgr(record: SourceBangRecord, duckDuckGoByCode: Map<string, DuckDuckGoRank>) {
+function getKagiRecordDdgr(
+	record: SourceBangRecord,
+	duckDuckGoByCode: Map<string, DuckDuckGoRank>
+) {
 	const code = record.t ? normalizeBangCode(record.t) : undefined;
 	const duckDuckGoRank = code ? duckDuckGoByCode.get(code) : undefined;
 	const isProviderNative = Boolean(record.u?.startsWith('/'));
@@ -294,7 +297,9 @@ function getKagiRecordDdgr(record: SourceBangRecord, duckDuckGoByCode: Map<strin
 		return 1;
 	}
 
-	const kagiDomain = isProviderNative ? 'bang-provider' : getUrlHostname(normalizeBangUrl(record.u ?? '', 'kagi'));
+	const kagiDomain = isProviderNative
+		? 'bang-provider'
+		: getUrlHostname(normalizeBangUrl(record.u ?? '', 'kagi'));
 
 	if (
 		kagiDomain &&
@@ -439,10 +444,7 @@ function getShortestCode(codes: string[]) {
 }
 
 function getLongestCode(codes: string[]) {
-	return codes.reduce(
-		(longest, code) => (code.length > longest.length ? code : longest),
-		codes[0]
-	);
+	return codes.reduce((longest, code) => (code.length > longest.length ? code : longest), codes[0]);
 }
 
 function getDuckDuckGoRankLookup(source: PersistedBangSource) {
@@ -511,7 +513,9 @@ function getUrlIdentity(url: string) {
 		const parsed = new URL(normalized);
 		parsed.hostname = parsed.hostname.toLowerCase().replace(/^www\./, '');
 
-		const path = deepUnescape(parsed.pathname).replace(/\/{2,}/g, '/').replace(/\/+$/, '');
+		const path = deepUnescape(parsed.pathname)
+			.replace(/\/{2,}/g, '/')
+			.replace(/\/+$/, '');
 		const query = [...parsed.searchParams.entries()]
 			.map(([key, value]) => [deepUnescape(key), deepUnescape(value)] as const)
 			.sort(([leftKey, leftValue], [rightKey, rightValue]) => {

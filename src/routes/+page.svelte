@@ -3,7 +3,12 @@
 	import { onMount } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 
-	import { readBangCatalog, type BangProviderId, type Zbang, type ZbangCatalog } from '$lib/bang-data';
+	import {
+		readBangCatalog,
+		type BangProviderId,
+		type Zbang,
+		type ZbangCatalog
+	} from '$lib/bang-data';
 	import {
 		applyBang,
 		filterBangs,
@@ -146,19 +151,25 @@
 		mode === 'bangs'
 			? launcherItems.filter((item) => item.pluginId === 'bangs')
 			: mode === 'compromise'
-			? launcherItems.filter((item) => item.pluginId === 'compromise')
-			: launcherItems
+				? launcherItems.filter((item) => item.pluginId === 'compromise')
+				: launcherItems
 	);
 	const selectablePrimaryItems = $derived(
-		mode === 'compromise' ? [] : visibleLauncherItems.filter((item) => item.kind === 'action' && item.run)
+		mode === 'compromise'
+			? []
+			: visibleLauncherItems.filter((item) => item.kind === 'action' && item.run)
 	);
 	const shortcutLauncherItems = $derived(
-		visibleLauncherItems.filter((item) => item.kind === 'action' && item.run).slice(0, shortcutLabels.length)
+		visibleLauncherItems
+			.filter((item) => item.kind === 'action' && item.run)
+			.slice(0, shortcutLabels.length)
 	);
-	const shortcutItemIds = $derived(new Map(shortcutLauncherItems.map((item, index) => [item.id, index])));
+	const shortcutItemIds = $derived(
+		new Map(shortcutLauncherItems.map((item, index) => [item.id, index]))
+	);
 	const primaryLauncherItem = $derived(
 		selectablePrimaryItems.find((item) => item.id === selectedPrimaryItemId) ??
-		selectablePrimaryItems.find((item) => item.safeForEnter)
+			selectablePrimaryItems.find((item) => item.safeForEnter)
 	);
 	const secondaryLauncherItems = $derived(
 		fullscreen
@@ -214,7 +225,11 @@
 		if (forwardedTokens.length) {
 			const forwardedQuery = [...forwardedTokens, payloadText].filter(Boolean).join(' ');
 
-			window.open(getSearchUrl(settings.searchProvider, forwardedQuery), '_blank', 'noopener,noreferrer');
+			window.open(
+				getSearchUrl(settings.searchProvider, forwardedQuery),
+				'_blank',
+				'noopener,noreferrer'
+			);
 		}
 	}
 
@@ -257,7 +272,9 @@
 	function getBangSearchDescription(composition: BangComposition) {
 		const targets = [
 			...composition.localTargets.map(({ item }) => item.name),
-			...composition.forwardedTokens.map((token) => `${token} via ${searchProviderLabels[settings.searchProvider]}`)
+			...composition.forwardedTokens.map(
+				(token) => `${token} via ${searchProviderLabels[settings.searchProvider]}`
+			)
 		].join(', ');
 		const payload = composition.payloadText ? ` for "${composition.payloadText}"` : '';
 
@@ -349,7 +366,8 @@
 
 		inputHistory = [{ data, inputType, ts }, ...inputHistory].slice(0, 2);
 		isPeriodShortcut = inputType === 'insertText' && data === '. ';
-		isMobilePeriodShortcut = inputType === 'insertText' && data === ' ' && inputHistory[1]?.data === '.';
+		isMobilePeriodShortcut =
+			inputType === 'insertText' && data === ' ' && inputHistory[1]?.data === '.';
 	}
 
 	function handleLauncherKeydown(event: KeyboardEvent) {
@@ -464,9 +482,9 @@
 		}
 
 		const index = shortcutLabels.findIndex((label) => label === shortcutKey);
-		const item = (pendingShortcutLauncherItems.length ? pendingShortcutLauncherItems : shortcutLauncherItems)[
-			index
-		];
+		const item = (
+			pendingShortcutLauncherItems.length ? pendingShortcutLauncherItems : shortcutLauncherItems
+		)[index];
 
 		if (item) void item.run?.();
 	}
@@ -1095,19 +1113,20 @@
 	}
 
 	function rankItems(items: LauncherItem[]) {
-		return [...items].sort(
-			(a, b) => {
-				if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
-					return a.sortOrder - b.sortOrder;
-				}
-
-				return b.score - a.score || a.title.localeCompare(b.title);
+		return [...items].sort((a, b) => {
+			if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
+				return a.sortOrder - b.sortOrder;
 			}
-		);
+
+			return b.score - a.score || a.title.localeCompare(b.title);
+		});
 	}
 </script>
 
-<svelte:document onmousedown={handleDocumentMouseDown} onvisibilitychange={handleVisibilityChange} />
+<svelte:document
+	onmousedown={handleDocumentMouseDown}
+	onvisibilitychange={handleVisibilityChange}
+/>
 
 {#snippet highlightedText(segments: BangHighlightSegment[] | undefined, fallback: string)}
 	{#if segments}
@@ -1160,7 +1179,12 @@
 								{#if getShortcutLabel(primaryLauncherItem)}
 									<span class="shortcut-label">{getShortcutLabel(primaryLauncherItem)}</span>
 								{/if}
-								<strong>{@render highlightedText(primaryLauncherItem.titleSegments, primaryLauncherItem.title)}</strong>
+								<strong
+									>{@render highlightedText(
+										primaryLauncherItem.titleSegments,
+										primaryLauncherItem.title
+									)}</strong
+								>
 							</span>
 							{#if primaryLauncherItem.description}<small
 									>{@render highlightedText(
