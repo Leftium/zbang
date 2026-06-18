@@ -49,10 +49,12 @@ Loading flow:
 2. Fetch the JSON asset lazily from that URL.
 3. Validate the response shape and provider identity.
 4. Use the catalog in memory.
-5. If loading or validation fails, keep any previously loaded in-memory catalog.
-6. If no local catalog is available, keep normal search usable and forward bang-like queries to the configured provider/search fallback instead of handling them locally.
+5. If loading or validation fails, clear provider catalog state for the selected provider and log the failure. This disables local provider bang matching for that provider until the user changes provider or reloads.
+6. If no local provider catalog is available, keep normal search usable and forward bang-like queries to the configured provider/search fallback instead of handling them locally. User-owned `myBangs` remain available if they loaded successfully.
 
 The first implementation should load on mount for simplicity. Further optimization can delay loading until bang functionality is first needed if startup performance requires it.
+
+Known acceptable tradeoff: persisted settings initialize in `onMount`, while the launcher catalog effect can start from the default `kagi` setting. A user with a persisted non-default bang provider may briefly download the default Kagi catalog before the selected provider catalog. This can be optimized later with a settings initialization flag if first-load network behavior becomes important.
 
 ## Persistence Model
 
@@ -166,7 +168,8 @@ Completed:
 
 Remaining:
 
-- Verify build output and deployed asset cache headers.
+- Verify deployed asset cache headers.
+- Verify in a browser/network trace whether the launcher downloads only the selected provider catalog on first mount.
 
 ## API and Store Cleanup
 
@@ -207,6 +210,14 @@ Compare before and after the refactor:
 - launcher startup behavior
 - time until local bang autocomplete is usable
 - behavior when catalog fetch fails
+
+Local build observations after the shipped-catalog refactor:
+
+- `pnpm build` emits both catalogs as Vite content-hashed JSON assets under `_app/immutable/assets/`.
+- DuckDuckGo catalog asset: about 2.36 MB raw, 436 KB gzip, 327 KB Brotli.
+- Kagi catalog asset: about 2.23 MB raw, 398 KB gzip, 301 KB Brotli.
+- The launcher JS contains catalog asset URL strings, not the JSON catalog payloads.
+- The Vite manifest associates both catalog JSON assets with the launcher chunk because both URLs are statically imported. Browser/network verification should confirm whether SvelteKit or browser preload behavior fetches both catalogs, or whether only the selected provider catalog is downloaded by the runtime `fetch()` call.
 
 ## Suggested Sequence
 
