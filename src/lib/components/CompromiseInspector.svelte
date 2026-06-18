@@ -1,103 +1,5 @@
 <script lang="ts" module>
-	export type InspectPanelId =
-		| 'doc-json'
-		| 'terms'
-		| 'topics'
-		| 'people'
-		| 'places'
-		| 'organizations'
-		| 'dates'
-		| 'date-values'
-		| 'times'
-		| 'time-values'
-		| 'durations'
-		| 'numbers'
-		| 'urls'
-		| 'contacts'
-		| 'social'
-		| 'values'
-		| 'phrases'
-		| 'keywords'
-		| 'stats'
-		| 'ngrams'
-		| 'tfidf'
-		| 'tags';
-
-	export const inspectPanelIds = [
-		'doc-json',
-		'terms',
-		'topics',
-		'people',
-		'places',
-		'organizations',
-		'dates',
-		'date-values',
-		'times',
-		'time-values',
-		'durations',
-		'numbers',
-		'urls',
-		'contacts',
-		'social',
-		'values',
-		'phrases',
-		'keywords',
-		'stats',
-		'ngrams',
-		'tfidf',
-		'tags'
-	] as const;
-
-	export function getInspectPanelId(value: string | null): InspectPanelId {
-		return inspectPanelIds.includes(value as InspectPanelId)
-			? (value as InspectPanelId)
-			: 'doc-json';
-	}
-</script>
-
-<script lang="ts">
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
-	import Inspect from 'svelte-inspect-value';
-
-	import { createCompromiseDoc, nlp } from '$lib/compromise';
-
-	type InspectPanel = {
-		id: InspectPanelId;
-		label: string;
-		description: string;
-		expression: string;
-	};
-
-	type CompromiseTerm = {
-		text: string;
-		pre?: string;
-		post?: string;
-		tags?: string[];
-		normal?: string;
-		index?: number[];
-		id?: string;
-		chunk?: string;
-	};
-
-	type CompromiseTermPhrase = {
-		terms?: CompromiseTerm[];
-	};
-
-	type TokenViewTerm = CompromiseTerm & {
-		key: string;
-		score?: number;
-		scoreWeight: number;
-	};
-
-	let {
-		text,
-		inspect = 'doc-json',
-		expression: expressionParam
-	}: { text: string; inspect?: InspectPanelId; expression?: string } = $props();
-
-	const doc = $derived(createCompromiseDoc(text.trim()));
-	const panels = $derived<InspectPanel[]>([
+	export const inspectPanels = [
 		{
 			id: 'doc-json',
 			label: 'doc.json()',
@@ -255,7 +157,53 @@
 			description: 'Readable tag output from compromise.',
 			expression: "doc.out('tags')"
 		}
-	]);
+	] as const;
+
+	export type InspectPanelId = (typeof inspectPanels)[number]['id'];
+
+	export function getInspectPanelId(value: string | null): InspectPanelId {
+		return inspectPanels.some((panel) => panel.id === value)
+			? (value as InspectPanelId)
+			: 'doc-json';
+	}
+</script>
+
+<script lang="ts">
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
+	import Inspect from 'svelte-inspect-value';
+
+	import { createCompromiseDoc, nlp } from '$lib/compromise';
+
+	type CompromiseTerm = {
+		text: string;
+		pre?: string;
+		post?: string;
+		tags?: string[];
+		normal?: string;
+		index?: number[];
+		id?: string;
+		chunk?: string;
+	};
+
+	type CompromiseTermPhrase = {
+		terms?: CompromiseTerm[];
+	};
+
+	type TokenViewTerm = CompromiseTerm & {
+		key: string;
+		score?: number;
+		scoreWeight: number;
+	};
+
+	let {
+		text,
+		inspect = 'doc-json',
+		expression: expressionParam
+	}: { text: string; inspect?: InspectPanelId; expression?: string } = $props();
+
+	const doc = $derived(createCompromiseDoc(text.trim()));
+	const panels = inspectPanels;
 	const selectedPanel = $derived(panels.find((panel) => panel.id === inspect) ?? panels[0]);
 	const evaluatedExpression = $derived(expressionParam ?? selectedPanel.expression);
 	let draftExpression = $derived(evaluatedExpression);

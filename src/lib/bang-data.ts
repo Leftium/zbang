@@ -114,26 +114,34 @@ export function getBangSource(id: string) {
 
 export async function readBangSourceStatuses(): Promise<BangSourceStatus[]> {
 	const db = await openBangDb();
-	const sources = await getAllFromStore<PersistedBangSource>(db, SOURCE_STORE);
-	db.close();
 
-	return sources.map(getBangSourceStatus).sort(sortBySourceOrder);
+	try {
+		const sources = await getAllFromStore<PersistedBangSource>(db, SOURCE_STORE);
+		return sources.map(getBangSourceStatus).sort(sortBySourceOrder);
+	} finally {
+		db.close();
+	}
 }
 
 export async function readBangCatalogStatuses(): Promise<BangCatalogStatus[]> {
 	const db = await openBangDb();
-	const catalogs = await getAllFromStore<ZbangCatalog>(db, CATALOG_STORE);
-	db.close();
 
-	return catalogs.map(getBangCatalogStatus).sort(sortByCatalogOrder);
+	try {
+		const catalogs = await getAllFromStore<ZbangCatalog>(db, CATALOG_STORE);
+		return catalogs.map(getBangCatalogStatus).sort(sortByCatalogOrder);
+	} finally {
+		db.close();
+	}
 }
 
 export async function readBangCatalog(provider: BangProviderId): Promise<ZbangCatalog | undefined> {
 	const db = await openBangDb();
-	const catalog = await getFromStore<ZbangCatalog>(db, CATALOG_STORE, provider);
-	db.close();
 
-	return catalog;
+	try {
+		return await getFromStore<ZbangCatalog>(db, CATALOG_STORE, provider);
+	} finally {
+		db.close();
+	}
 }
 
 export async function refreshBangData(): Promise<BangDataRefreshResult> {
@@ -153,7 +161,7 @@ export async function clearPersistedBangData(): Promise<void> {
 	}
 }
 
-export async function downloadBangSources(): Promise<BangSourceDownloadResult[]> {
+async function downloadBangSources(): Promise<BangSourceDownloadResult[]> {
 	return Promise.all(
 		BANG_SOURCES.map(async (source) => {
 			try {
@@ -174,43 +182,46 @@ export async function downloadBangSources(): Promise<BangSourceDownloadResult[]>
 
 async function generateBangCatalogs(): Promise<BangCatalogGenerationResult[]> {
 	const db = await openBangDb();
-	const sourceList = await getAllFromStore<PersistedBangSource>(db, SOURCE_STORE);
-	const sources = new Map(sourceList.map((source) => [source.id, source]));
-	const generatedAt = new Date().toISOString();
-	const results: BangCatalogGenerationResult[] = [];
-
 	try {
-		const catalog = generateDuckDuckGoCatalog(requireSource(sources, 'duckduckgo'), generatedAt);
-		await putInStore(db, CATALOG_STORE, catalog);
-		results.push({ ok: true, catalog: getBangCatalogStatus(catalog) });
-	} catch (error) {
-		results.push({
-			ok: false,
-			provider: 'duckduckgo',
-			error: error instanceof Error ? error.message : 'Unknown catalog generation error'
-		});
-	}
+		const sourceList = await getAllFromStore<PersistedBangSource>(db, SOURCE_STORE);
+		const sources = new Map(sourceList.map((source) => [source.id, source]));
+		const generatedAt = new Date().toISOString();
+		const results: BangCatalogGenerationResult[] = [];
 
-	try {
-		const duckDuckGoSource = requireSource(sources, 'duckduckgo');
-		const catalog = generateKagiCatalog(
-			requireSource(sources, 'kagi-shared'),
-			requireSource(sources, 'kagi-kagi'),
-			duckDuckGoSource,
-			generatedAt
-		);
-		await putInStore(db, CATALOG_STORE, catalog);
-		results.push({ ok: true, catalog: getBangCatalogStatus(catalog) });
-	} catch (error) {
-		results.push({
-			ok: false,
-			provider: 'kagi',
-			error: error instanceof Error ? error.message : 'Unknown catalog generation error'
-		});
-	}
+		try {
+			const catalog = generateDuckDuckGoCatalog(requireSource(sources, 'duckduckgo'), generatedAt);
+			await putInStore(db, CATALOG_STORE, catalog);
+			results.push({ ok: true, catalog: getBangCatalogStatus(catalog) });
+		} catch (error) {
+			results.push({
+				ok: false,
+				provider: 'duckduckgo',
+				error: error instanceof Error ? error.message : 'Unknown catalog generation error'
+			});
+		}
 
-	db.close();
-	return results;
+		try {
+			const duckDuckGoSource = requireSource(sources, 'duckduckgo');
+			const catalog = generateKagiCatalog(
+				requireSource(sources, 'kagi-shared'),
+				requireSource(sources, 'kagi-kagi'),
+				duckDuckGoSource,
+				generatedAt
+			);
+			await putInStore(db, CATALOG_STORE, catalog);
+			results.push({ ok: true, catalog: getBangCatalogStatus(catalog) });
+		} catch (error) {
+			results.push({
+				ok: false,
+				provider: 'kagi',
+				error: error instanceof Error ? error.message : 'Unknown catalog generation error'
+			});
+		}
+
+		return results;
+	} finally {
+		db.close();
+	}
 }
 
 function generateDuckDuckGoCatalog(source: PersistedBangSource, generatedAt: string): ZbangCatalog {
@@ -633,19 +644,22 @@ async function fetchText(url: string) {
 
 async function persistBangSource(source: BangSourceDefinition, text: string) {
 	const db = await openBangDb();
-	const persisted: PersistedBangSource = {
-		id: source.id,
-		url: source.url,
-		fetchedAt: new Date().toISOString(),
-		hash: await hashText(text),
-		bangCount: countSourceBangs(text),
-		text
-	};
 
-	await putInStore(db, SOURCE_STORE, persisted);
-	db.close();
+	try {
+		const persisted: PersistedBangSource = {
+			id: source.id,
+			url: source.url,
+			fetchedAt: new Date().toISOString(),
+			hash: await hashText(text),
+			bangCount: countSourceBangs(text),
+			text
+		};
 
-	return persisted;
+		await putInStore(db, SOURCE_STORE, persisted);
+		return persisted;
+	} finally {
+		db.close();
+	}
 }
 
 function getBangSourceStatus(source: PersistedBangSource): BangSourceStatus {

@@ -42,7 +42,6 @@
 	};
 
 	type LauncherContext = {
-		value: string;
 		text: string;
 		hasValue: boolean;
 		bangComposition: BangComposition;
@@ -66,7 +65,6 @@
 	type MoneyJson = { text?: string; number?: { prefix?: string; unit?: string } };
 
 	type CompromiseSignals = {
-		text: string;
 		terms: string[];
 		topics: string[];
 		people: string[];
@@ -138,7 +136,6 @@
 	const bangResults = $derived(filterBangs(bangFilterInput, preparedBangs));
 	const bangTotalCount = $derived(bangCatalog?.items.length ?? 0);
 	const launcherContext = $derived({
-		value,
 		text: value.trim(),
 		hasValue,
 		bangComposition,
@@ -671,7 +668,6 @@
 
 		if (!text) {
 			return {
-				text,
 				terms: [],
 				topics: [],
 				people: [],
@@ -706,7 +702,6 @@
 		const money = doc.money();
 
 		return {
-			text,
 			terms: unique(doc.terms().out('array')),
 			topics: unique(doc.topics().out('array')),
 			people: unique(doc.people().out('array')),

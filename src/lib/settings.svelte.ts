@@ -24,10 +24,6 @@ function applyColorScheme(colorScheme: ColorScheme) {
 	localStorage.setItem('theme', colorScheme);
 }
 
-export function setColorScheme(colorScheme: ColorScheme) {
-	applyColorScheme(colorScheme);
-}
-
 export function toggleColorScheme() {
 	applyColorScheme(settings.colorScheme === 'dark' ? 'light' : 'dark');
 }

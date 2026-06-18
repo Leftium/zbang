@@ -15,7 +15,6 @@
 		enterNewlineRestored = $bindable(false),
 		enterNewlineFullscreen = $bindable(true),
 		primaryAction,
-		secondaryActions,
 		onprimaryaction,
 		oninput,
 		onkeydown,
@@ -28,7 +27,6 @@
 		enterNewlineRestored?: boolean;
 		enterNewlineFullscreen?: boolean;
 		primaryAction?: Snippet;
-		secondaryActions?: Snippet;
 		onprimaryaction?: () => void;
 	} = $props();
 
@@ -200,12 +198,6 @@
 			{@render primaryAction()}
 		</div>
 	{/if}
-
-	{#if secondaryActions}
-		<div class="secondary-actions">
-			{@render secondaryActions()}
-		</div>
-	{/if}
 </div>
 
 <style>
@@ -280,16 +272,11 @@
 		white-space: nowrap;
 	}
 
-	.primary-action,
-	.secondary-actions {
+	.primary-action {
 		display: grid;
 		gap: var(--size-2);
 		padding: var(--size-2);
 		border-top: 1px solid var(--nc-border);
-	}
-
-	.grow-wrap.fullscreen .secondary-actions {
-		display: none;
 	}
 
 	button {
@@ -333,8 +320,7 @@
 			flex: 1 0 auto;
 		}
 
-		.primary-action,
-		.secondary-actions {
+		.primary-action {
 			gap: var(--size-1);
 			padding: var(--size-1);
 		}
