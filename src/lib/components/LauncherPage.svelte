@@ -40,9 +40,10 @@
 	import { settings, type SearchProvider } from '$lib/settings.svelte';
 	import { loadShippedBangCatalog } from '$lib/shipped-bang-catalog';
 
+	const initialUrlQuery = page.url.searchParams.get('q') ?? '';
 	let {
 		modeId = 'everything',
-		value = $bindable(page.url.searchParams.get('q') ?? '')
+		value = $bindable(initialUrlQuery)
 	}: { modeId?: LauncherModeId; value?: string } = $props();
 
 	const searchProviderLabels: Record<SearchProvider, string> = {
@@ -80,6 +81,17 @@
 	let isMobilePeriodShortcut = $state(false);
 	let expandedLauncherGroups = $state<Record<string, boolean>>({});
 	let myBangs = $state<Zbang[]>([]);
+	let lastUrlQuery = $state(initialUrlQuery);
+
+	$effect(() => {
+		const urlQuery = page.url.searchParams.get('q') ?? '';
+
+		if (urlQuery === lastUrlQuery) return;
+
+		lastUrlQuery = urlQuery;
+		value = urlQuery;
+		bangEntry = undefined;
+	});
 
 	const mode = $derived(getLauncherMode(modeId));
 	const hasValue = $derived(Boolean(value.trim()));
