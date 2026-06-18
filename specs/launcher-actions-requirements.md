@@ -148,6 +148,7 @@ Ranking should eventually consider:
 - Plugin-provided relevance hints or confidence metadata.
 
 The project should experiment with `compromise` for natural-language heuristics. These experiments should help identify useful signals, not force plugins to depend directly on one NLP library.
+For now, NLP signals may remain in the shared launcher context so plugins can use them for item scoring, boosts, suppressions, and future richer actions without each plugin rebuilding the same document analysis.
 
 ## Enter Behavior
 
@@ -200,6 +201,7 @@ Compromise/NLP mode should remain a development-friendly place to explore compos
 into either layered mode-specific inputs or a single shareable scratchpad that contains both sample text and evaluator code.
 The product requirement is not the specific implementation; it is that editable mode-specific inputs should reuse shared
 launcher affordances where practical and should be URL-addressable for reproducible debugging.
+TODO: Before this evaluator is treated as production-safe, sanitize and/or sandbox expressions so shared URLs cannot run arbitrary privileged page code.
 
 ## Inline Triggers
 

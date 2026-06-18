@@ -128,6 +128,7 @@
 	const inspect = $derived(getInspectPanelId(page.url.searchParams.get('inspect')));
 	const expression = $derived(page.url.searchParams.get('expr') ?? undefined);
 	const hasValue = $derived(Boolean(value.trim()));
+	// Keep NLP signals in the shared launcher context so plugins can score and enrich items.
 	const compromiseSignals = $derived(getCompromiseSignals(value));
 	const preparedBangs = $derived(prepareBangCatalog(bangCatalog));
 	const bangCodeMap = $derived(createBangCodeMap(bangCatalog));

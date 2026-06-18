@@ -326,6 +326,7 @@
 	) {
 		try {
 			try {
+				// TODO: Sanitize and/or sandbox evaluator input before this graduates beyond dev tooling.
 				return Function(
 					'text',
 					'nlp',

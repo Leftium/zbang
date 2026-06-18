@@ -100,6 +100,7 @@ Overlap:
 Implementation note:
 
 - Keep compromise-specific methods and selectors visible for debugging.
+- TODO: Sanitize and/or sandbox the compromise expression evaluator before treating it as production-safe.
 - Combined mode should not require callers to know compromise selector syntax.
 - Prefer calling compromise for linguistic interpretation instead of rebuilding NLP selectors in other modes.
 - Treat compromise utilities as candidates for actions, not just insight rows.
