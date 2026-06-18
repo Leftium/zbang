@@ -25,7 +25,6 @@ const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const catalogDir = resolve(rootDir, 'catalogs');
 
 async function main() {
-	const generatedAt = new Date().toISOString();
 	const sources = new Map(
 		(await Promise.all(BANG_SOURCES.map(downloadSource))).map((source) => [source.id, source])
 	);
@@ -34,7 +33,7 @@ async function main() {
 		{
 			provider: 'duckduckgo',
 			filename: 'zbang.catalog.duckduckgo.json',
-			catalog: generateDuckDuckGoCatalog(duckDuckGoSource, generatedAt)
+			catalog: generateDuckDuckGoCatalog(duckDuckGoSource)
 		},
 		{
 			provider: 'kagi',
@@ -42,8 +41,7 @@ async function main() {
 			catalog: generateKagiCatalog(
 				requireSource(sources, 'kagi-shared'),
 				requireSource(sources, 'kagi-kagi'),
-				duckDuckGoSource,
-				generatedAt
+				duckDuckGoSource
 			)
 		}
 	];

@@ -1,22 +1,18 @@
 {
 	"provider": "kagi",
-	"generatedAt": "2026-06-18T17:07:41.542Z",
 	"generatorVersion": 1,
 	"dedupedCount": 61,
 	"sources": [
 		{
 			"url": "https://github.com/kagisearch/bangs/raw/refs/heads/main/data/bangs.json",
-			"fetchedAt": "2026-06-18T17:07:42.076Z",
 			"hash": "3d43b6f2e5a4a8ae05f31f63a9e4e66b6318cf6286cf3d407b2fc42d581820c2"
 		},
 		{
 			"url": "https://github.com/kagisearch/bangs/raw/refs/heads/main/data/kagi_bangs.json",
-			"fetchedAt": "2026-06-18T17:07:41.900Z",
 			"hash": "ad791dbabbabfd24174e8e192142ed1e494836d8c36882f4c5b841f0a7b2c7db"
 		},
 		{
 			"url": "https://duckduckgo.com/bang.js",
-			"fetchedAt": "2026-06-18T17:07:42.101Z",
 			"hash": "e69536d51e6f306f3e0063af0d88862713bf8d7075aefc8ec85db88779355768"
 		}
 	],

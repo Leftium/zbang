@@ -28,10 +28,10 @@ export type Zbang = {
 
 export type ZbangCatalog = {
 	provider: BangProviderId;
-	generatedAt: string;
+	generatedAt?: string;
 	generatorVersion: number;
 	dedupedCount?: number;
-	sources: Array<Pick<PersistedBangSource, 'url' | 'fetchedAt' | 'hash'>>;
+	sources: Array<Pick<PersistedBangSource, 'url' | 'hash'>>;
 	items: Zbang[];
 };
 
@@ -86,10 +86,7 @@ export function getBangSource(id: string) {
 	return BANG_SOURCES.find((source) => source.id === id);
 }
 
-export function generateDuckDuckGoCatalog(
-	source: PersistedBangSource,
-	generatedAt: string
-): ZbangCatalog {
+export function generateDuckDuckGoCatalog(source: PersistedBangSource): ZbangCatalog {
 	const records = parseSourceRecords(source);
 	const normalized = records.flatMap((record) => normalizeSourceRecord(record, 'duckduckgo'));
 	const deduped = dedupeNormalizedBangs(normalized);
@@ -97,7 +94,6 @@ export function generateDuckDuckGoCatalog(
 
 	return {
 		provider: 'duckduckgo',
-		generatedAt,
 		generatorVersion: GENERATOR_VERSION,
 		dedupedCount: deduped.dedupedCount,
 		sources: [getCatalogSource(source)],
@@ -108,8 +104,7 @@ export function generateDuckDuckGoCatalog(
 export function generateKagiCatalog(
 	sharedSource: PersistedBangSource,
 	kagiSource: PersistedBangSource,
-	duckDuckGoSource: PersistedBangSource,
-	generatedAt: string
+	duckDuckGoSource: PersistedBangSource
 ): ZbangCatalog {
 	const duckDuckGoByCode = getDuckDuckGoRankLookup(duckDuckGoSource);
 	const normalized = [
@@ -125,7 +120,6 @@ export function generateKagiCatalog(
 
 	return {
 		provider: 'kagi',
-		generatedAt,
 		generatorVersion: GENERATOR_VERSION,
 		dedupedCount: deduped.dedupedCount,
 		sources: [
@@ -153,8 +147,8 @@ export function validateZbangCatalog(catalog: unknown, provider: BangProviderId)
 	const value = catalog as Partial<ZbangCatalog>;
 
 	if (value.provider !== provider) errors.push(`provider must be ${provider}`);
-	if (typeof value.generatedAt !== 'string' || !value.generatedAt) {
-		errors.push('generatedAt must be a non-empty string');
+	if (value.generatedAt !== undefined && typeof value.generatedAt !== 'string') {
+		errors.push('generatedAt must be a string when present');
 	}
 	if (typeof value.generatorVersion !== 'number') {
 		errors.push('generatorVersion must be a number');
@@ -547,7 +541,6 @@ function parseSourceRecords(source: PersistedBangSource) {
 function getCatalogSource(source: PersistedBangSource) {
 	return {
 		url: source.url,
-		fetchedAt: source.fetchedAt,
 		hash: source.hash
 	};
 }

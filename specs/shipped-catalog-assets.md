@@ -87,7 +87,7 @@ Suggested package script:
 ```json
 {
 	"scripts": {
-		"generate:catalogs": "node scripts/generate-catalogs.ts"
+		"generate:catalogs": "node scripts/generate-catalogs.ts && prettier --write catalogs/*.json"
 	}
 }
 ```
@@ -96,9 +96,13 @@ Recent Node versions can run TypeScript files directly when the script only uses
 
 Catalog generation is manual only. Generated catalog changes should be reviewed and committed like other source changes.
 
+Generated catalog artifacts should be deterministic when upstream source content is unchanged. Do not include generation-time timestamps such as top-level `generatedAt` or per-source `fetchedAt` in shipped catalog JSON. Source URLs and hashes are enough to identify the upstream inputs, and Git history records when the generated artifact changed.
+
 ## JSON Formatting
 
 Prefer readable pretty JSON initially. Readable diffs help review catalog generation changes and provider-data churn.
+
+The generator should run Prettier after writing catalog JSON so `npm run generate:catalogs` does not leave formatting-only diffs.
 
 Minified JSON may be reconsidered later if repository size or uncompressed asset size becomes a problem. In production, compression should reduce the transfer-size penalty of pretty JSON.
 
@@ -110,7 +114,6 @@ Validate at minimum:
 
 - top-level value is an object
 - `provider` matches the requested provider
-- `generatedAt` is a string
 - `generatorVersion` is a number
 - `sources` is an array
 - `items` is an array
@@ -139,7 +142,24 @@ Keep settings for:
 - selected search provider
 - any user-owned bang management controls
 
-`generatedAt` remains useful as metadata and diagnostics, but stale catalog age should no longer drive user-facing reminders.
+Shipped catalog artifacts intentionally omit `generatedAt`; stale catalog age should no longer drive user-facing reminders. Runtime-only timestamps may remain temporarily in legacy refresh/status code until that code is removed.
+
+## Current Progress
+
+Completed:
+
+- Extracted browser-independent catalog generation into `src/lib/bang-catalog.ts`.
+- Added `scripts/generate-catalogs.ts` and `npm run generate:catalogs`.
+- Added source-controlled generated catalogs in `catalogs/`.
+- Added `catalogs/README.md`.
+- Made generated catalog output deterministic for unchanged source hashes.
+
+Remaining:
+
+- Add the `$catalogs` alias.
+- Switch launcher loading to `?url` fetched shipped catalogs.
+- Add runtime shipped-catalog validation and graceful failure handling.
+- Remove runtime source refresh, stale reminders, settings refresh UI, non-user IndexedDB stores, and related API routes.
 
 ## API and Store Cleanup
 
@@ -181,9 +201,9 @@ Compare before and after the refactor:
 
 ## Suggested Sequence
 
-1. Extract catalog generation into browser-independent functions while preserving existing runtime behavior.
-2. Add the manual CLI generator.
-3. Generate full catalog files into `catalogs/`.
+1. Extract catalog generation into browser-independent functions while preserving existing runtime behavior. Done.
+2. Add the manual CLI generator. Done.
+3. Generate full catalog files into `catalogs/`. Done.
 4. Add the `$catalogs` alias.
 5. Switch launcher loading to `?url` fetched catalogs on mount.
 6. Add runtime catalog validation and graceful failure handling.

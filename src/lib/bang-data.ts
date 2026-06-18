@@ -158,7 +158,10 @@ async function generateBangCatalogs(): Promise<BangCatalogGenerationResult[]> {
 		const results: BangCatalogGenerationResult[] = [];
 
 		try {
-			const catalog = generateDuckDuckGoCatalog(requireSource(sources, 'duckduckgo'), generatedAt);
+			const catalog = {
+				...generateDuckDuckGoCatalog(requireSource(sources, 'duckduckgo')),
+				generatedAt
+			};
 			await putInStore(db, CATALOG_STORE, catalog);
 			results.push({ ok: true, catalog: getBangCatalogStatus(catalog) });
 		} catch (error) {
@@ -174,9 +177,9 @@ async function generateBangCatalogs(): Promise<BangCatalogGenerationResult[]> {
 			const catalog = generateKagiCatalog(
 				requireSource(sources, 'kagi-shared'),
 				requireSource(sources, 'kagi-kagi'),
-				duckDuckGoSource,
-				generatedAt
+				duckDuckGoSource
 			);
+			catalog.generatedAt = generatedAt;
 			await putInStore(db, CATALOG_STORE, catalog);
 			results.push({ ok: true, catalog: getBangCatalogStatus(catalog) });
 		} catch (error) {
@@ -247,7 +250,7 @@ function getBangSourceStatus(source: PersistedBangSource): BangSourceStatus {
 function getBangCatalogStatus(catalog: ZbangCatalog): BangCatalogStatus {
 	return {
 		provider: catalog.provider,
-		generatedAt: catalog.generatedAt,
+		generatedAt: catalog.generatedAt ?? '',
 		generatorVersion: catalog.generatorVersion,
 		dedupedCount: catalog.dedupedCount,
 		sources: catalog.sources,
