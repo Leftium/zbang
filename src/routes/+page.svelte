@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
-	import { SvelteMap, SvelteURL } from 'svelte/reactivity';
+	import { SvelteURL } from 'svelte/reactivity';
 
 	import {
 		readBangCatalog,
@@ -16,83 +16,26 @@
 		type BangFilterResult,
 		type BangHighlightSegment
 	} from '$lib/bang-filter';
-	import { createCompromiseDoc } from '$lib/compromise';
 	import CompromiseInspector, {
 		getInspectPanelId
 	} from '$lib/components/CompromiseInspector.svelte';
 	import ExpandingTextarea from '$lib/components/ExpandingTextarea.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import { createBangCodeMap, parseBangComposition } from '$lib/launcher/bang-composition';
+	import { getCompromiseSignals, unique } from '$lib/launcher/compromise-signals';
+	import { getKeywordScoreBoost, rankItems, scoreInsight } from '$lib/launcher/ranking';
+	import type {
+		BangComposition,
+		BangEntry,
+		CompromiseSignals,
+		LauncherContext,
+		LauncherItem,
+		LauncherMode,
+		LauncherPlugin
+	} from '$lib/launcher/types';
 	import { settings, type SearchProvider } from '$lib/settings.svelte';
 
 	let value = $derived(page.url.searchParams.get('q') ?? '');
-
-	type LauncherItem = {
-		id: string;
-		pluginId: string;
-		kind: 'action' | 'insight';
-		title: string;
-		description?: string;
-		titleSegments?: BangHighlightSegment[];
-		descriptionSegments?: BangHighlightSegment[];
-		rank?: number;
-		score: number;
-		sortOrder?: number;
-		safeForEnter?: boolean;
-		run?: () => void | Promise<void>;
-	};
-
-	type LauncherContext = {
-		text: string;
-		hasValue: boolean;
-		bangComposition: BangComposition;
-		nlp: CompromiseSignals;
-	};
-
-	type LauncherPlugin = {
-		id: string;
-		getItems: (context: LauncherContext) => LauncherItem[];
-	};
-
-	type LauncherMode = 'all' | 'bangs' | 'compromise';
-	type BangCompositionTarget = { token: string; item: Zbang };
-	type BangComposition = {
-		localTargets: BangCompositionTarget[];
-		forwardedTokens: string[];
-		payloadText: string;
-		hasTargets: boolean;
-	};
-	type KeywordSignal = { word: string; score: number };
-	type MoneyJson = { text?: string; number?: { prefix?: string; unit?: string } };
-
-	type CompromiseSignals = {
-		terms: string[];
-		topics: string[];
-		people: string[];
-		places: string[];
-		organizations: string[];
-		questions: string[];
-		urls: string[];
-		emails: string[];
-		phoneNumbers: string[];
-		hashTags: string[];
-		atMentions: string[];
-		emojis: string[];
-		emoticons: string[];
-		money: string[];
-		currencies: string[];
-		percentages: string[];
-		fractions: string[];
-		acronyms: string[];
-		hyphenated: string[];
-		quotations: string[];
-		parentheses: string[];
-		keywords: KeywordSignal[];
-		dates: string[];
-		times: string[];
-		durations: string[];
-		verbs: string[];
-		nouns: string[];
-	};
 
 	const searchProviderLabels: Record<SearchProvider, string> = {
 		kagi: 'Kagi',
@@ -108,7 +51,7 @@
 	let bangCatalog = $state<ZbangCatalog>();
 	let loadedBangProvider = $state<BangProviderId>();
 	let textareaElement = $state<HTMLTextAreaElement>();
-	let bangEntry = $state<{ triggerIndex: number; fragment: string }>();
+	let bangEntry = $state<BangEntry>();
 	let fullscreen = $state(false);
 	let wordwrap = $state(true);
 	let enterNewlineRestored = $state(false);
@@ -564,61 +507,6 @@
 		return true;
 	}
 
-	function createBangCodeMap(catalog: ZbangCatalog | undefined) {
-		const codeMap = new SvelteMap<string, Zbang>();
-
-		for (const item of catalog?.items ?? []) {
-			for (const code of item.code) {
-				codeMap.set(normalizeBangCode(code), item);
-			}
-		}
-
-		return codeMap;
-	}
-
-	function parseBangComposition(
-		input: string,
-		codeMap: Map<string, Zbang>,
-		activeEntry: typeof bangEntry
-	): BangComposition {
-		const localTargets: BangCompositionTarget[] = [];
-		const forwardedTokens: string[] = [];
-		const payloadTokens: string[] = [];
-		const activeTokenStart = activeEntry?.triggerIndex;
-		let offset = 0;
-
-		for (const token of input.match(/\S+/g) ?? []) {
-			const index = input.indexOf(token, offset);
-			offset = index + token.length;
-
-			if (activeTokenStart !== undefined && index === activeTokenStart) continue;
-
-			if (!/^![^\s!]+$/.test(token)) {
-				payloadTokens.push(token);
-				continue;
-			}
-
-			const item = codeMap.get(normalizeBangCode(token));
-
-			if (item) {
-				localTargets.push({ token, item });
-			} else {
-				forwardedTokens.push(token);
-			}
-		}
-
-		return {
-			localTargets,
-			forwardedTokens,
-			payloadText: payloadTokens.join(' '),
-			hasTargets: Boolean(localTargets.length || forwardedTokens.length)
-		};
-	}
-
-	function normalizeBangCode(code: string) {
-		return (code.startsWith('!') ? code : `!${code}`).toLowerCase();
-	}
-
 	function updateBangEntry(textarea: HTMLTextAreaElement) {
 		if (!bangEntry) return;
 
@@ -661,106 +549,6 @@
 		}
 
 		return 'all';
-	}
-
-	function getCompromiseSignals(input: string): CompromiseSignals {
-		const text = input.trim();
-
-		if (!text) {
-			return {
-				terms: [],
-				topics: [],
-				people: [],
-				places: [],
-				organizations: [],
-				questions: [],
-				urls: [],
-				emails: [],
-				phoneNumbers: [],
-				hashTags: [],
-				atMentions: [],
-				emojis: [],
-				emoticons: [],
-				money: [],
-				currencies: [],
-				percentages: [],
-				fractions: [],
-				acronyms: [],
-				hyphenated: [],
-				quotations: [],
-				parentheses: [],
-				keywords: [],
-				dates: [],
-				times: [],
-				durations: [],
-				verbs: [],
-				nouns: []
-			};
-		}
-
-		const doc = createCompromiseDoc(text);
-		const money = doc.money();
-
-		return {
-			terms: unique(doc.terms().out('array')),
-			topics: unique(doc.topics().out('array')),
-			people: unique(doc.people().out('array')),
-			places: unique(doc.places().out('array')),
-			organizations: unique(doc.organizations().out('array')),
-			questions: unique(doc.questions().out('array')),
-			urls: unique(doc.urls().out('array')),
-			emails: unique(doc.emails().out('array')),
-			phoneNumbers: unique(doc.phoneNumbers().out('array')),
-			hashTags: unique(doc.hashTags().out('array')),
-			atMentions: unique(doc.atMentions().out('array')),
-			emojis: unique(doc.emojis().out('array')),
-			emoticons: unique(doc.emoticons().out('array')),
-			money: getMoneyAmounts(money.json() as MoneyJson[]),
-			currencies: getCurrencies(money.json() as MoneyJson[]),
-			percentages: unique(doc.percentages().out('array')),
-			fractions: unique(doc.fractions().out('array')),
-			acronyms: unique(doc.acronyms().out('array')),
-			hyphenated: unique(doc.hyphenated().out('array')),
-			quotations: unique(doc.quotations().out('array')),
-			parentheses: unique(doc.parentheses().out('array')),
-			keywords: uniqueKeywords(doc.tfidf({ form: 'normal' }).slice(0, 8)),
-			dates: unique(doc.dates().out('array')),
-			times: unique(doc.times().out('array')),
-			durations: unique(doc.durations().out('array')),
-			verbs: unique(doc.verbs().out('array')),
-			nouns: unique(doc.nouns().out('array'))
-		};
-	}
-
-	function unique(values: string[]) {
-		return [...new Set(values.filter(Boolean))];
-	}
-
-	function uniqueKeywords(values: [word: string, score: number][]) {
-		return values.reduce<KeywordSignal[]>((keywords, [word, score]) => {
-			if (!word || keywords.some((keyword) => keyword.word === word)) return keywords;
-
-			keywords.push({ word, score });
-			return keywords;
-		}, []);
-	}
-
-	function getCurrencies(values: MoneyJson[]) {
-		return unique(
-			values.flatMap(({ number }) =>
-				[number?.prefix, number?.unit].filter((value): value is string => Boolean(value?.trim()))
-			)
-		);
-	}
-
-	function getMoneyAmounts(values: MoneyJson[]) {
-		return unique(
-			values.flatMap(({ text, number }) => (hasCurrency(number) && text ? [text] : []))
-		);
-	}
-
-	function hasCurrency(number: MoneyJson['number']) {
-		return Boolean(number?.prefix?.trim() || number?.unit?.trim());
 	}
 
 	function createPlugins(): LauncherPlugin[] {
@@ -1007,18 +795,6 @@
 		];
 	}
 
-	function scoreInsight(base: number, matches: string[], extraBoost = 0) {
-		if (!matches.length) return 10;
-
-		return base + Math.min(matches.length, 5) + extraBoost;
-	}
-
-	function getKeywordScoreBoost(keywords: KeywordSignal[]) {
-		const topScore = keywords[0]?.score ?? 0;
-
-		return Math.min(Math.round(topScore), 5);
-	}
-
 	function createInsightItem(
 		id: string,
 		title: string,
@@ -1106,16 +882,6 @@
 		return [item.pluginId, item.rank ? `rank ${formatCount(item.rank)}` : undefined, item.score]
 			.filter(Boolean)
 			.join(' | ');
-	}
-
-	function rankItems(items: LauncherItem[]) {
-		return [...items].sort((a, b) => {
-			if (a.sortOrder !== undefined && b.sortOrder !== undefined) {
-				return a.sortOrder - b.sortOrder;
-			}
-
-			return b.score - a.score || a.title.localeCompare(b.title);
-		});
 	}
 </script>
 
