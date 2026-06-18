@@ -1012,22 +1012,29 @@
 
 {#snippet actionItem(item: LauncherItem, shortcutLabel: string | undefined)}
 	{@const itemMeta = formatItemMeta(item)}
+	{@const itemShortcutLabel = item.pluginId === 'bang-data' ? undefined : shortcutLabel}
+	{@const hasShortcut = Boolean(itemShortcutLabel)}
+	{@const hasAside = hasShortcut || Boolean(itemMeta)}
 	<div
 		class:notification-item={item.pluginId === 'bang-data'}
 		class:primary={item.id === primaryLauncherItem?.id}
 		class="launcher-item action-item"
 	>
-		<button class="item-run" onclick={() => item.run?.()}>
+		<button class:has-shortcut={hasShortcut} class="item-run" onclick={() => item.run?.()}>
 			<span class="item-text">
 				<span class="item-heading">
-					{#if shortcutLabel}<span class="shortcut-label">{shortcutLabel}</span>{/if}
 					<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
 				</span>
 				{#if item.description}<small
 						>{@render highlightedText(item.descriptionSegments, item.description)}</small
 					>{/if}
 			</span>
-			{#if itemMeta}<span class="meta">{itemMeta}</span>{/if}
+			{#if hasAside}
+				<span class="item-aside">
+					{#if itemShortcutLabel}<span class="shortcut-label">{itemShortcutLabel}</span>{/if}
+					{#if itemMeta}<span class="meta">{itemMeta}</span>{/if}
+				</span>
+			{/if}
 		</button>
 
 		{#if item.secondaryAction}
@@ -1266,8 +1273,14 @@
 		min-width: 0;
 	}
 
-	.shortcut-label {
+	.item-aside {
 		flex: 0 0 auto;
+		display: grid;
+		justify-items: end;
+		gap: 0.125rem;
+	}
+
+	.shortcut-label {
 		min-width: 2.75rem;
 		padding: 0.125rem 0.375rem;
 		text-align: center;
@@ -1307,7 +1320,6 @@
 	}
 
 	.meta {
-		flex: 0 0 auto;
 		color: var(--nc-tx-2);
 		font-size: var(--font-size-0);
 		white-space: nowrap;
@@ -1327,6 +1339,30 @@
 
 		.item-heading {
 			gap: var(--size-1);
+		}
+
+		.item-run.has-shortcut {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			align-items: start;
+			gap: 0.125rem var(--size-2);
+		}
+
+		.item-run.has-shortcut .item-text {
+			display: contents;
+		}
+
+		.item-run.has-shortcut .item-heading {
+			grid-column: 1;
+		}
+
+		.item-run.has-shortcut .item-text small {
+			grid-column: 1 / -1;
+		}
+
+		.item-run.has-shortcut .item-aside {
+			grid-column: 2;
+			grid-row: 1;
 		}
 
 		.shortcut-label {
