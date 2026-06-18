@@ -717,6 +717,15 @@
 		return parts.join(' | ');
 	}
 
+	function getGroupMobileCountLabel(group: LauncherGroup) {
+		const parts: string[] = [];
+
+		if (group.matchedCount !== undefined) parts.push(`${group.matchedCount} matched`);
+		if (group.totalCount !== undefined) parts.push(`${group.totalCount} total`);
+
+		return parts.join(' | ');
+	}
+
 	function createPlugins(): LauncherPlugin[] {
 		return [
 			{
@@ -1291,13 +1300,17 @@
 	{@const renderedItems = getRenderedGroupItems(group)}
 	{@const hiddenCount = group.items.length - visibleItems.length}
 	{@const expanded = Boolean(expandedLauncherGroups[group.id])}
+	{@const mobileCountLabel = getGroupMobileCountLabel(group)}
 	<section class="launcher-group" aria-labelledby={`${group.id}-heading`}>
 		<button class="launcher-group-header" onclick={() => toggleLauncherGroup(group.id)}>
 			<span class="item-text">
 				<span class="item-heading">
 					<strong id={`${group.id}-heading`}>{group.title}</strong>
 				</span>
-				{#if group.description}<small>{group.description}</small>{/if}
+				{#if group.description}<small class="group-description">{group.description}</small>{/if}
+				{#if mobileCountLabel}
+					<small class="group-mobile-count">{mobileCountLabel}</small>
+				{/if}
 			</span>
 			<span class="item-aside">
 				<span class="meta">{getGroupCountLabel(group)}</span>
@@ -1442,6 +1455,10 @@
 		font-size: var(--font-size-0);
 		font-weight: 700;
 		white-space: nowrap;
+	}
+
+	.group-mobile-count {
+		display: none;
 	}
 
 	.bang-composition {
@@ -1682,7 +1699,44 @@
 			grid-row: 1;
 		}
 
-		.meta {
+		.launcher-group-header {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			align-items: start;
+			gap: 0.125rem var(--size-2);
+			padding: var(--size-1) var(--size-2);
+		}
+
+		.launcher-group-header .item-text {
+			display: contents;
+		}
+
+		.launcher-group-header .item-heading {
+			grid-column: 1;
+			grid-row: 1;
+		}
+
+		.launcher-group-header .item-aside {
+			grid-column: 2;
+			grid-row: 1;
+		}
+
+		.launcher-group-header .meta,
+		.group-description {
+			display: none;
+		}
+
+		.group-mobile-count {
+			display: block;
+			grid-column: 1 / -1;
+			grid-row: 2;
+			overflow: hidden;
+			color: var(--nc-tx-2);
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		.launcher-item .meta {
 			display: none;
 		}
 	}
