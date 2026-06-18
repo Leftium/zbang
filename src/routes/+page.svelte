@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
-	import { SvelteMap } from 'svelte/reactivity';
+	import { SvelteMap, SvelteURL } from 'svelte/reactivity';
 
 	import {
 		readBangCatalog,
@@ -242,7 +242,7 @@
 		const template = item.urls.s.replace(/%s/g, placeholder);
 
 		try {
-			const url = new URL(template);
+			const url = new SvelteURL(template);
 			const params = [...url.searchParams.entries()];
 			const hasQueryPlaceholder = params.some(([, value]) => value.includes(placeholder));
 

@@ -20,7 +20,6 @@
 	import {
 		resetColorScheme,
 		setBangProvider,
-		setColorScheme,
 		setSearchProvider,
 		settings,
 		toggleColorScheme,

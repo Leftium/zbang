@@ -138,7 +138,7 @@ function cleanBangFilterQuery(query: string) {
 	return query.replace('//', '').trim();
 }
 
-function getUsedBangs(line: string) {
+function getUsedBangs(line: string): string[] {
 	return line.match(/![^\s]+(?=\s)/g) ?? [];
 }
 

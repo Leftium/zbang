@@ -193,7 +193,6 @@ async function generateBangCatalogs(): Promise<BangCatalogGenerationResult[]> {
 
 	try {
 		const duckDuckGoSource = requireSource(sources, 'duckduckgo');
-		const duckDuckGo = generateDuckDuckGoCatalog(duckDuckGoSource, generatedAt);
 		const catalog = generateKagiCatalog(
 			requireSource(sources, 'kagi-shared'),
 			requireSource(sources, 'kagi-kagi'),
