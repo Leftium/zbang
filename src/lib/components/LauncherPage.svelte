@@ -1301,7 +1301,11 @@
 	{@const hiddenCount = group.items.length - visibleItems.length}
 	{@const expanded = Boolean(expandedLauncherGroups[group.id])}
 	{@const mobileCountLabel = getGroupMobileCountLabel(group)}
-	<section class="launcher-group" aria-labelledby={`${group.id}-heading`}>
+	<section
+		class:empty-group={renderedItems.length === 0}
+		class="launcher-group"
+		aria-labelledby={`${group.id}-heading`}
+	>
 		<button class="launcher-group-header" onclick={() => toggleLauncherGroup(group.id)}>
 			<span class="item-text">
 				<span class="item-heading">
@@ -1414,13 +1418,13 @@
 
 	.launcher-list {
 		display: grid;
-		gap: var(--size-2);
+		gap: var(--size-3);
 		margin-block-start: var(--size-3);
 	}
 
 	.launcher-group {
 		display: grid;
-		gap: var(--size-1);
+		gap: 0;
 	}
 
 	.launcher-group-header {
@@ -1435,8 +1439,12 @@
 		text-align: left;
 		background: var(--nc-surface-2);
 		border: 1px solid var(--nc-border);
-		border-radius: var(--nc-radius);
+		border-radius: var(--nc-radius) var(--nc-radius) 0 0;
 		box-shadow: none;
+	}
+
+	.launcher-group.empty-group .launcher-group-header {
+		border-radius: var(--nc-radius);
 	}
 
 	.launcher-group-header:hover,
@@ -1447,7 +1455,16 @@
 
 	.launcher-group-items {
 		display: grid;
-		gap: var(--size-1);
+		gap: 0;
+	}
+
+	.launcher-group-items > .launcher-item {
+		border-top: 0;
+		border-radius: 0;
+	}
+
+	.launcher-group-items > .launcher-item:last-child {
+		border-radius: 0 0 var(--nc-radius) var(--nc-radius);
 	}
 
 	.group-toggle-label {
@@ -1564,6 +1581,10 @@
 		transform: translateY(-1px);
 	}
 
+	.launcher-group .action-item.primary {
+		transform: none;
+	}
+
 	.notification-item {
 		background: color-mix(in srgb, var(--yellow-2) 72%, var(--nc-surface-1));
 		border-color: var(--yellow-6);
@@ -1661,7 +1682,7 @@
 
 	@media (max-width: 520px) {
 		.launcher-list {
-			gap: var(--size-1);
+			gap: var(--size-2);
 			margin-block-start: var(--size-2);
 		}
 
