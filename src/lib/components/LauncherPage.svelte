@@ -142,6 +142,7 @@
 		visibleLauncherGroups.flatMap((group) => getVisibleGroupItems(group))
 	);
 	const visibleActionItems = $derived([...visibleLauncherItems, ...visibleGroupedLauncherItems]);
+	const textareaPlaceholder = $derived(getTextareaPlaceholder());
 	const selectablePrimaryItems = $derived(
 		visibleActionItems.filter((item) => item.kind === 'action' && item.run)
 	);
@@ -851,6 +852,20 @@
 		];
 	}
 
+	function getTextareaPlaceholder() {
+		if (bangPickerActive || mode.id === 'bangs') {
+			return 'Filter term... (bangs will be filtered and sorted based on this term)';
+		}
+		if (mode.id === 'search') {
+			return 'Search query... (the query will be sent to your search provider)';
+		}
+		if (mode.id === 'compromise') {
+			return 'Text sample... (NLP signals will be extracted from this text)';
+		}
+
+		return 'Filter term... (modes will be filtered and sorted based on this term)';
+	}
+
 	function getModeListItems(context: LauncherContext): LauncherItem[] {
 		const modes = launcherModes.filter((mode) => mode.id !== 'everything');
 
@@ -1310,7 +1325,7 @@
 			spellcheck="false"
 			autocomplete="off"
 			autocapitalize="off"
-			placeholder="Type a query..."
+			placeholder={textareaPlaceholder}
 			onbeforeinput={handleLauncherBeforeInput}
 			onclick={handleLauncherCursorChange}
 			oninput={handleLauncherInput}
