@@ -2,7 +2,12 @@
 	import { dev } from '$app/environment';
 	import { onDestroy, onMount } from 'svelte';
 
-	import { readBangCatalog, type BangProviderId, type Zbang, type ZbangCatalog } from '$lib/bang-data';
+	import {
+		readBangCatalog,
+		type BangProviderId,
+		type Zbang,
+		type ZbangCatalog
+	} from '$lib/bang-data';
 	import Header from '$lib/components/Header.svelte';
 
 	const BOOTSTRAP_MAX_RANK = 1000;
@@ -133,7 +138,9 @@ ${indent}]`;
 
 			return `{
 ${entries
-	.map(([key, item]) => `${nextIndent}${JSON.stringify(key)}: ${formatBootstrapJson(item, depth + 1)}`)
+	.map(
+		([key, item]) => `${nextIndent}${JSON.stringify(key)}: ${formatBootstrapJson(item, depth + 1)}`
+	)
 	.join(',\n')}
 ${indent}}`;
 		}

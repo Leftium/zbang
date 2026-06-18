@@ -149,7 +149,17 @@
 		{
 			"rank": 15,
 			"name": "Kagi Assistant",
-			"code": ["!ai", "!assistant", "!as", "!expert", "!llm", "!asst", "!answer", "!custom", "!discuss"],
+			"code": [
+				"!ai",
+				"!assistant",
+				"!as",
+				"!expert",
+				"!llm",
+				"!asst",
+				"!answer",
+				"!custom",
+				"!discuss"
+			],
 			"tags": [],
 			"urls": {
 				"s": "https://kagi.com/assistant?q=%s"
@@ -500,7 +510,16 @@
 		{
 			"rank": 54,
 			"name": "Scryfall",
-			"code": ["!mtg", "!scry", "!magiccards", "!scryfall", "!sfa", "!sfl", "!mc.info", "!magiccard"],
+			"code": [
+				"!mtg",
+				"!scry",
+				"!magiccards",
+				"!scryfall",
+				"!sfa",
+				"!sfl",
+				"!mc.info",
+				"!magiccard"
+			],
 			"tags": ["Entertainment/Games (offline)"],
 			"urls": {
 				"s": "https://scryfall.com/search?q=%s"
@@ -815,7 +834,20 @@
 		{
 			"rank": 89,
 			"name": "DuckDuckGo Images",
-			"code": ["!ddi", "!ddgi", "!ddg-pictures", "!dgi", "!dggi", "!dim", "!ddg-i", "!ddg-img", "!ddg-imgs", "!ddg-pics", "!ddg-image", "!ddg-images"],
+			"code": [
+				"!ddi",
+				"!ddgi",
+				"!ddg-pictures",
+				"!dgi",
+				"!dggi",
+				"!dim",
+				"!ddg-i",
+				"!ddg-img",
+				"!ddg-imgs",
+				"!ddg-pics",
+				"!ddg-image",
+				"!ddg-images"
+			],
 			"tags": ["Online Services/Search (DDG)"],
 			"urls": {
 				"s": "https://duckduckgo.com/?q=%s&iax=images&ia=images"
@@ -1544,7 +1576,19 @@
 		{
 			"rank": 170,
 			"name": "Amazon Germany / Austria",
-			"code": ["!ade", "!amazon_de", "!ama", "!amde", "!amazonde", "!azd", "!a.de", "!age", "!ager", "!amznde", "!a.at"],
+			"code": [
+				"!ade",
+				"!amazon_de",
+				"!ama",
+				"!amde",
+				"!amazonde",
+				"!azd",
+				"!a.de",
+				"!age",
+				"!ager",
+				"!amznde",
+				"!a.at"
+			],
 			"tags": ["Shopping/Online"],
 			"urls": {
 				"s": "https://www.amazon.de/s?k=%s"
@@ -4568,7 +4612,15 @@
 		{
 			"rank": 506,
 			"name": "Wayback Machine",
-			"code": ["!ia", "!wayback", "!waybackmachine", "!wbm", "!webarchive", "!archived", "!archiveweb"],
+			"code": [
+				"!ia",
+				"!wayback",
+				"!waybackmachine",
+				"!wbm",
+				"!webarchive",
+				"!archived",
+				"!archiveweb"
+			],
 			"tags": ["Online Services/Tools (URLs)"],
 			"urls": {
 				"s": "https://web.archive.org/web/*/%s"
@@ -4640,7 +4692,15 @@
 		{
 			"rank": 514,
 			"name": "Chrome Web Store",
-			"code": ["!cws", "!chrome", "!chromewebstore", "!cwebstore", "!crx", "!cstore", "!chromestore"],
+			"code": [
+				"!cws",
+				"!chrome",
+				"!chromewebstore",
+				"!cwebstore",
+				"!crx",
+				"!cstore",
+				"!chromestore"
+			],
 			"tags": ["Tech/Downloads (add-ons)"],
 			"urls": {
 				"s": "https://chromewebstore.google.com/search/%s"

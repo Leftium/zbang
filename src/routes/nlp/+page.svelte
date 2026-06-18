@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import CompromiseInspector, { getInspectPanelId } from '$lib/components/CompromiseInspector.svelte';
+	import CompromiseInspector, {
+		getInspectPanelId
+	} from '$lib/components/CompromiseInspector.svelte';
 	import LauncherPage from '$lib/components/LauncherPage.svelte';
 
 	const urlText = $derived(page.url.searchParams.get('q') ?? '');
