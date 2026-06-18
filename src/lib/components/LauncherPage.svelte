@@ -30,6 +30,7 @@
 		BangEntry,
 		CompromiseSignals,
 		LauncherContext,
+		LauncherGroup,
 		LauncherItem,
 		LauncherMode,
 		LauncherModeId,
@@ -57,6 +58,9 @@
 	const shortcutDelay = 250;
 	const bangDataStaleDays = 30;
 	const bangDataReminderSnoozeDays = 30;
+	const launcherGroupItemLimits: Record<string, number> = {
+		'bangs.provider': 8
+	};
 	type InputFrame = { data: string | null; inputType: string; ts: number };
 	type KeyFrame = { key: string; ts: number };
 	let bangCatalog = $state<ZbangCatalog>();
@@ -75,6 +79,7 @@
 	let doubleKeypress = $state<string>();
 	let isPeriodShortcut = $state(false);
 	let isMobilePeriodShortcut = $state(false);
+	let expandedLauncherGroups = $state<Record<string, boolean>>({});
 
 	const mode = $derived(getLauncherMode(modeId));
 	const hasValue = $derived(Boolean(value.trim()));
@@ -109,16 +114,26 @@
 	});
 	const plugins = $derived(createPlugins());
 	const launcherItems = $derived(
-		rankItems(plugins.flatMap((plugin) => plugin.getItems(launcherContext)))
+		rankItems(plugins.flatMap((plugin) => plugin.getItems?.(launcherContext) ?? []))
+	);
+	const launcherGroups = $derived(
+		plugins.flatMap((plugin) => plugin.getGroups?.(launcherContext) ?? [])
 	);
 	const visibleLauncherItems = $derived(
 		launcherItems.filter((item) => mode.pluginIds.includes(item.pluginId))
 	);
+	const visibleLauncherGroups = $derived(
+		launcherGroups.filter((group) => mode.pluginIds.includes(group.pluginId) && group.items.length)
+	);
+	const visibleGroupedLauncherItems = $derived(
+		visibleLauncherGroups.flatMap((group) => getVisibleGroupItems(group))
+	);
+	const visibleActionItems = $derived([...visibleLauncherItems, ...visibleGroupedLauncherItems]);
 	const selectablePrimaryItems = $derived(
-		visibleLauncherItems.filter((item) => item.kind === 'action' && item.run)
+		visibleActionItems.filter((item) => item.kind === 'action' && item.run)
 	);
 	const shortcutLauncherItems = $derived(
-		visibleLauncherItems
+		visibleActionItems
 			.filter((item) => item.kind === 'action' && item.run)
 			.slice(0, shortcutLabels.length)
 	);
@@ -573,6 +588,42 @@
 		void primaryLauncherItem?.run?.();
 	}
 
+	function getGroupCollapsedLimit(group: LauncherGroup) {
+		return group.collapsedItemLimit ?? launcherGroupItemLimits[group.id] ?? 5;
+	}
+
+	function getBangGroupCollapsedLimit(items: LauncherItem[]) {
+		return mode.id === 'bangs' ? launcherGroupItemLimits['bangs.provider'] : items.length;
+	}
+
+	function getVisibleGroupItems(group: LauncherGroup) {
+		if (expandedLauncherGroups[group.id]) return group.items;
+
+		return group.items.slice(0, getGroupCollapsedLimit(group));
+	}
+
+	function getRenderedGroupItems(group: LauncherGroup) {
+		const items = getVisibleGroupItems(group);
+
+		return fullscreen ? items.filter((item) => item.id !== primaryLauncherItem?.id) : items;
+	}
+
+	function toggleLauncherGroup(groupId: string) {
+		expandedLauncherGroups = {
+			...expandedLauncherGroups,
+			[groupId]: !expandedLauncherGroups[groupId]
+		};
+	}
+
+	function getGroupCountLabel(group: LauncherGroup) {
+		const parts = [`${group.items.length} loaded`];
+
+		if (group.matchedCount !== undefined) parts.push(`${group.matchedCount} matched`);
+		if (group.totalCount !== undefined) parts.push(`${group.totalCount} total`);
+
+		return parts.join(' | ');
+	}
+
 	function createPlugins(): LauncherPlugin[] {
 		return [
 			{
@@ -628,13 +679,13 @@
 			},
 			{
 				id: 'bangs',
-				getItems() {
+				getGroups() {
 					if (!bangPickerActive && mode.id !== 'bangs') return [];
 
-					return bangResults.items.map(({ item, score, highlights }, index) => ({
+					const items = bangResults.items.map(({ item, score, highlights }, index) => ({
 						id: `bangs.${item.rank}`,
 						pluginId: 'bangs',
-						kind: 'action',
+						kind: 'action' as const,
 						title: item.name,
 						description: `${item.code.join(' ')} | ${formatBangUrl(item.urls.s)}`,
 						titleSegments: highlights.name,
@@ -645,6 +696,19 @@
 						safeForEnter: mode.id !== 'bangs',
 						...(mode.id === 'bangs' ? {} : { run: () => insertBang(item.code[0]) })
 					}));
+
+					return [
+						{
+							id: 'bangs.provider',
+							pluginId: 'bangs',
+							title: 'Provider bangs',
+							description: 'Forward to your configured bang provider unless added to My bangs.',
+							items,
+							collapsedItemLimit: getBangGroupCollapsedLimit(items),
+							matchedCount: bangResults.total,
+							totalCount: preparedBangs.length
+						}
+					];
 				}
 			},
 			{
@@ -1040,7 +1104,7 @@
 		class:primary={item.id === primaryLauncherItem?.id}
 		class="launcher-item action-item"
 	>
-		<button class:has-shortcut={hasShortcut} class="item-run" onclick={() => item.run?.()}>
+		<button class:has-shortcut={hasShortcut} class="item-run" disabled={!item.run} onclick={() => item.run?.()}>
 			<span class="item-text">
 				<span class="item-heading">
 					<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
@@ -1067,6 +1131,53 @@
 			</button>
 		{/if}
 	</div>
+{/snippet}
+
+{#snippet insightItem(item: LauncherItem)}
+	<article class="launcher-item insight-item">
+		<span class="item-text">
+			<span class="item-heading">
+				<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
+			</span>
+			{#if item.description}<small>{@render highlightedText(item.descriptionSegments, item.description)}</small
+				>{/if}
+		</span>
+		<span class="meta">{formatItemMeta(item)}</span>
+	</article>
+{/snippet}
+
+{#snippet launcherGroup(group: LauncherGroup)}
+	{@const visibleItems = getVisibleGroupItems(group)}
+	{@const renderedItems = getRenderedGroupItems(group)}
+	{@const hiddenCount = group.items.length - visibleItems.length}
+	{@const expanded = Boolean(expandedLauncherGroups[group.id])}
+	<section class="launcher-group" aria-labelledby={`${group.id}-heading`}>
+		<button class="launcher-group-header" onclick={() => toggleLauncherGroup(group.id)}>
+			<span class="item-text">
+				<span class="item-heading">
+					<strong id={`${group.id}-heading`}>{group.title}</strong>
+				</span>
+				{#if group.description}<small>{group.description}</small>{/if}
+			</span>
+			<span class="item-aside">
+				<span class="meta">{getGroupCountLabel(group)}</span>
+				{#if hiddenCount > 0 || expanded}
+					<span class="group-toggle-label">{expanded ? 'Collapse' : `Show ${hiddenCount} more`}</span>
+				{/if}
+			</span>
+		</button>
+
+		<div class="launcher-group-items">
+			{#each renderedItems as item (item.id)}
+				{#if item.kind === 'action'}
+					{@const shortcutLabel = getShortcutLabel(item)}
+					{@render actionItem(item, shortcutLabel)}
+				{:else}
+					{@render insightItem(item)}
+				{/if}
+			{/each}
+		</div>
+	</section>
 {/snippet}
 
 <main>
@@ -1122,18 +1233,11 @@
 				{@const shortcutLabel = getShortcutLabel(item)}
 				{@render actionItem(item, shortcutLabel)}
 			{:else}
-				<article class="launcher-item insight-item">
-					<span class="item-text">
-						<span class="item-heading">
-							<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
-						</span>
-						{#if item.description}<small
-								>{@render highlightedText(item.descriptionSegments, item.description)}</small
-							>{/if}
-					</span>
-					<span class="meta">{formatItemMeta(item)}</span>
-				</article>
+				{@render insightItem(item)}
 			{/if}
+		{/each}
+		{#each visibleLauncherGroups as group (group.id)}
+			{@render launcherGroup(group)}
 		{/each}
 	</section>
 
@@ -1159,6 +1263,45 @@
 		display: grid;
 		gap: var(--size-2);
 		margin-block-start: var(--size-3);
+	}
+
+	.launcher-group {
+		display: grid;
+		gap: var(--size-1);
+	}
+
+	.launcher-group-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--size-3);
+		width: 100%;
+		margin: 0;
+		padding: var(--size-2) var(--size-3);
+		color: var(--nc-tx-1);
+		text-align: left;
+		background: var(--nc-surface-2);
+		border: 1px solid var(--nc-border);
+		border-radius: var(--nc-radius);
+		box-shadow: none;
+	}
+
+	.launcher-group-header:hover,
+	.launcher-group-header:focus {
+		background: color-mix(in srgb, var(--nc-primary) 8%, var(--nc-surface-2));
+		box-shadow: none;
+	}
+
+	.launcher-group-items {
+		display: grid;
+		gap: var(--size-1);
+	}
+
+	.group-toggle-label {
+		color: var(--nc-primary);
+		font-size: var(--font-size-0);
+		font-weight: 700;
+		white-space: nowrap;
 	}
 
 	.bang-composition {
@@ -1239,6 +1382,12 @@
 	.item-run:focus {
 		background: transparent;
 		box-shadow: none;
+	}
+
+	.item-run:disabled {
+		color: inherit;
+		cursor: default;
+		opacity: 1;
 	}
 
 	.secondary-action {

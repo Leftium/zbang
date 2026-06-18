@@ -21,6 +21,17 @@ export type LauncherItem = {
 	};
 };
 
+export type LauncherGroup = {
+	id: string;
+	pluginId: string;
+	title: string;
+	description?: string;
+	items: LauncherItem[];
+	collapsedItemLimit?: number;
+	matchedCount?: number;
+	totalCount?: number;
+};
+
 export type LauncherContext = {
 	text: string;
 	hasValue: boolean;
@@ -30,7 +41,8 @@ export type LauncherContext = {
 
 export type LauncherPlugin = {
 	id: string;
-	getItems: (context: LauncherContext) => LauncherItem[];
+	getItems?: (context: LauncherContext) => LauncherItem[];
+	getGroups?: (context: LauncherContext) => LauncherGroup[];
 };
 
 export type LauncherModeId = 'everything' | 'bangs' | 'compromise' | 'search';
