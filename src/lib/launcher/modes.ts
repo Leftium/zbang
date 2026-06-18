@@ -21,7 +21,7 @@ export const launcherModes = [
 		id: 'bangs',
 		label: 'Bang',
 		description: 'Filter and explore available bang shortcuts.',
-		path: '/bangs',
+		path: '/bang',
 		pluginIds: ['bang-data', 'bangs'],
 		keywords: ['bang', 'filter', 'explore', 'shortcut']
 	},
