@@ -7,7 +7,6 @@
 	import { SvelteURL } from 'svelte/reactivity';
 
 	import {
-		readBangCatalog,
 		readMyBangs,
 		writeMyBangs,
 		type BangProviderId,
@@ -38,7 +37,8 @@
 		LauncherModeId,
 		LauncherPlugin
 	} from '$lib/launcher/types';
-	import { dismissBangDataReminder, settings, type SearchProvider } from '$lib/settings.svelte';
+	import { settings, type SearchProvider } from '$lib/settings.svelte';
+	import { loadShippedBangCatalog } from '$lib/shipped-bang-catalog';
 
 	let {
 		modeId = 'everything',
@@ -54,8 +54,6 @@
 	const shortcutLabels = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'] as const;
 	const shortcutKeys = new Set(['F', 'L', 'N', 'M', '.', ' ', ...shortcutLabels]);
 	const shortcutDelay = 250;
-	const bangDataStaleDays = 30;
-	const bangDataReminderSnoozeDays = 30;
 	const launcherGroupItemLimits: Record<string, number> = {
 		'bangs.my': 8,
 		'bangs.provider': 8
@@ -76,6 +74,7 @@
 	let pendingShortcutLauncherItems: LauncherItem[] = [];
 	let pendingShortcutPrimaryItem: LauncherItem | undefined;
 	let myBangWrite = Promise.resolve();
+	let loadingBangProvider = $state<BangProviderId>();
 	let doubleKeypress = $state<string>();
 	let isPeriodShortcut = $state(false);
 	let isMobilePeriodShortcut = $state(false);
@@ -102,21 +101,6 @@
 	const bangFilterInput = $derived(bangEntry ? `!${bangEntry.fragment}` : value);
 	const myBangResults = $derived(filterBangs(bangFilterInput, preparedMyBangs));
 	const providerBangResults = $derived(filterBangs(bangFilterInput, preparedProviderBangs));
-	const bangDataAgeDays = $derived(
-		bangCatalog ? getElapsedDays(bangCatalog.generatedAt) : undefined
-	);
-	const bangDataReminderDismissed = $derived(
-		Boolean(
-			settings.bangDataReminderDismissedUntil &&
-			new Date(settings.bangDataReminderDismissedUntil).getTime() > Date.now()
-		)
-	);
-	const showBangDataReminder = $derived(
-		bangDataAgeDays !== undefined &&
-			bangDataAgeDays >= bangDataStaleDays &&
-			!bangDataReminderDismissed &&
-			!bangPickerActive
-	);
 	const launcherContext = $derived({
 		text: value.trim(),
 		hasValue,
@@ -165,14 +149,13 @@
 	);
 
 	onMount(() => {
-		void loadBangCatalog(settings.bangProvider);
 		void loadMyBangs();
 	});
 
 	$effect(() => {
 		const provider = settings.bangProvider;
 
-		if (loadedBangProvider && loadedBangProvider !== provider) {
+		if (loadedBangProvider !== provider && loadingBangProvider !== provider) {
 			void loadBangCatalog(provider);
 		}
 	});
@@ -269,35 +252,26 @@
 		return `${targets}${payload}`;
 	}
 
-	function openBangSettings() {
-		window.location.assign(resolve('/settings') + '#bang-sources-heading');
-	}
-
-	function dismissStaleBangDataReminder() {
-		dismissBangDataReminder(bangDataReminderSnoozeDays);
-	}
-
-	function getElapsedDays(date: string) {
-		return Math.floor((Date.now() - new Date(date).getTime()) / (24 * 60 * 60 * 1000));
-	}
-
 	async function loadBangCatalog(provider: BangProviderId) {
-		const persistedCatalog = await readBangCatalog(provider);
+		loadingBangProvider = provider;
+		const result = await loadShippedBangCatalog(provider);
 
-		bangCatalog = persistedCatalog ?? (await loadBootstrapBangCatalog(provider));
+		if (loadingBangProvider === provider) loadingBangProvider = undefined;
+		if (settings.bangProvider !== provider) return;
+
 		loadedBangProvider = provider;
+
+		if (result.error) {
+			bangCatalog = undefined;
+			console.error('Failed to load shipped bang catalog', result.error);
+			return;
+		}
+
+		bangCatalog = result.data;
 	}
 
 	async function loadMyBangs() {
 		myBangs = await readMyBangs();
-	}
-
-	async function loadBootstrapBangCatalog(provider: BangProviderId): Promise<ZbangCatalog> {
-		if (provider === 'duckduckgo') {
-			return (await import('$lib/data/zbang.bootstrap.duckduckgo.json')).default as ZbangCatalog;
-		}
-
-		return (await import('$lib/data/zbang.bootstrap.kagi.json')).default as ZbangCatalog;
 	}
 
 	function insertBang(code: string) {
@@ -735,30 +709,6 @@
 					if (bangEntry) return [];
 
 					return getModeListItems(context);
-				}
-			},
-			{
-				id: 'bang-data',
-				getItems(context) {
-					if (!showBangDataReminder || bangDataAgeDays === undefined) return [];
-
-					return [
-						{
-							id: 'bang-data.refresh',
-							pluginId: 'bang-data',
-							kind: 'action',
-							title: 'Visit Settings to update bang data',
-							description: `Current bang data is ${bangDataAgeDays} days old.`,
-							score: context.hasValue ? 99 : 130,
-							safeForEnter: !context.hasValue,
-							run: openBangSettings,
-							secondaryAction: {
-								label: `Snooze for ${bangDataReminderSnoozeDays} days`,
-								title: `Snooze for ${bangDataReminderSnoozeDays} days`,
-								run: dismissStaleBangDataReminder
-							}
-						}
-					];
 				}
 			},
 			{

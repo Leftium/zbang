@@ -72,7 +72,7 @@
 					filename: provider.filename,
 					sourceCount: catalog.items.length,
 					bootstrapCount: bootstrap.items.length,
-					generatedAt: catalog.generatedAt,
+					generatedAt: catalog.generatedAt ?? '',
 					json,
 					url: URL.createObjectURL(new Blob([json], { type: 'application/json' }))
 				});

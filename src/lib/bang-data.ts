@@ -30,7 +30,8 @@ export type BangSourceDownloadResult =
 	| { ok: true; source: BangSourceStatus }
 	| { ok: false; id: BangSourceId; error: string };
 
-export type BangCatalogStatus = Omit<ZbangCatalog, 'items'> & {
+export type BangCatalogStatus = Omit<ZbangCatalog, 'items' | 'generatedAt'> & {
+	generatedAt: string;
 	recordCount: number;
 };
 
