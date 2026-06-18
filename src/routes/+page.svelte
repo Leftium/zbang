@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+	import fuzzysort from 'fuzzysort';
 	import { onMount } from 'svelte';
 	import { SvelteURL } from 'svelte/reactivity';
 
@@ -18,13 +19,11 @@
 		type BangFilterResult,
 		type BangHighlightSegment
 	} from '$lib/bang-filter';
-	import CompromiseInspector, {
-		getInspectPanelId
-	} from '$lib/components/CompromiseInspector.svelte';
 	import ExpandingTextarea from '$lib/components/ExpandingTextarea.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { createBangCodeMap, parseBangComposition } from '$lib/launcher/bang-composition';
 	import { getCompromiseSignals, unique } from '$lib/launcher/compromise-signals';
+	import { getLauncherMode, launcherModes } from '$lib/launcher/modes';
 	import { getKeywordScoreBoost, rankItems, scoreInsight } from '$lib/launcher/ranking';
 	import type {
 		BangComposition,
@@ -73,19 +72,16 @@
 	let isPeriodShortcut = $state(false);
 	let isMobilePeriodShortcut = $state(false);
 
-	const mode = $derived(getMode(page.url.searchParams.get('mode')));
-	const inspect = $derived(getInspectPanelId(page.url.searchParams.get('inspect')));
-	const expression = $derived(page.url.searchParams.get('expr') ?? undefined);
+	const mode = getLauncherMode('everything');
 	const hasValue = $derived(Boolean(value.trim()));
 	// Keep NLP signals in the shared launcher context so plugins can score and enrich items.
 	const compromiseSignals = $derived(getCompromiseSignals(value));
 	const preparedBangs = $derived(prepareBangCatalog(bangCatalog));
 	const bangCodeMap = $derived(createBangCodeMap(bangCatalog));
 	const bangComposition = $derived(parseBangComposition(value, bangCodeMap, bangEntry));
-	const bangPickerActive = $derived(mode === 'bangs' || Boolean(bangEntry));
+	const bangPickerActive = $derived(Boolean(bangEntry));
 	const bangFilterInput = $derived(bangEntry ? `!${bangEntry.fragment}` : value);
 	const bangResults = $derived(filterBangs(bangFilterInput, preparedBangs));
-	const bangTotalCount = $derived(bangCatalog?.items.length ?? 0);
 	const bangDataAgeDays = $derived(
 		bangCatalog ? getElapsedDays(bangCatalog.generatedAt) : undefined
 	);
@@ -112,16 +108,10 @@
 		rankItems(plugins.flatMap((plugin) => plugin.getItems(launcherContext)))
 	);
 	const visibleLauncherItems = $derived(
-		mode === 'bangs'
-			? launcherItems.filter((item) => item.pluginId === 'bangs')
-			: mode === 'compromise'
-				? launcherItems.filter((item) => item.pluginId === 'compromise')
-				: launcherItems
+		launcherItems.filter((item) => mode.pluginIds.includes(item.pluginId))
 	);
 	const selectablePrimaryItems = $derived(
-		mode === 'compromise'
-			? []
-			: visibleLauncherItems.filter((item) => item.kind === 'action' && item.run)
+		visibleLauncherItems.filter((item) => item.kind === 'action' && item.run)
 	);
 	const shortcutLauncherItems = $derived(
 		visibleLauncherItems
@@ -566,10 +556,6 @@
 		bangEntry = { ...bangEntry, fragment: token.slice(1) };
 	}
 
-	async function pasteFromClipboard() {
-		value = await navigator.clipboard.readText();
-	}
-
 	async function copyToClipboard() {
 		await navigator.clipboard.writeText(value);
 	}
@@ -578,16 +564,16 @@
 		void primaryLauncherItem?.run?.();
 	}
 
-	function getMode(mode: string | null): LauncherMode {
-		if (mode === 'bangs' || mode === 'compromise') {
-			return mode;
-		}
-
-		return 'all';
-	}
-
 	function createPlugins(): LauncherPlugin[] {
 		return [
+			{
+				id: 'mode-list',
+				getItems(context) {
+					if (bangEntry) return [];
+
+					return getModeListItems(context);
+				}
+			},
 			{
 				id: 'bang-data',
 				getItems(context) {
@@ -671,18 +657,7 @@
 						];
 					}
 
-					return [
-						{
-							id: 'clipboard.paste',
-							pluginId: 'clipboard',
-							kind: 'action',
-							title: 'Paste from clipboard',
-							description: 'Use clipboard text as the launcher subject.',
-							score: 100,
-							safeForEnter: true,
-							run: pasteFromClipboard
-						}
-					];
+					return [];
 				}
 			},
 			{
@@ -705,12 +680,86 @@
 			{
 				id: 'compromise',
 				getItems(context) {
-					if (mode !== 'compromise') return [];
-
 					return getCompromiseItems(context);
 				}
 			}
 		];
+	}
+
+	function getModeListItems(context: LauncherContext): LauncherItem[] {
+		const modes = launcherModes.filter((mode) => mode.id !== 'everything');
+
+		if (!context.hasValue) {
+			return modes.map((mode, index) => createModeListItem(mode, 120 - index, index, index));
+		}
+
+		return fuzzysort
+			.go(
+				context.text,
+				modes.map((mode) => ({
+					mode,
+					searchText: `${mode.label} ${mode.description} ${mode.keywords.join(' ')}`
+				})),
+				{
+					key: 'searchText',
+					limit: modes.length,
+					threshold: 0.4
+				}
+			)
+			.map((result, index) => {
+				const { mode } = result.obj;
+				const titleResult = fuzzysort.single(context.text, mode.label);
+
+				return createModeListItem(mode, 100 + Math.round(result.score * 20), index, undefined, {
+					titleSegments: getFuzzyHighlightSegments(mode.label, titleResult)
+				});
+			});
+	}
+
+	function createModeListItem(
+		mode: LauncherMode,
+		score: number,
+		shortcutIndex: number,
+		sortOrder?: number,
+		overrides: Partial<LauncherItem> = {}
+	): LauncherItem {
+		return {
+			id: `mode-list.${mode.id}`,
+			pluginId: 'mode-list',
+			kind: 'action',
+			title: mode.label,
+			description: mode.description,
+			score,
+			sortOrder,
+			safeForEnter: shortcutIndex === 0,
+			run: () => goto(resolve(mode.path)),
+			...overrides
+		};
+	}
+
+	function getFuzzyHighlightSegments(target: string, result: Fuzzysort.Result | null) {
+		if (!result?.indexes.length) return [{ text: target, matched: false }];
+
+		const matchedIndexes = new Set(result.indexes);
+		const segments: BangHighlightSegment[] = [];
+		let current = '';
+		let currentMatched = matchedIndexes.has(0);
+
+		for (let index = 0; index < target.length; index += 1) {
+			const matched = matchedIndexes.has(index);
+
+			if (matched !== currentMatched) {
+				if (current) segments.push({ text: current, matched: currentMatched });
+				current = '';
+				currentMatched = matched;
+			}
+
+			current += target[index];
+		}
+
+		if (current) segments.push({ text: current, matched: currentMatched });
+
+		return segments;
 	}
 
 	function getCompromiseItems(context: LauncherContext): LauncherItem[] {
@@ -994,17 +1043,7 @@
 {/snippet}
 
 <main>
-	<Header />
-
-	{#if mode !== 'all'}
-		<div class="mode-chip">Mode: {mode}</div>
-	{/if}
-
-	{#if mode === 'bangs'}
-		<div class="result-count">
-			Results: {formatCount(bangResults.total)}/{formatCount(bangTotalCount)}
-		</div>
-	{/if}
+	<Header modeLabel={mode.label} />
 
 	<div class="launcher-input-shell">
 		<ExpandingTextarea
@@ -1071,9 +1110,6 @@
 		{/each}
 	</section>
 
-	{#if mode === 'compromise'}
-		<CompromiseInspector text={value} {inspect} {expression} />
-	{/if}
 </main>
 
 <style>
@@ -1131,23 +1167,6 @@
 		max-width: 100%;
 		color: var(--nc-tx-2);
 		background: var(--nc-surface-1);
-	}
-
-	.mode-chip {
-		display: inline-flex;
-		margin-block-end: var(--size-2);
-		padding: 0.125rem 0.5rem;
-		color: var(--nc-tx-2);
-		background: var(--nc-surface-1);
-		border: 1px solid var(--nc-border);
-		border-radius: 999px;
-		font-size: var(--font-size-0);
-	}
-
-	.result-count {
-		margin-block-end: var(--size-2);
-		color: var(--nc-tx-2);
-		font-size: var(--font-size-0);
 	}
 
 	.launcher-item {

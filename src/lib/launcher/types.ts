@@ -33,7 +33,16 @@ export type LauncherPlugin = {
 	getItems: (context: LauncherContext) => LauncherItem[];
 };
 
-export type LauncherMode = 'all' | 'bangs' | 'compromise';
+export type LauncherModeId = 'everything' | 'bangs' | 'compromise' | 'search';
+
+export type LauncherMode = {
+	id: LauncherModeId;
+	label: string;
+	description: string;
+	path: string;
+	pluginIds: readonly string[];
+	keywords: readonly string[];
+};
 
 export type BangEntry = { triggerIndex: number; fragment: string };
 

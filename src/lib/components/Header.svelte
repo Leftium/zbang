@@ -1,12 +1,17 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
+
+	let { modeLabel }: { modeLabel?: string } = $props();
 </script>
 
 <header>
 	<a class="brand" href={resolve('/')}>
 		<span class="logo">[z!]</span>
 		<span class="brand-secondary">whi</span><span class="brand-primary">zBang</span>
+		{#if modeLabel}
+			<span class="mode-separator">/</span><span class="mode-label">{modeLabel}</span>
+		{/if}
 	</a>
 
 	{#if page.url.pathname !== resolve('/settings')}
@@ -40,11 +45,29 @@
 		color: var(--gray-5);
 	}
 
+	.mode-separator,
+	.mode-label {
+		font-size: var(--font-size-2);
+		font-weight: var(--font-weight-6);
+	}
+
+	.mode-separator {
+		margin-inline: 0.375rem;
+		color: var(--gray-5);
+	}
+
+	.mode-label {
+		color: hsl(15 70% 66%);
+	}
+
 	a {
 		text-decoration: none;
 	}
 
 	.brand {
+		display: inline-flex;
+		align-items: baseline;
+		flex-wrap: wrap;
 		line-height: var(--font-lineheight-1);
 	}
 
