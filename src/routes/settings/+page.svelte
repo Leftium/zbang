@@ -46,7 +46,6 @@
 	let bangSourceCountChanges = $state<Partial<Record<BangSourceId, number>>>({});
 	let bangCatalogCountChanges = $state<Partial<Record<BangProviderId, number>>>({});
 	let bangSourceHashChanges = $state<Partial<Record<BangSourceId, boolean>>>({});
-	let bangCatalogHashChanges = $state<Partial<Record<BangProviderId, boolean>>>({});
 	let bangSourceMessage = $state('');
 	let isRefreshingBangData = $state(false);
 	let isClearingBangData = $state(false);
@@ -90,11 +89,7 @@
 				bangCatalogStatuses
 			);
 			bangSourceHashChanges = getBangSourceHashChanges(previousSourceStatuses, bangSourceStatuses);
-			bangCatalogHashChanges = getBangCatalogHashChanges(
-				previousCatalogStatuses,
-				bangCatalogStatuses
-			);
-			if (savedCatalogs > 0) {
+			if (!failedSources.length && !failedCatalogs.length) {
 				clearBangDataReminderDismissal();
 			}
 			bangSourceErrors = getBangSourceErrors(failedSources);
@@ -123,7 +118,6 @@
 			bangSourceCountChanges = {};
 			bangCatalogCountChanges = {};
 			bangSourceHashChanges = {};
-			bangCatalogHashChanges = {};
 			bangSourceMessage = 'Cleared persisted bang data.';
 		} catch (error) {
 			bangSourceMessage = error instanceof Error ? error.message : 'Failed to clear bang data.';
@@ -230,32 +224,6 @@
 				return previous === undefined ? [] : [[status.id, status.hash !== previous]];
 			})
 		);
-	}
-
-	function getBangCatalogHashChanges(
-		previousStatuses: BangCatalogStatus[],
-		currentStatuses: BangCatalogStatus[]
-	): Partial<Record<BangProviderId, boolean>> {
-		return Object.fromEntries(
-			currentStatuses.flatMap((status) => {
-				const previous = previousStatuses.find((item) => item.provider === status.provider);
-
-				if (!previous) {
-					return [];
-				}
-
-				return [
-					[
-						status.provider,
-						getCatalogSourceHashSignature(status) !== getCatalogSourceHashSignature(previous)
-					]
-				];
-			})
-		);
-	}
-
-	function getCatalogSourceHashSignature(status: BangCatalogStatus) {
-		return status.sources.map((source) => `${source.url}:${source.hash}`).join('|');
 	}
 
 	function getBangSourceStatus(id: BangSourceId) {
@@ -442,21 +410,6 @@
 								<div>
 									<dt>Deduped</dt>
 									<dd>{formatDedupedCount(status.dedupedCount)}</dd>
-								</div>
-								<div>
-									<dt>Generator</dt>
-									<dd>v{status.generatorVersion}</dd>
-								</div>
-								<div>
-									<dt>Sources</dt>
-									<dd>
-										{status.sources.length}
-										{#if bangCatalogHashChanges[status.provider] !== undefined}
-											<span class:changed={bangCatalogHashChanges[status.provider]} class="hash-change">
-												{formatHashChange(bangCatalogHashChanges[status.provider])}
-											</span>
-										{/if}
-									</dd>
 								</div>
 							</dl>
 						{:else}

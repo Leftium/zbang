@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 </script>
 
 <header>
@@ -8,7 +9,9 @@
 		<span class="brand-secondary">whi</span><span class="brand-primary">zBang</span>
 	</a>
 
-	<a class="secondary outline settings" href={resolve('/settings')}>settings</a>
+	{#if page.url.pathname !== resolve('/settings')}
+		<a class="secondary outline settings" href={resolve('/settings')}>settings</a>
+	{/if}
 </header>
 
 <style>
