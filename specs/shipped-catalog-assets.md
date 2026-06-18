@@ -144,7 +144,7 @@ Keep settings for:
 - selected search provider
 - any user-owned bang management controls
 
-Shipped catalog artifacts intentionally omit `generatedAt`; stale catalog age should no longer drive user-facing reminders. Runtime-only timestamps may remain temporarily in legacy refresh/status code until that code is removed.
+Shipped catalog artifacts intentionally omit `generatedAt`; stale catalog age should no longer drive user-facing reminders.
 
 ## Current Progress
 
@@ -162,10 +162,11 @@ Completed:
 - Removed obsolete dev bootstrap generation route and bootstrap JSON artifacts.
 - Removed settings refresh UI and stale reminder settings state.
 - Removed runtime source refresh, source API route, and non-user IndexedDB stores.
+- Removed transitional generated/fetched timestamp fields from catalog generation types.
 
 Remaining:
 
-- Keep or move `myBangs` persistence into a smaller user-data persistence module.
+- Verify build output and deployed asset cache headers.
 
 ## API and Store Cleanup
 
@@ -180,7 +181,7 @@ Removed app routes and stores that existed only for runtime source refresh or no
 - provider catalog writes
 - source writes
 
-`myBangs` persistence remains in `src/lib/bang-data.ts`. It can move into a smaller user-data persistence module later if the current compatibility re-export module becomes confusing.
+`myBangs` persistence remains in `src/lib/bang-data.ts`. Moving it into a smaller user-data persistence module is optional and deferred unless the current compatibility re-export module becomes confusing.
 
 The IndexedDB schema was bumped to delete legacy non-user stores for existing browsers while preserving `myBangs`.
 

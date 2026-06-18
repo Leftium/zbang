@@ -92,7 +92,6 @@ async function downloadSource(source: (typeof BANG_SOURCES)[number]): Promise<Pe
 	return {
 		id: source.id,
 		url: source.url,
-		fetchedAt: new Date().toISOString(),
 		hash: createHash('sha256').update(text).digest('hex'),
 		bangCount: countSourceBangs(text),
 		text

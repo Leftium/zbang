@@ -10,7 +10,6 @@ export type BangSourceDefinition = {
 export type PersistedBangSource = {
 	id: BangSourceId;
 	url: string;
-	fetchedAt: string;
 	hash: string;
 	bangCount?: number;
 	text: string;
@@ -28,7 +27,6 @@ export type Zbang = {
 
 export type ZbangCatalog = {
 	provider: BangProviderId;
-	generatedAt?: string;
 	generatorVersion: number;
 	dedupedCount?: number;
 	sources: Array<Pick<PersistedBangSource, 'url' | 'hash'>>;
@@ -143,9 +141,6 @@ export function validateZbangCatalog(catalog: unknown, provider: BangProviderId)
 	const value = catalog as Partial<ZbangCatalog>;
 
 	if (value.provider !== provider) errors.push(`provider must be ${provider}`);
-	if (value.generatedAt !== undefined && typeof value.generatedAt !== 'string') {
-		errors.push('generatedAt must be a string when present');
-	}
 	if (typeof value.generatorVersion !== 'number') {
 		errors.push('generatorVersion must be a number');
 	}

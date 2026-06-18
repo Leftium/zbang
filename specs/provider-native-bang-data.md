@@ -1,5 +1,7 @@
 # Provider-Native Bang Data
 
+Status: historical. `specs/shipped-catalog-assets.md` supersedes the runtime refresh, IndexedDB catalog persistence, bootstrap route, and timestamped catalog examples in this document.
+
 ## Goal
 
 Support separate bang and search providers without shipping the full bang database in the initial JavaScript bundle.
