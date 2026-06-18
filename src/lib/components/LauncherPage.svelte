@@ -629,7 +629,7 @@
 			{
 				id: 'bangs',
 				getItems() {
-					if (!bangPickerActive) return [];
+					if (!bangPickerActive && mode.id !== 'bangs') return [];
 
 					return bangResults.items.map(({ item, score, highlights }, index) => ({
 						id: `bangs.${item.rank}`,
@@ -642,8 +642,8 @@
 						rank: item.rank,
 						score,
 						sortOrder: index,
-						safeForEnter: true,
-						run: () => insertBang(item.code[0])
+						safeForEnter: mode.id !== 'bangs',
+						...(mode.id === 'bangs' ? {} : { run: () => insertBang(item.code[0]) })
 					}));
 				}
 			},

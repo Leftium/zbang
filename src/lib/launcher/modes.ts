@@ -20,10 +20,10 @@ export const launcherModes = [
 	{
 		id: 'bangs',
 		label: 'Bangs',
-		description: 'Manage bang data, sources, and installed bang shortcuts.',
+		description: 'Filter and explore available bang shortcuts.',
 		path: '/bangs',
-		pluginIds: ['bang-data', 'clipboard'],
-		keywords: ['bang', 'manage', 'source', 'install', 'shortcut']
+		pluginIds: ['bang-data', 'bangs'],
+		keywords: ['bang', 'filter', 'explore', 'shortcut']
 	},
 	{
 		id: 'compromise',
