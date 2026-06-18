@@ -1,14 +1,11 @@
 import type { BangProviderId } from '$lib/bang-data';
-import { SvelteDate } from 'svelte/reactivity';
-
 export type ColorScheme = '' | 'dark' | 'light';
 export type SearchProvider = 'kagi' | 'duckduckgo' | 'google';
 
 export const settings = $state({
 	colorScheme: '' as ColorScheme,
 	bangProvider: 'kagi' as BangProviderId,
-	searchProvider: 'kagi' as SearchProvider,
-	bangDataReminderDismissedUntil: ''
+	searchProvider: 'kagi' as SearchProvider
 });
 
 function applyColorScheme(colorScheme: ColorScheme) {
@@ -40,24 +37,10 @@ export function setBangProvider(bangProvider: BangProviderId) {
 	localStorage.setItem('bangProvider', bangProvider);
 }
 
-export function dismissBangDataReminder(days: number) {
-	const dismissedUntil = new SvelteDate(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
-	settings.bangDataReminderDismissedUntil = dismissedUntil;
-	localStorage.setItem('bangDataReminderDismissedUntil', dismissedUntil);
-}
-
-export function clearBangDataReminderDismissal() {
-	settings.bangDataReminderDismissedUntil = '';
-	localStorage.removeItem('bangDataReminderDismissedUntil');
-}
-
 export function initSettings() {
 	const storedColorScheme = localStorage.getItem('theme');
 	const storedBangProvider = localStorage.getItem('bangProvider');
 	const storedSearchProvider = localStorage.getItem('searchProvider');
-	const storedBangDataReminderDismissedUntil = localStorage.getItem(
-		'bangDataReminderDismissedUntil'
-	);
 
 	if (storedColorScheme === 'dark' || storedColorScheme === 'light') {
 		applyColorScheme(storedColorScheme);
@@ -75,7 +58,4 @@ export function initSettings() {
 		settings.bangProvider = storedBangProvider;
 	}
 
-	if (storedBangDataReminderDismissedUntil) {
-		settings.bangDataReminderDismissedUntil = storedBangDataReminderDismissedUntil;
-	}
 }

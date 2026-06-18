@@ -160,10 +160,11 @@ Completed:
 - Added runtime shipped-catalog validation and graceful failure handling.
 - Removed launcher stale-catalog reminders.
 - Removed obsolete dev bootstrap generation route and bootstrap JSON artifacts.
+- Removed settings refresh UI and stale reminder settings state.
 
 Remaining:
 
-- Remove runtime source refresh, stale reminders, settings refresh UI, non-user IndexedDB stores, and related API routes.
+- Remove runtime source refresh, non-user IndexedDB stores, and related API routes.
 
 ## API and Store Cleanup
 
@@ -211,6 +212,6 @@ Compare before and after the refactor:
 4. Add the `$catalogs` alias. Done.
 5. Switch launcher loading to `?url` fetched catalogs on mount. Done.
 6. Add runtime catalog validation and graceful failure handling. Done.
-7. Remove runtime source refresh, stale reminders, and settings refresh UI. In progress.
+7. Remove runtime source refresh, stale reminders, and settings refresh UI. In progress; settings UI and stale reminder state are removed.
 8. Remove non-user IndexedDB stores and APIs.
 9. Verify build output and deployed asset cache headers.
