@@ -2,10 +2,10 @@
 	import { dev } from '$app/environment';
 	import { onDestroy, onMount } from 'svelte';
 
-	import { readBangCatalog, type BangProviderId, type ZbangCatalog } from '$lib/bang-data';
+	import { readBangCatalog, type BangProviderId, type Zbang, type ZbangCatalog } from '$lib/bang-data';
 	import Header from '$lib/components/Header.svelte';
 
-	const BOOTSTRAP_MIN_DDGR = 25;
+	const BOOTSTRAP_MAX_RANK = 1000;
 	const providers: { value: BangProviderId; label: string; filename: string }[] = [
 		{ value: 'kagi', label: 'Kagi', filename: 'zbang.bootstrap.kagi.json' },
 		{
@@ -60,7 +60,7 @@
 				}
 
 				const bootstrap = buildBootstrapCatalog(catalog);
-				const json = `${JSON.stringify(bootstrap, null, 2)}\n`;
+				const json = `${formatBootstrapJson(bootstrap)}\n`;
 				nextOutputs.push({
 					provider: provider.value,
 					label: provider.label,
@@ -77,7 +77,7 @@
 			outputs = nextOutputs;
 			missingProviders = nextMissingProviders;
 			message = nextOutputs.length
-				? `Generated bootstrap files with ddgr >= ${BOOTSTRAP_MIN_DDGR}.`
+				? `Generated bootstrap files with rank <= ${BOOTSTRAP_MAX_RANK}.`
 				: 'No generated catalogs found. Refresh bang data from settings first.';
 		} catch (error) {
 			message = error instanceof Error ? error.message : 'Failed to generate bootstrap files.';
@@ -87,7 +87,9 @@
 	}
 
 	function buildBootstrapCatalog(catalog: ZbangCatalog): ZbangCatalog {
-		const items = catalog.items.filter((item) => (item.ddgr ?? 0) >= BOOTSTRAP_MIN_DDGR);
+		const items = catalog.items
+			.filter((item) => item.rank <= BOOTSTRAP_MAX_RANK)
+			.map(toRuntimeZbang);
 
 		return {
 			provider: catalog.provider,
@@ -96,6 +98,51 @@
 			sources: catalog.sources,
 			items
 		};
+	}
+
+	function toRuntimeZbang(item: Zbang): Zbang {
+		return {
+			rank: item.rank,
+			name: item.name,
+			code: item.code,
+			tags: item.tags,
+			urls: item.urls
+		};
+	}
+
+	function formatBootstrapJson(value: unknown, depth = 0): string {
+		const indent = '\t'.repeat(depth);
+		const nextIndent = '\t'.repeat(depth + 1);
+
+		if (Array.isArray(value)) {
+			if (!value.length) return '[]';
+
+			if (value.every(isPrimitiveJsonValue)) {
+				return `[${value.map((item) => JSON.stringify(item)).join(', ')}]`;
+			}
+
+			return `[
+${value.map((item) => `${nextIndent}${formatBootstrapJson(item, depth + 1)}`).join(',\n')}
+${indent}]`;
+		}
+
+		if (value && typeof value === 'object') {
+			const entries = Object.entries(value);
+
+			if (!entries.length) return '{}';
+
+			return `{
+${entries
+	.map(([key, item]) => `${nextIndent}${JSON.stringify(key)}: ${formatBootstrapJson(item, depth + 1)}`)
+	.join(',\n')}
+${indent}}`;
+		}
+
+		return JSON.stringify(value);
+	}
+
+	function isPrimitiveJsonValue(value: unknown) {
+		return value === null || ['string', 'number', 'boolean'].includes(typeof value);
 	}
 
 	function revokeOutputUrls(values: BootstrapOutput[]) {
@@ -177,10 +224,6 @@
 							<div>
 								<dt>Bootstrap records</dt>
 								<dd>{formatCount(output.bootstrapCount)}</dd>
-							</div>
-							<div>
-								<dt>Minimum ddgr</dt>
-								<dd>{BOOTSTRAP_MIN_DDGR}</dd>
 							</div>
 							<div>
 								<dt>Catalog generated</dt>

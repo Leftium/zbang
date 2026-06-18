@@ -1,27 +1,26 @@
 {
 	"provider": "kagi",
-	"generatedAt": "2026-06-17T19:29:31.099Z",
+	"generatedAt": "2026-06-18T05:35:35.809Z",
 	"generatorVersion": 1,
 	"sources": [
 		{
 			"url": "https://github.com/kagisearch/bangs/raw/refs/heads/main/data/bangs.json",
-			"fetchedAt": "2026-06-17T19:29:31.078Z",
+			"fetchedAt": "2026-06-18T05:35:35.768Z",
 			"hash": "3d43b6f2e5a4a8ae05f31f63a9e4e66b6318cf6286cf3d407b2fc42d581820c2"
 		},
 		{
 			"url": "https://github.com/kagisearch/bangs/raw/refs/heads/main/data/kagi_bangs.json",
-			"fetchedAt": "2026-06-17T19:29:30.872Z",
+			"fetchedAt": "2026-06-18T05:35:35.426Z",
 			"hash": "ad791dbabbabfd24174e8e192142ed1e494836d8c36882f4c5b841f0a7b2c7db"
 		},
 		{
 			"url": "https://duckduckgo.com/bang.js",
-			"fetchedAt": "2026-06-17T19:29:30.841Z",
+			"fetchedAt": "2026-06-18T05:35:35.399Z",
 			"hash": "e69536d51e6f306f3e0063af0d88862713bf8d7075aefc8ec85db88779355768"
 		}
 	],
 	"items": [
 		{
-			"ddgr": 1693724,
 			"rank": 1,
 			"name": "Google",
 			"code": ["!g", "!google", "!goog", "!п"],
@@ -31,7 +30,6 @@
 			}
 		},
 		{
-			"ddgr": 484885,
 			"rank": 2,
 			"name": "Wikipedia",
 			"code": ["!w", "!wikipedia", "!encyclopedia", "!wiki", "!wk", "!wi"],
@@ -41,7 +39,6 @@
 			}
 		},
 		{
-			"ddgr": 426335,
 			"rank": 3,
 			"name": "YouTube",
 			"code": ["!yt", "!youtube", "!you", "!ty", "!ytb", "!watch", "!υτ", "!ют", "!ютуб"],
@@ -51,7 +48,6 @@
 			}
 		},
 		{
-			"ddgr": 45291,
 			"rank": 4,
 			"name": "Google Images",
 			"code": ["!gi", "!googleimages", "!gimg", "!gim", "!gimages", "!googleimg"],
@@ -61,7 +57,6 @@
 			}
 		},
 		{
-			"ddgr": 37867,
 			"rank": 5,
 			"name": "Amazon.com",
 			"code": ["!a", "!amazon", "!az", "!amz", "!aus", "!buy", "!amus", "!price"],
@@ -71,7 +66,6 @@
 			}
 		},
 		{
-			"ddgr": 27235,
 			"rank": 6,
 			"name": "Kagi Maps",
 			"code": ["!m", "!maps", "!map"],
@@ -81,7 +75,6 @@
 			}
 		},
 		{
-			"ddgr": 18544,
 			"rank": 7,
 			"name": "Wikipedia (English)",
 			"code": ["!we", "!wen", "!enwiki", "!wikien", "!w.en"],
@@ -91,7 +84,6 @@
 			}
 		},
 		{
-			"ddgr": 18459,
 			"rank": 8,
 			"name": "IMDB",
 			"code": ["!tv", "!imdb", "!imbd"],
@@ -101,7 +93,6 @@
 			}
 		},
 		{
-			"ddgr": 13762,
 			"rank": 9,
 			"name": "Kagi Images",
 			"code": ["!i", "!image", "!pictures", "!img", "!images", "!pics", "!imgs"],
@@ -111,7 +102,6 @@
 			}
 		},
 		{
-			"ddgr": 13369,
 			"rank": 10,
 			"name": "GitHub",
 			"code": ["!gh", "!github", "!git"],
@@ -121,7 +111,6 @@
 			}
 		},
 		{
-			"ddgr": 8591,
 			"rank": 11,
 			"name": "X",
 			"code": ["!x", "!twitter", "!twit", "!twid", "!tweet"],
@@ -131,7 +120,6 @@
 			}
 		},
 		{
-			"ddgr": 7886,
 			"rank": 12,
 			"name": "Old School RuneScape Wiki",
 			"code": ["!osrs", "!wosrs", "!rs07"],
@@ -141,7 +129,6 @@
 			}
 		},
 		{
-			"ddgr": 7382,
 			"rank": 13,
 			"name": "Bing",
 			"code": ["!b", "!bing"],
@@ -151,7 +138,6 @@
 			}
 		},
 		{
-			"ddgr": 7305,
 			"rank": 14,
 			"name": "OpenStreetMap",
 			"code": ["!osm", "!openstreetmap", "!omap", "!ost", "!openmaps", "!openstreet"],
@@ -161,27 +147,15 @@
 			}
 		},
 		{
-			"ddgr": 6929,
 			"rank": 15,
 			"name": "Kagi Assistant",
-			"code": [
-				"!ai",
-				"!assistant",
-				"!as",
-				"!expert",
-				"!llm",
-				"!asst",
-				"!answer",
-				"!custom",
-				"!discuss"
-			],
+			"code": ["!ai", "!assistant", "!as", "!expert", "!llm", "!asst", "!answer", "!custom", "!discuss"],
 			"tags": [],
 			"urls": {
 				"s": "https://kagi.com/assistant?q=%s"
 			}
 		},
 		{
-			"ddgr": 6177,
 			"rank": 16,
 			"name": "GMail.com",
 			"code": ["!gmail"],
@@ -191,7 +165,6 @@
 			}
 		},
 		{
-			"ddgr": 6116,
 			"rank": 17,
 			"name": "German Wikipedia",
 			"code": ["!wde", "!wikipediade", "!wikide", "!w.de", "!dewiki", "!wge", "!wiki.de"],
@@ -201,7 +174,6 @@
 			}
 		},
 		{
-			"ddgr": 5891,
 			"rank": 18,
 			"name": "StartPage",
 			"code": ["!s", "!sp"],
@@ -211,7 +183,6 @@
 			}
 		},
 		{
-			"ddgr": 5887,
 			"rank": 19,
 			"name": "Instagram",
 			"code": ["!ig", "!instagram", "!insta", "!igu"],
@@ -221,7 +192,6 @@
 			}
 		},
 		{
-			"ddgr": 5393,
 			"rank": 20,
 			"name": "eBay",
 			"code": ["!e", "!ebay", "!eb"],
@@ -231,7 +201,6 @@
 			}
 		},
 		{
-			"ddgr": 5385,
 			"rank": 21,
 			"name": "Reddit",
 			"code": ["!r", "!reddit"],
@@ -241,7 +210,6 @@
 			}
 		},
 		{
-			"ddgr": 4791,
 			"rank": 22,
 			"name": "History",
 			"code": ["!history"],
@@ -251,7 +219,6 @@
 			}
 		},
 		{
-			"ddgr": 4500,
 			"rank": 23,
 			"name": "Rate Your Music",
 			"code": ["!rym", "!rateyourmusic", "!rymf"],
@@ -261,7 +228,6 @@
 			}
 		},
 		{
-			"ddgr": 4394,
 			"rank": 24,
 			"name": "Wolfram Alpha",
 			"code": ["!wa", "!wolframalpha", "!wolfram", "!wolf", "!alpha", "!wra", "!walpha"],
@@ -271,7 +237,6 @@
 			}
 		},
 		{
-			"ddgr": 4384,
 			"rank": 25,
 			"name": "Old Reddit (subreddit)",
 			"code": ["!ors", "!osr", "!srold", "!sro"],
@@ -281,7 +246,6 @@
 			}
 		},
 		{
-			"ddgr": 4049,
 			"rank": 26,
 			"name": "Google DE",
 			"code": ["!gde"],
@@ -291,7 +255,6 @@
 			}
 		},
 		{
-			"ddgr": 3885,
 			"rank": 27,
 			"name": "NixOS Packages Search",
 			"code": ["!nixpkgs"],
@@ -301,7 +264,6 @@
 			}
 		},
 		{
-			"ddgr": 3676,
 			"rank": 28,
 			"name": "Google UK",
 			"code": ["!guk", "!googleuk", "!g.uk"],
@@ -311,7 +273,6 @@
 			}
 		},
 		{
-			"ddgr": 3595,
 			"rank": 29,
 			"name": "Brave Search",
 			"code": ["!brave"],
@@ -321,7 +282,6 @@
 			}
 		},
 		{
-			"ddgr": 3553,
 			"rank": 30,
 			"name": "Arch User Repository",
 			"code": ["!aur"],
@@ -331,7 +291,6 @@
 			}
 		},
 		{
-			"ddgr": 3457,
 			"rank": 31,
 			"name": "dict.leo.org",
 			"code": ["!leo"],
@@ -341,7 +300,6 @@
 			}
 		},
 		{
-			"ddgr": 3375,
 			"rank": 32,
 			"name": "French Wikipedia",
 			"code": ["!wfr", "!wikifr"],
@@ -351,7 +309,6 @@
 			}
 		},
 		{
-			"ddgr": 3233,
 			"rank": 33,
 			"name": "Google FR",
 			"code": ["!gfr"],
@@ -361,7 +318,6 @@
 			}
 		},
 		{
-			"ddgr": 3213,
 			"rank": 34,
 			"name": "Hacker News",
 			"code": ["!hn", "!hackernews", "!hnsearch", "!newsyc", "!searchyc"],
@@ -371,7 +327,6 @@
 			}
 		},
 		{
-			"ddgr": 3126,
 			"rank": 35,
 			"name": "ArchLinux Wiki",
 			"code": ["!arch"],
@@ -381,7 +336,6 @@
 			}
 		},
 		{
-			"ddgr": 3081,
 			"rank": 36,
 			"name": "Steam",
 			"code": ["!ste", "!steam", "!steme"],
@@ -391,7 +345,6 @@
 			}
 		},
 		{
-			"ddgr": 2934,
 			"rank": 37,
 			"name": "Urban Dictionary",
 			"code": ["!u", "!ud", "!urbandictionary", "!urban"],
@@ -401,7 +354,6 @@
 			}
 		},
 		{
-			"ddgr": 2833,
 			"rank": 38,
 			"name": "Kagi Safe Search: Off",
 			"code": ["!safeoff"],
@@ -411,7 +363,6 @@
 			}
 		},
 		{
-			"ddgr": 2800,
 			"rank": 39,
 			"name": "Twitch",
 			"code": ["!ttv"],
@@ -421,7 +372,6 @@
 			}
 		},
 		{
-			"ddgr": 2693,
 			"rank": 40,
 			"name": "LinkedIn",
 			"code": ["!li", "!linkedin"],
@@ -431,7 +381,6 @@
 			}
 		},
 		{
-			"ddgr": 2480,
 			"rank": 41,
 			"name": "namuwiki",
 			"code": ["!namu"],
@@ -441,7 +390,6 @@
 			}
 		},
 		{
-			"ddgr": 2280,
 			"rank": 42,
 			"name": "DeepL Translator",
 			"code": ["!dpl", "!deepl"],
@@ -451,7 +399,6 @@
 			}
 		},
 		{
-			"ddgr": 2155,
 			"rank": 43,
 			"name": "Google Maps",
 			"code": ["!gm", "!googlemaps", "!gmaps", "!gmap", "!googlemap", "!гкарты"],
@@ -461,7 +408,6 @@
 			}
 		},
 		{
-			"ddgr": 2152,
 			"rank": 44,
 			"name": "Goodreads",
 			"code": ["!gr"],
@@ -471,7 +417,6 @@
 			}
 		},
 		{
-			"ddgr": 1965,
 			"rank": 45,
 			"name": "Board Game Geek",
 			"code": ["!bgg", "!boardgame"],
@@ -481,7 +426,6 @@
 			}
 		},
 		{
-			"ddgr": 1796,
 			"rank": 46,
 			"name": "Bing Images",
 			"code": ["!bi", "!bingimages", "!bimages", "!bim"],
@@ -491,7 +435,6 @@
 			}
 		},
 		{
-			"ddgr": 1741,
 			"rank": 47,
 			"name": "Yahoo Japan",
 			"code": ["!yj", "!yjp"],
@@ -501,7 +444,6 @@
 			}
 		},
 		{
-			"ddgr": 1712,
 			"rank": 48,
 			"name": "Google Drive",
 			"code": ["!drive", "!gdrive", "!гдиск", "!драйв"],
@@ -511,7 +453,6 @@
 			}
 		},
 		{
-			"ddgr": 1710,
 			"rank": 49,
 			"name": "Reddit subreddit",
 			"code": ["!sr", "!subreddit", "!rds", "!rsub", "!reddits", "!subr", "!sbr", "!sreddit"],
@@ -521,7 +462,6 @@
 			}
 		},
 		{
-			"ddgr": 1658,
 			"rank": 50,
 			"name": "Google Finance",
 			"code": ["!gf", "!gfinance", "!stock"],
@@ -531,7 +471,6 @@
 			}
 		},
 		{
-			"ddgr": 1657,
 			"rank": 51,
 			"name": "Discogs",
 			"code": ["!dis", "!discogs"],
@@ -541,7 +480,6 @@
 			}
 		},
 		{
-			"ddgr": 1654,
 			"rank": 52,
 			"name": "Kagi Assistant - Chat",
 			"code": ["!chat"],
@@ -551,7 +489,6 @@
 			}
 		},
 		{
-			"ddgr": 1625,
 			"rank": 53,
 			"name": "Google Video",
 			"code": ["!gv", "!гв"],
@@ -561,26 +498,15 @@
 			}
 		},
 		{
-			"ddgr": 1565,
 			"rank": 54,
 			"name": "Scryfall",
-			"code": [
-				"!mtg",
-				"!scry",
-				"!magiccards",
-				"!scryfall",
-				"!sfa",
-				"!sfl",
-				"!mc.info",
-				"!magiccard"
-			],
+			"code": ["!mtg", "!scry", "!magiccards", "!scryfall", "!sfa", "!sfl", "!mc.info", "!magiccard"],
 			"tags": ["Entertainment/Games (offline)"],
 			"urls": {
 				"s": "https://scryfall.com/search?q=%s"
 			}
 		},
 		{
-			"ddgr": 1564,
 			"rank": 55,
 			"name": "Yahoo! Japan Realtime",
 			"code": ["!yjr", "!yrtjp"],
@@ -590,7 +516,6 @@
 			}
 		},
 		{
-			"ddgr": 1549,
 			"rank": 56,
 			"name": "dict.cc",
 			"code": ["!dcc", "!dict.cc", "!dictcc", "!deen", "!dende"],
@@ -600,7 +525,6 @@
 			}
 		},
 		{
-			"ddgr": 1499,
 			"rank": 57,
 			"name": "Flickr",
 			"code": ["!f", "!flickr"],
@@ -610,7 +534,6 @@
 			}
 		},
 		{
-			"ddgr": 1391,
 			"rank": 58,
 			"name": "Wiktionary Search",
 			"code": ["!wikt", "!wiktionary", "!wten", "!wikten", "!wtla"],
@@ -620,7 +543,6 @@
 			}
 		},
 		{
-			"ddgr": 1370,
 			"rank": 59,
 			"name": "Jisho.org",
 			"code": ["!ji", "!jisho"],
@@ -630,7 +552,6 @@
 			}
 		},
 		{
-			"ddgr": 1361,
 			"rank": 60,
 			"name": "Amazon.fr",
 			"code": ["!afr", "!amazonfr", "!azf", "!amfr"],
@@ -640,7 +561,6 @@
 			}
 		},
 		{
-			"ddgr": 1358,
 			"rank": 61,
 			"name": "Google Calendar",
 			"code": ["!gcal", "!календарь", "!calendar", "!гкал"],
@@ -650,7 +570,6 @@
 			}
 		},
 		{
-			"ddgr": 1346,
 			"rank": 62,
 			"name": "Google TW",
 			"code": ["!gtw"],
@@ -660,7 +579,6 @@
 			}
 		},
 		{
-			"ddgr": 1289,
 			"rank": 63,
 			"name": "Google Spain",
 			"code": ["!ges"],
@@ -670,7 +588,6 @@
 			}
 		},
 		{
-			"ddgr": 1253,
 			"rank": 64,
 			"name": "Kagi Videos",
 			"code": ["!v", "!videos", "!video", "!vids"],
@@ -680,7 +597,6 @@
 			}
 		},
 		{
-			"ddgr": 1229,
 			"rank": 65,
 			"name": "old reddit",
 			"code": ["!ored"],
@@ -690,7 +606,6 @@
 			}
 		},
 		{
-			"ddgr": 1227,
 			"rank": 66,
 			"name": "Google News",
 			"code": ["!gn", "!gnews", "!gnus"],
@@ -700,7 +615,6 @@
 			}
 		},
 		{
-			"ddgr": 1227,
 			"rank": 67,
 			"name": "PyPI",
 			"code": ["!pip", "!pypi", "!pypa"],
@@ -710,7 +624,6 @@
 			}
 		},
 		{
-			"ddgr": 1216,
 			"rank": 68,
 			"name": "Google Shopping",
 			"code": ["!gs", "!gshopping", "!shopping"],
@@ -720,7 +633,6 @@
 			}
 		},
 		{
-			"ddgr": 1215,
 			"rank": 69,
 			"name": "Archive of our Own",
 			"code": ["!ao3"],
@@ -730,7 +642,6 @@
 			}
 		},
 		{
-			"ddgr": 1211,
 			"rank": 70,
 			"name": "Pixiv",
 			"code": ["!pixiv"],
@@ -740,7 +651,6 @@
 			}
 		},
 		{
-			"ddgr": 1127,
 			"rank": 71,
 			"name": "Google Japan",
 			"code": ["!gj", "!googlejp"],
@@ -750,7 +660,6 @@
 			}
 		},
 		{
-			"ddgr": 1115,
 			"rank": 72,
 			"name": "Google Australia",
 			"code": ["!ga", "!googleoz"],
@@ -760,7 +669,6 @@
 			}
 		},
 		{
-			"ddgr": 1062,
 			"rank": 73,
 			"name": "cppreference.com",
 			"code": ["!cpp", "!cppref", "!c++ref"],
@@ -770,7 +678,6 @@
 			}
 		},
 		{
-			"ddgr": 1056,
 			"rank": 74,
 			"name": "Spanish Wikipedia",
 			"code": ["!wes", "!eswiki", "!wikies"],
@@ -780,7 +687,6 @@
 			}
 		},
 		{
-			"ddgr": 1045,
 			"rank": 75,
 			"name": "Google HK",
 			"code": ["!ghk"],
@@ -790,7 +696,6 @@
 			}
 		},
 		{
-			"ddgr": 1005,
 			"rank": 76,
 			"name": "Discord Invite",
 			"code": ["!discord"],
@@ -800,7 +705,6 @@
 			}
 		},
 		{
-			"ddgr": 987,
 			"rank": 77,
 			"name": "Bing Videos",
 			"code": ["!bv", "!bingvideos", "!bvideo", "!bvideos"],
@@ -810,7 +714,6 @@
 			}
 		},
 		{
-			"ddgr": 984,
 			"rank": 78,
 			"name": "Google Mail",
 			"code": ["!mail"],
@@ -820,7 +723,6 @@
 			}
 		},
 		{
-			"ddgr": 946,
 			"rank": 79,
 			"name": "Google Scholar",
 			"code": ["!gsc", "!scholar", "!googlescholar", "!gsch", "!gscholar", "!gschol", "!papers"],
@@ -830,7 +732,6 @@
 			}
 		},
 		{
-			"ddgr": 945,
 			"rank": 80,
 			"name": "Internet",
 			"code": ["!archive", "!iarchive"],
@@ -840,7 +741,6 @@
 			}
 		},
 		{
-			"ddgr": 943,
 			"rank": 81,
 			"name": "Italian Wikipedia",
 			"code": ["!wit", "!wikipediait", "!itwiki", "!wikiit"],
@@ -850,7 +750,6 @@
 			}
 		},
 		{
-			"ddgr": 916,
 			"rank": 82,
 			"name": "Apple Maps",
 			"code": ["!am", "!applemaps", "!amaps"],
@@ -860,7 +759,6 @@
 			}
 		},
 		{
-			"ddgr": 870,
 			"rank": 83,
 			"name": "TV Tropes",
 			"code": ["!tvt", "!tvtropes", "!trope"],
@@ -870,7 +768,6 @@
 			}
 		},
 		{
-			"ddgr": 837,
 			"rank": 84,
 			"name": "tumblr",
 			"code": ["!tumblr"],
@@ -880,7 +777,6 @@
 			}
 		},
 		{
-			"ddgr": 824,
 			"rank": 85,
 			"name": "archive.is",
 			"code": ["!ais", "!archiveis"],
@@ -890,7 +786,6 @@
 			}
 		},
 		{
-			"ddgr": 792,
 			"rank": 86,
 			"name": "Docs.rs",
 			"code": ["!docsrs", "!docs.rs"],
@@ -900,7 +795,6 @@
 			}
 		},
 		{
-			"ddgr": 783,
 			"rank": 87,
 			"name": "Amazon.it",
 			"code": ["!ait", "!amazon.it", "!amazonit", "!amit", "!a.it"],
@@ -910,7 +804,6 @@
 			}
 		},
 		{
-			"ddgr": 782,
 			"rank": 88,
 			"name": "Walmart",
 			"code": ["!walmart"],
@@ -920,30 +813,15 @@
 			}
 		},
 		{
-			"ddgr": 762,
 			"rank": 89,
 			"name": "DuckDuckGo Images",
-			"code": [
-				"!ddi",
-				"!ddgi",
-				"!ddg-pictures",
-				"!dgi",
-				"!dggi",
-				"!dim",
-				"!ddg-i",
-				"!ddg-img",
-				"!ddg-imgs",
-				"!ddg-pics",
-				"!ddg-image",
-				"!ddg-images"
-			],
+			"code": ["!ddi", "!ddgi", "!ddg-pictures", "!dgi", "!dggi", "!dim", "!ddg-i", "!ddg-img", "!ddg-imgs", "!ddg-pics", "!ddg-image", "!ddg-images"],
 			"tags": ["Online Services/Search (DDG)"],
 			"urls": {
 				"s": "https://duckduckgo.com/?q=%s&iax=images&ia=images"
 			}
 		},
 		{
-			"ddgr": 716,
 			"rank": 90,
 			"name": "Google CA",
 			"code": ["!gca"],
@@ -953,7 +831,6 @@
 			}
 		},
 		{
-			"ddgr": 711,
 			"rank": 91,
 			"name": "Steam Database",
 			"code": ["!steamdb"],
@@ -963,7 +840,6 @@
 			}
 		},
 		{
-			"ddgr": 699,
 			"rank": 92,
 			"name": "Kagi News",
 			"code": ["!n", "!news"],
@@ -973,7 +849,6 @@
 			}
 		},
 		{
-			"ddgr": 698,
 			"rank": 93,
 			"name": "Amazon.ca",
 			"code": ["!aca", "!amazonca", "!amca", "!azca", "!am.ca"],
@@ -983,7 +858,6 @@
 			}
 		},
 		{
-			"ddgr": 698,
 			"rank": 94,
 			"name": "Genius",
 			"code": ["!rg", "!genius", "!gen", "!rap"],
@@ -993,7 +867,6 @@
 			}
 		},
 		{
-			"ddgr": 696,
 			"rank": 95,
 			"name": "Bulbapedia",
 			"code": ["!bu", "!bulba", "!bulbapedia", "!bpa", "!bpedia"],
@@ -1003,7 +876,6 @@
 			}
 		},
 		{
-			"ddgr": 695,
 			"rank": 96,
 			"name": "Dutch Wikipedia",
 			"code": ["!wnl", "!nlwiki", "!wikinl", "!nlwi"],
@@ -1013,7 +885,6 @@
 			}
 		},
 		{
-			"ddgr": 686,
 			"rank": 97,
 			"name": "4chan Board",
 			"code": ["!4ch"],
@@ -1023,7 +894,6 @@
 			}
 		},
 		{
-			"ddgr": 675,
 			"rank": 98,
 			"name": "アマゾン (Amazon Japan)",
 			"code": ["!aj", "!ajp", "!amazonjp", "!amjp", "!ajl"],
@@ -1033,7 +903,6 @@
 			}
 		},
 		{
-			"ddgr": 648,
 			"rank": 99,
 			"name": "Docs.rs - Documentation for Rust packages",
 			"code": ["!drs", "!rs-docs"],
@@ -1043,7 +912,6 @@
 			}
 		},
 		{
-			"ddgr": 643,
 			"rank": 100,
 			"name": "Nico Nico Douga",
 			"code": ["!nico", "!niconico"],
@@ -1053,7 +921,6 @@
 			}
 		},
 		{
-			"ddgr": 625,
 			"rank": 101,
 			"name": "Docker Hub",
 			"code": ["!dh", "!docker", "!dockerhub", "!dhub"],
@@ -1063,7 +930,6 @@
 			}
 		},
 		{
-			"ddgr": 606,
 			"rank": 102,
 			"name": "Startpage",
 			"code": ["!startpage"],
@@ -1073,7 +939,6 @@
 			}
 		},
 		{
-			"ddgr": 600,
 			"rank": 103,
 			"name": "Gmail",
 			"code": ["!go", "!gmailh", "!gma"],
@@ -1083,7 +948,6 @@
 			}
 		},
 		{
-			"ddgr": 599,
 			"rank": 104,
 			"name": "Reddit on Google",
 			"code": ["!greddit"],
@@ -1093,7 +957,6 @@
 			}
 		},
 		{
-			"ddgr": 597,
 			"rank": 105,
 			"name": "Google BR",
 			"code": ["!gbr"],
@@ -1103,7 +966,6 @@
 			}
 		},
 		{
-			"ddgr": 593,
 			"rank": 106,
 			"name": "Proton Mail",
 			"code": ["!protonmail"],
@@ -1113,7 +975,6 @@
 			}
 		},
 		{
-			"ddgr": 583,
 			"rank": 107,
 			"name": "QR Code Search",
 			"code": ["!qr"],
@@ -1123,7 +984,6 @@
 			}
 		},
 		{
-			"ddgr": 570,
 			"rank": 108,
 			"name": "ebay.co.uk",
 			"code": ["!euk", "!ebayuk", "!ebuk"],
@@ -1133,7 +993,6 @@
 			}
 		},
 		{
-			"ddgr": 560,
 			"rank": 109,
 			"name": "tenor",
 			"code": ["!tenor"],
@@ -1143,7 +1002,6 @@
 			}
 		},
 		{
-			"ddgr": 551,
 			"rank": 110,
 			"name": "AniList",
 			"code": ["!al", "!an"],
@@ -1153,7 +1011,6 @@
 			}
 		},
 		{
-			"ddgr": 550,
 			"rank": 111,
 			"name": "Google CL",
 			"code": ["!gcl"],
@@ -1163,7 +1020,6 @@
 			}
 		},
 		{
-			"ddgr": 544,
 			"rank": 112,
 			"name": "Hoogle",
 			"code": ["!h", "!hoogle", "!hgle", "!ho", "!hgl"],
@@ -1173,7 +1029,6 @@
 			}
 		},
 		{
-			"ddgr": 537,
 			"rank": 113,
 			"name": "Cargo",
 			"code": ["!cargo", "!crates"],
@@ -1183,7 +1038,6 @@
 			}
 		},
 		{
-			"ddgr": 526,
 			"rank": 114,
 			"name": "NixOS Packages",
 			"code": ["!nixpkg"],
@@ -1193,7 +1047,6 @@
 			}
 		},
 		{
-			"ddgr": 523,
 			"rank": 115,
 			"name": "Debian Packages",
 			"code": ["!deb", "!debpackages", "!dpkg", "!dtr", "!debianpack", "!dpts", "!dpackages"],
@@ -1203,7 +1056,6 @@
 			}
 		},
 		{
-			"ddgr": 516,
 			"rank": 116,
 			"name": "Reddit (Kagi Search)",
 			"code": ["!ddgr", "!searchr"],
@@ -1213,7 +1065,6 @@
 			}
 		},
 		{
-			"ddgr": 514,
 			"rank": 117,
 			"name": "4plebs Archive",
 			"code": ["!4plebs"],
@@ -1223,7 +1074,6 @@
 			}
 		},
 		{
-			"ddgr": 511,
 			"rank": 118,
 			"name": "Yandex (en)",
 			"code": ["!yan", "!yandexen", "!yaen"],
@@ -1233,7 +1083,6 @@
 			}
 		},
 		{
-			"ddgr": 502,
 			"rank": 119,
 			"name": "The Blue Alliance",
 			"code": ["!tba"],
@@ -1243,7 +1092,6 @@
 			}
 		},
 		{
-			"ddgr": 499,
 			"rank": 120,
 			"name": "DeviantArt",
 			"code": ["!da", "!deviantart"],
@@ -1253,7 +1101,6 @@
 			}
 		},
 		{
-			"ddgr": 499,
 			"rank": 121,
 			"name": "diki.pl",
 			"code": ["!diki"],
@@ -1263,7 +1110,6 @@
 			}
 		},
 		{
-			"ddgr": 486,
 			"rank": 122,
 			"name": "Bandcamp",
 			"code": ["!bndc", "!bandcamp", "!bcamp"],
@@ -1273,7 +1119,6 @@
 			}
 		},
 		{
-			"ddgr": 484,
 			"rank": 123,
 			"name": "Wikipedia in Japanese",
 			"code": ["!wj"],
@@ -1283,7 +1128,6 @@
 			}
 		},
 		{
-			"ddgr": 482,
 			"rank": 124,
 			"name": "BBC.co.uk",
 			"code": ["!bbc", "!bbcr"],
@@ -1293,7 +1137,6 @@
 			}
 		},
 		{
-			"ddgr": 481,
 			"rank": 125,
 			"name": "SlickDeals",
 			"code": ["!sd", "!slickdeals"],
@@ -1303,7 +1146,6 @@
 			}
 		},
 		{
-			"ddgr": 479,
 			"rank": 126,
 			"name": "Arch manual pages",
 			"code": ["!man", "!archman", "!manpage"],
@@ -1313,7 +1155,6 @@
 			}
 		},
 		{
-			"ddgr": 478,
 			"rank": 127,
 			"name": "Granblue Fantasy Wiki",
 			"code": ["!gbf"],
@@ -1323,7 +1164,6 @@
 			}
 		},
 		{
-			"ddgr": 469,
 			"rank": 128,
 			"name": "Le Bon Coin",
 			"code": ["!lbc", "!leboncoin"],
@@ -1333,7 +1173,6 @@
 			}
 		},
 		{
-			"ddgr": 469,
 			"rank": 129,
 			"name": "Wikidata",
 			"code": ["!wd", "!wikidata", "!wdt"],
@@ -1343,7 +1182,6 @@
 			}
 		},
 		{
-			"ddgr": 463,
 			"rank": 130,
 			"name": "AliExpress",
 			"code": ["!ae", "!ali", "!aliexpress", "!aliexp"],
@@ -1353,7 +1191,6 @@
 			}
 		},
 		{
-			"ddgr": 463,
 			"rank": 131,
 			"name": "Duden",
 			"code": ["!duden"],
@@ -1363,7 +1200,6 @@
 			}
 		},
 		{
-			"ddgr": 461,
 			"rank": 132,
 			"name": "GoodReads",
 			"code": ["!goodreads"],
@@ -1373,7 +1209,6 @@
 			}
 		},
 		{
-			"ddgr": 459,
 			"rank": 133,
 			"name": "The Free Dictionary",
 			"code": ["!d", "!thefreedictionary", "!define", "!tfd", "!def", "!dictionary", "!idioms"],
@@ -1383,7 +1218,6 @@
 			}
 		},
 		{
-			"ddgr": 450,
 			"rank": 134,
 			"name": "Domaintools Whois",
 			"code": ["!whois"],
@@ -1393,7 +1227,6 @@
 			}
 		},
 		{
-			"ddgr": 447,
 			"rank": 135,
 			"name": "lib.rs",
 			"code": ["!librs"],
@@ -1403,7 +1236,6 @@
 			}
 		},
 		{
-			"ddgr": 443,
 			"rank": 136,
 			"name": "fr.wikipedia.org",
 			"code": ["!wf"],
@@ -1413,7 +1245,6 @@
 			}
 		},
 		{
-			"ddgr": 431,
 			"rank": 137,
 			"name": "Polish Wikipedia",
 			"code": ["!wpl", "!plwiki", "!plw", "!wikipl"],
@@ -1423,7 +1254,6 @@
 			}
 		},
 		{
-			"ddgr": 425,
 			"rank": 138,
 			"name": "WhatIsMyIPAddress.com",
 			"code": ["!ip"],
@@ -1433,7 +1263,6 @@
 			}
 		},
 		{
-			"ddgr": 412,
 			"rank": 139,
 			"name": "Spotify",
 			"code": ["!spy", "!spotify", "!spotifysearch", "!spt"],
@@ -1443,7 +1272,6 @@
 			}
 		},
 		{
-			"ddgr": 409,
 			"rank": 140,
 			"name": "Japanese Wikipedia",
 			"code": ["!wja", "!jawiki", "!jawp", "!wikija"],
@@ -1453,7 +1281,6 @@
 			}
 		},
 		{
-			"ddgr": 403,
 			"rank": 141,
 			"name": "Arch Package Search",
 			"code": ["!pac", "!archpkg", "!apkg"],
@@ -1463,7 +1290,6 @@
 			}
 		},
 		{
-			"ddgr": 399,
 			"rank": 142,
 			"name": "Allegro",
 			"code": ["!allegro"],
@@ -1473,7 +1299,6 @@
 			}
 		},
 		{
-			"ddgr": 395,
 			"rank": 143,
 			"name": "Google finland",
 			"code": ["!gfi"],
@@ -1483,7 +1308,6 @@
 			}
 		},
 		{
-			"ddgr": 385,
 			"rank": 144,
 			"name": "TheTVDB.com",
 			"code": ["!tvdb"],
@@ -1493,7 +1317,6 @@
 			}
 		},
 		{
-			"ddgr": 375,
 			"rank": 145,
 			"name": "yr.no/NRK/Meteorologisk institutt Weather",
 			"code": ["!yr"],
@@ -1503,7 +1326,6 @@
 			}
 		},
 		{
-			"ddgr": 366,
 			"rank": 146,
 			"name": "Etsy",
 			"code": ["!etsy"],
@@ -1513,7 +1335,6 @@
 			}
 		},
 		{
-			"ddgr": 363,
 			"rank": 147,
 			"name": "Zillow",
 			"code": ["!zillow"],
@@ -1523,7 +1344,6 @@
 			}
 		},
 		{
-			"ddgr": 361,
 			"rank": 148,
 			"name": "MobyGames",
 			"code": ["!moby"],
@@ -1533,7 +1353,6 @@
 			}
 		},
 		{
-			"ddgr": 359,
 			"rank": 149,
 			"name": "SpanishDict",
 			"code": ["!sdict", "!spanish", "!spanishdict", "!spandict", "!spanishd"],
@@ -1543,7 +1362,6 @@
 			}
 		},
 		{
-			"ddgr": 358,
 			"rank": 150,
 			"name": "Arch Linux Packages",
 			"code": ["!alp", "!pkg", "!pacman"],
@@ -1553,7 +1371,6 @@
 			}
 		},
 		{
-			"ddgr": 357,
 			"rank": 151,
 			"name": "Google NL",
 			"code": ["!gnl"],
@@ -1563,7 +1380,6 @@
 			}
 		},
 		{
-			"ddgr": 345,
 			"rank": 152,
 			"name": "Trakt",
 			"code": ["!trakt"],
@@ -1573,7 +1389,6 @@
 			}
 		},
 		{
-			"ddgr": 345,
 			"rank": 153,
 			"name": "USPS",
 			"code": ["!usps"],
@@ -1583,7 +1398,6 @@
 			}
 		},
 		{
-			"ddgr": 337,
 			"rank": 154,
 			"name": "Cambridge Dictionary",
 			"code": ["!cald", "!cambridge", "!cdic"],
@@ -1593,7 +1407,6 @@
 			}
 		},
 		{
-			"ddgr": 336,
 			"rank": 155,
 			"name": "Album of The Year",
 			"code": ["!aoty"],
@@ -1603,7 +1416,6 @@
 			}
 		},
 		{
-			"ddgr": 335,
 			"rank": 156,
 			"name": "IMDb",
 			"code": ["!imd"],
@@ -1613,7 +1425,6 @@
 			}
 		},
 		{
-			"ddgr": 335,
 			"rank": 157,
 			"name": "MusicBrainz (artist)",
 			"code": ["!mb", "!musicbrainz"],
@@ -1623,7 +1434,6 @@
 			}
 		},
 		{
-			"ddgr": 332,
 			"rank": 158,
 			"name": "Tureng",
 			"code": ["!tureng"],
@@ -1633,7 +1443,6 @@
 			}
 		},
 		{
-			"ddgr": 323,
 			"rank": 159,
 			"name": "Pinterest",
 			"code": ["!pin"],
@@ -1643,7 +1452,6 @@
 			}
 		},
 		{
-			"ddgr": 322,
 			"rank": 160,
 			"name": "Amazon Brazil",
 			"code": ["!abr"],
@@ -1653,7 +1461,6 @@
 			}
 		},
 		{
-			"ddgr": 322,
 			"rank": 161,
 			"name": "Kagi Search (no JS)",
 			"code": ["!html", "!noscript", "!nojs"],
@@ -1663,7 +1470,6 @@
 			}
 		},
 		{
-			"ddgr": 322,
 			"rank": 162,
 			"name": "YouTube Music",
 			"code": ["!myt", "!ytm", "!ytmusic", "!ytmu", "!ютм"],
@@ -1673,7 +1479,6 @@
 			}
 		},
 		{
-			"ddgr": 317,
 			"rank": 163,
 			"name": "ebay.de",
 			"code": ["!ede", "!ebayde", "!ebde"],
@@ -1683,7 +1488,6 @@
 			}
 		},
 		{
-			"ddgr": 315,
 			"rank": 164,
 			"name": "Giphy",
 			"code": ["!giphy"],
@@ -1693,7 +1497,6 @@
 			}
 		},
 		{
-			"ddgr": 309,
 			"rank": 165,
 			"name": "HLTV.org",
 			"code": ["!hltv"],
@@ -1703,7 +1506,6 @@
 			}
 		},
 		{
-			"ddgr": 304,
 			"rank": 166,
 			"name": "OpenStreetMap Wiki",
 			"code": ["!osmw", "!openstreetmapwiki", "!wosm", "!osmwiki"],
@@ -1713,7 +1515,6 @@
 			}
 		},
 		{
-			"ddgr": 298,
 			"rank": 167,
 			"name": "Old Reddit",
 			"code": ["!rold", "!oldreddit", "!oldred", "!redditold"],
@@ -1723,7 +1524,6 @@
 			}
 		},
 		{
-			"ddgr": 293,
 			"rank": 168,
 			"name": "Daum",
 			"code": ["!daum"],
@@ -1733,7 +1533,6 @@
 			}
 		},
 		{
-			"ddgr": 290,
 			"rank": 169,
 			"name": "Google Translate (to English)",
 			"code": ["!gt", "!gt-english", "!gten", "!gtranslate", "!гп", "!gtenglish"],
@@ -1743,29 +1542,15 @@
 			}
 		},
 		{
-			"ddgr": 288,
 			"rank": 170,
 			"name": "Amazon Germany / Austria",
-			"code": [
-				"!ade",
-				"!amazon_de",
-				"!ama",
-				"!amde",
-				"!amazonde",
-				"!azd",
-				"!a.de",
-				"!age",
-				"!ager",
-				"!amznde",
-				"!a.at"
-			],
+			"code": ["!ade", "!amazon_de", "!ama", "!amde", "!amazonde", "!azd", "!a.de", "!age", "!ager", "!amznde", "!a.at"],
 			"tags": ["Shopping/Online"],
 			"urls": {
 				"s": "https://www.amazon.de/s?k=%s"
 			}
 		},
 		{
-			"ddgr": 287,
 			"rank": 171,
 			"name": "Google Image Search",
 			"code": ["!gis"],
@@ -1775,7 +1560,6 @@
 			}
 		},
 		{
-			"ddgr": 281,
 			"rank": 172,
 			"name": "Finnish Wikipedia",
 			"code": ["!wfi", "!fiwiki", "!wi-fi", "!wikifi"],
@@ -1785,7 +1569,6 @@
 			}
 		},
 		{
-			"ddgr": 279,
 			"rank": 173,
 			"name": "VNDB",
 			"code": ["!vndb"],
@@ -1795,7 +1578,6 @@
 			}
 		},
 		{
-			"ddgr": 277,
 			"rank": 174,
 			"name": "Google AU",
 			"code": ["!gau"],
@@ -1805,7 +1587,6 @@
 			}
 		},
 		{
-			"ddgr": 276,
 			"rank": 175,
 			"name": "Pro Cycling Stats",
 			"code": ["!pcs"],
@@ -1815,7 +1596,6 @@
 			}
 		},
 		{
-			"ddgr": 274,
 			"rank": 176,
 			"name": "osu!",
 			"code": ["!osu"],
@@ -1825,7 +1605,6 @@
 			}
 		},
 		{
-			"ddgr": 265,
 			"rank": 177,
 			"name": "NixOS Options Search",
 			"code": ["!nixopt"],
@@ -1835,7 +1614,6 @@
 			}
 		},
 		{
-			"ddgr": 262,
 			"rank": 178,
 			"name": "Google Docs",
 			"code": ["!gd", "!gdocs", "!гдокументы", "!гд", "!гдок", "!гдокс"],
@@ -1845,7 +1623,6 @@
 			}
 		},
 		{
-			"ddgr": 261,
 			"rank": 179,
 			"name": "Guild Wars 2 Wiki",
 			"code": ["!gw2", "!gw2wiki"],
@@ -1855,7 +1632,6 @@
 			}
 		},
 		{
-			"ddgr": 259,
 			"rank": 180,
 			"name": "Google AR",
 			"code": ["!gar"],
@@ -1865,7 +1641,6 @@
 			}
 		},
 		{
-			"ddgr": 254,
 			"rank": 181,
 			"name": "Cricbuzz",
 			"code": ["!cricbuzz"],
@@ -1875,7 +1650,6 @@
 			}
 		},
 		{
-			"ddgr": 254,
 			"rank": 182,
 			"name": "Google Groups",
 			"code": ["!gg", "!ggroups", "!гг"],
@@ -1885,7 +1659,6 @@
 			}
 		},
 		{
-			"ddgr": 251,
 			"rank": 183,
 			"name": "UPS Tracking",
 			"code": ["!ups"],
@@ -1895,7 +1668,6 @@
 			}
 		},
 		{
-			"ddgr": 249,
 			"rank": 184,
 			"name": "ESPN.com",
 			"code": ["!espn"],
@@ -1905,7 +1677,6 @@
 			}
 		},
 		{
-			"ddgr": 245,
 			"rank": 185,
 			"name": "Swedish Wikipedia",
 			"code": ["!wsv", "!svwiki", "!wikisv"],
@@ -1915,7 +1686,6 @@
 			}
 		},
 		{
-			"ddgr": 243,
 			"rank": 186,
 			"name": "Baseball Reference",
 			"code": ["!bbref", "!baseball"],
@@ -1925,7 +1695,6 @@
 			}
 		},
 		{
-			"ddgr": 242,
 			"rank": 187,
 			"name": "pinterest.com/",
 			"code": ["!pinterest"],
@@ -1935,7 +1704,6 @@
 			}
 		},
 		{
-			"ddgr": 235,
 			"rank": 188,
 			"name": "The Maven Repository",
 			"code": ["!mvn", "!mvnrep"],
@@ -1945,7 +1713,6 @@
 			}
 		},
 		{
-			"ddgr": 234,
 			"rank": 189,
 			"name": "JustWatch",
 			"code": ["!jwh", "!justwatch"],
@@ -1955,7 +1722,6 @@
 			}
 		},
 		{
-			"ddgr": 232,
 			"rank": 190,
 			"name": "LEO Dictionary English",
 			"code": ["!leoe"],
@@ -1965,7 +1731,6 @@
 			}
 		},
 		{
-			"ddgr": 231,
 			"rank": 191,
 			"name": "Google BE",
 			"code": ["!gbe"],
@@ -1975,7 +1740,6 @@
 			}
 		},
 		{
-			"ddgr": 231,
 			"rank": 192,
 			"name": "OneLook.com",
 			"code": ["!o"],
@@ -1985,7 +1749,6 @@
 			}
 		},
 		{
-			"ddgr": 228,
 			"rank": 193,
 			"name": "Gentoo Wiki",
 			"code": ["!gw", "!installgentoo", "!gentoo", "!gwiki", "!gentoowiki"],
@@ -1995,7 +1758,6 @@
 			}
 		},
 		{
-			"ddgr": 226,
 			"rank": 194,
 			"name": "Final Fantasy XIV A Realm Reborn Wiki",
 			"code": ["!ffxiv"],
@@ -2005,7 +1767,6 @@
 			}
 		},
 		{
-			"ddgr": 225,
 			"rank": 195,
 			"name": "startpage.com",
 			"code": ["!start"],
@@ -2015,7 +1776,6 @@
 			}
 		},
 		{
-			"ddgr": 224,
 			"rank": 196,
 			"name": "Cambridge Dictionary (American English)",
 			"code": ["!camd"],
@@ -2025,7 +1785,6 @@
 			}
 		},
 		{
-			"ddgr": 224,
 			"rank": 197,
 			"name": "Википедия",
 			"code": ["!ш", "!wru", "!ruwiki", "!wikiru", "!ц", "!шру", "!ruwk", "!w.ru", "!вики"],
@@ -2035,7 +1794,6 @@
 			}
 		},
 		{
-			"ddgr": 221,
 			"rank": 198,
 			"name": "last.fm music",
 			"code": ["!lfm", "!lastfmmusic"],
@@ -2045,7 +1803,6 @@
 			}
 		},
 		{
-			"ddgr": 219,
 			"rank": 199,
 			"name": "Google Earth",
 			"code": ["!earth", "!земля"],
@@ -2055,7 +1812,6 @@
 			}
 		},
 		{
-			"ddgr": 214,
 			"rank": 200,
 			"name": "YouTube France",
 			"code": ["!ytfr"],
@@ -2065,7 +1821,6 @@
 			}
 		},
 		{
-			"ddgr": 213,
 			"rank": 201,
 			"name": "Seeking Alpha",
 			"code": ["!seekingalpha"],
@@ -2075,7 +1830,6 @@
 			}
 		},
 		{
-			"ddgr": 212,
 			"rank": 202,
 			"name": "B&H Photo Video",
 			"code": ["!bh", "!bhphotovideo"],
@@ -2085,7 +1839,6 @@
 			}
 		},
 		{
-			"ddgr": 212,
 			"rank": 203,
 			"name": "Portuguese Wikipedia",
 			"code": ["!wpt", "!ptwiki", "!wikipt"],
@@ -2095,7 +1848,6 @@
 			}
 		},
 		{
-			"ddgr": 212,
 			"rank": 204,
 			"name": "Wikimedia Commons",
 			"code": ["!wim", "!commons", "!wmc", "!wikic"],
@@ -2105,7 +1857,6 @@
 			}
 		},
 		{
-			"ddgr": 209,
 			"rank": 205,
 			"name": "Danbooru",
 			"code": ["!dbr", "!danbooru"],
@@ -2115,7 +1866,6 @@
 			}
 		},
 		{
-			"ddgr": 209,
 			"rank": 206,
 			"name": "Google PL",
 			"code": ["!gpl"],
@@ -2125,7 +1875,6 @@
 			}
 		},
 		{
-			"ddgr": 209,
 			"rank": 207,
 			"name": "Target",
 			"code": ["!tgt", "!target"],
@@ -2135,7 +1884,6 @@
 			}
 		},
 		{
-			"ddgr": 208,
 			"rank": 208,
 			"name": "FedEx",
 			"code": ["!fedex"],
@@ -2145,7 +1893,6 @@
 			}
 		},
 		{
-			"ddgr": 208,
 			"rank": 209,
 			"name": "Geizhals (de)",
 			"code": ["!ghde"],
@@ -2155,7 +1902,6 @@
 			}
 		},
 		{
-			"ddgr": 206,
 			"rank": 210,
 			"name": "AlternativeTo.net",
 			"code": ["!a2", "!alt", "!alternativeto", "!alto", "!ato", "!altto", "!alternative"],
@@ -2165,7 +1911,6 @@
 			}
 		},
 		{
-			"ddgr": 206,
 			"rank": 211,
 			"name": "RationalWiki",
 			"code": ["!rw", "!rationalwiki"],
@@ -2175,7 +1920,6 @@
 			}
 		},
 		{
-			"ddgr": 204,
 			"rank": 212,
 			"name": "Hackage",
 			"code": ["!hkg", "!hackage", "!hckg"],
@@ -2185,7 +1929,6 @@
 			}
 		},
 		{
-			"ddgr": 204,
 			"rank": 213,
 			"name": "Outlook",
 			"code": ["!outlook"],
@@ -2195,7 +1938,6 @@
 			}
 		},
 		{
-			"ddgr": 202,
 			"rank": 214,
 			"name": "CamelCamelCamel",
 			"code": ["!ccc", "!camel"],
@@ -2205,7 +1947,6 @@
 			}
 		},
 		{
-			"ddgr": 201,
 			"rank": 215,
 			"name": "eBay Kleinanzeigen",
 			"code": ["!klein"],
@@ -2215,7 +1956,6 @@
 			}
 		},
 		{
-			"ddgr": 201,
 			"rank": 216,
 			"name": "Google PT",
 			"code": ["!gpt"],
@@ -2225,7 +1965,6 @@
 			}
 		},
 		{
-			"ddgr": 199,
 			"rank": 217,
 			"name": "WowHead",
 			"code": ["!wowh", "!wowhead"],
@@ -2235,7 +1974,6 @@
 			}
 		},
 		{
-			"ddgr": 197,
 			"rank": 218,
 			"name": "emojipedia",
 			"code": ["!emoji"],
@@ -2245,7 +1983,6 @@
 			}
 		},
 		{
-			"ddgr": 197,
 			"rank": 219,
 			"name": "WordReference (enes)",
 			"code": ["!wrenes"],
@@ -2255,7 +1992,6 @@
 			}
 		},
 		{
-			"ddgr": 196,
 			"rank": 220,
 			"name": "BibleGateway",
 			"code": ["!bg", "!bible", "!biblegateway", "!bgw"],
@@ -2265,7 +2001,6 @@
 			}
 		},
 		{
-			"ddgr": 196,
 			"rank": 221,
 			"name": "Google Keep",
 			"code": ["!гз", "!keep", "!гзаметки"],
@@ -2275,7 +2010,6 @@
 			}
 		},
 		{
-			"ddgr": 196,
 			"rank": 222,
 			"name": "Reverb",
 			"code": ["!reverb"],
@@ -2285,7 +2019,6 @@
 			}
 		},
 		{
-			"ddgr": 194,
 			"rank": 223,
 			"name": "Thesaurus by Merriam-Webster",
 			"code": ["!mwt"],
@@ -2295,7 +2028,6 @@
 			}
 		},
 		{
-			"ddgr": 188,
 			"rank": 224,
 			"name": "Google AT",
 			"code": ["!gat"],
@@ -2305,7 +2037,6 @@
 			}
 		},
 		{
-			"ddgr": 187,
 			"rank": 225,
 			"name": "The Guardian",
 			"code": ["!guardian"],
@@ -2315,7 +2046,6 @@
 			}
 		},
 		{
-			"ddgr": 185,
 			"rank": 226,
 			"name": "Last.fm",
 			"code": ["!lastfm", "!last.fm"],
@@ -2325,7 +2055,6 @@
 			}
 		},
 		{
-			"ddgr": 185,
 			"rank": 227,
 			"name": "LibraryThing",
 			"code": ["!lt", "!librarything", "!libthing"],
@@ -2335,7 +2064,6 @@
 			}
 		},
 		{
-			"ddgr": 185,
 			"rank": 228,
 			"name": "Stardew Valley Wiki",
 			"code": ["!sdv", "!stardewvalley", "!stardew", "!svw"],
@@ -2345,7 +2073,6 @@
 			}
 		},
 		{
-			"ddgr": 183,
 			"rank": 229,
 			"name": "ČSFD",
 			"code": ["!csfd"],
@@ -2355,7 +2082,6 @@
 			}
 		},
 		{
-			"ddgr": 182,
 			"rank": 230,
 			"name": "GOG.com",
 			"code": ["!gog"],
@@ -2365,7 +2091,6 @@
 			}
 		},
 		{
-			"ddgr": 182,
 			"rank": 231,
 			"name": "Imgur",
 			"code": ["!imgur"],
@@ -2375,7 +2100,6 @@
 			}
 		},
 		{
-			"ddgr": 181,
 			"rank": 232,
 			"name": "The Unofficial Elder Scrolls Pages",
 			"code": ["!uesp", "!elderwiki", "!teswiki"],
@@ -2385,7 +2109,6 @@
 			}
 		},
 		{
-			"ddgr": 180,
 			"rank": 233,
 			"name": "Geizhals (eu)",
 			"code": ["!geiz"],
@@ -2395,7 +2118,6 @@
 			}
 		},
 		{
-			"ddgr": 179,
 			"rank": 234,
 			"name": "Metacritic",
 			"code": ["!mc", "!metacritic"],
@@ -2405,7 +2127,6 @@
 			}
 		},
 		{
-			"ddgr": 177,
 			"rank": 235,
 			"name": "Amazon.co.uk",
 			"code": ["!auk", "!amazonuk", "!azuk", "!amuk", "!a.uk"],
@@ -2415,7 +2136,6 @@
 			}
 		},
 		{
-			"ddgr": 177,
 			"rank": 236,
 			"name": "Kagi Images (GIF)",
 			"code": ["!gif"],
@@ -2425,7 +2145,6 @@
 			}
 		},
 		{
-			"ddgr": 176,
 			"rank": 237,
 			"name": "Ecosia",
 			"code": ["!ec", "!ecosia", "!eco"],
@@ -2435,7 +2154,6 @@
 			}
 		},
 		{
-			"ddgr": 175,
 			"rank": 238,
 			"name": "Who Sampled",
 			"code": ["!whosampled"],
@@ -2445,7 +2163,6 @@
 			}
 		},
 		{
-			"ddgr": 172,
 			"rank": 239,
 			"name": "Financial Times",
 			"code": ["!ft"],
@@ -2455,7 +2172,6 @@
 			}
 		},
 		{
-			"ddgr": 171,
 			"rank": 240,
 			"name": "Zero Hedge",
 			"code": ["!zh"],
@@ -2465,7 +2181,6 @@
 			}
 		},
 		{
-			"ddgr": 169,
 			"rank": 241,
 			"name": "CNN",
 			"code": ["!cnn"],
@@ -2475,7 +2190,6 @@
 			}
 		},
 		{
-			"ddgr": 169,
 			"rank": 242,
 			"name": "Dict.org",
 			"code": ["!dict"],
@@ -2485,7 +2199,6 @@
 			}
 		},
 		{
-			"ddgr": 169,
 			"rank": 243,
 			"name": "Flipkart",
 			"code": ["!fk", "!flipkart", "!flip"],
@@ -2495,7 +2208,6 @@
 			}
 		},
 		{
-			"ddgr": 168,
 			"rank": 244,
 			"name": "FurAffinity",
 			"code": ["!furaffinity"],
@@ -2505,7 +2217,6 @@
 			}
 		},
 		{
-			"ddgr": 167,
 			"rank": 245,
 			"name": "Centre national de ressources textuelles et lexicales",
 			"code": ["!tlfi", "!cnrtl", "!cnrtld", "!cntrl"],
@@ -2515,7 +2226,6 @@
 			}
 		},
 		{
-			"ddgr": 167,
 			"rank": 246,
 			"name": "Diccionario de la lengua española, 23.ª Edición, RAE",
 			"code": ["!dle", "!rae"],
@@ -2525,7 +2235,6 @@
 			}
 		},
 		{
-			"ddgr": 167,
 			"rank": 247,
 			"name": "U.GG",
 			"code": ["!ugg", "!u.gg"],
@@ -2535,7 +2244,6 @@
 			}
 		},
 		{
-			"ddgr": 166,
 			"rank": 248,
 			"name": "Google News Germany",
 			"code": ["!gnde"],
@@ -2545,7 +2253,6 @@
 			}
 		},
 		{
-			"ddgr": 166,
 			"rank": 249,
 			"name": "Rumble",
 			"code": ["!rumble"],
@@ -2555,7 +2262,6 @@
 			}
 		},
 		{
-			"ddgr": 166,
 			"rank": 250,
 			"name": "TrueAchievements",
 			"code": ["!trueachievements"],
@@ -2565,7 +2271,6 @@
 			}
 		},
 		{
-			"ddgr": 165,
 			"rank": 251,
 			"name": "DWDS",
 			"code": ["!dwds"],
@@ -2575,7 +2280,6 @@
 			}
 		},
 		{
-			"ddgr": 163,
 			"rank": 252,
 			"name": "The Wall Street Journal",
 			"code": ["!wsj"],
@@ -2585,7 +2289,6 @@
 			}
 		},
 		{
-			"ddgr": 162,
 			"rank": 253,
 			"name": "Wiktionary (PL)",
 			"code": ["!wtpl"],
@@ -2595,7 +2298,6 @@
 			}
 		},
 		{
-			"ddgr": 161,
 			"rank": 254,
 			"name": "DuckDuckgo France",
 			"code": ["!ddgf"],
@@ -2605,7 +2307,6 @@
 			}
 		},
 		{
-			"ddgr": 161,
 			"rank": 255,
 			"name": "Wikipedia mobile",
 			"code": ["!wm"],
@@ -2615,7 +2316,6 @@
 			}
 		},
 		{
-			"ddgr": 159,
 			"rank": 256,
 			"name": "Online Etymology Dictionary",
 			"code": ["!eo", "!etym", "!etymonline", "!ety", "!etymology", "!etymo"],
@@ -2625,7 +2325,6 @@
 			}
 		},
 		{
-			"ddgr": 158,
 			"rank": 257,
 			"name": "Amazon Australia",
 			"code": ["!aau", "!amazonau", "!amau"],
@@ -2635,7 +2334,6 @@
 			}
 		},
 		{
-			"ddgr": 157,
 			"rank": 258,
 			"name": "WordReference (esen)",
 			"code": ["!wresen"],
@@ -2645,7 +2343,6 @@
 			}
 		},
 		{
-			"ddgr": 155,
 			"rank": 259,
 			"name": "MetaCPAN",
 			"code": ["!cpan", "!metacpan", "!cpanm", "!mcpan", "!cpan1"],
@@ -2655,7 +2352,6 @@
 			}
 		},
 		{
-			"ddgr": 155,
 			"rank": 260,
 			"name": "nuget gallery",
 			"code": ["!nuget"],
@@ -2665,7 +2361,6 @@
 			}
 		},
 		{
-			"ddgr": 154,
 			"rank": 261,
 			"name": "Costco.com",
 			"code": ["!costco"],
@@ -2675,7 +2370,6 @@
 			}
 		},
 		{
-			"ddgr": 150,
 			"rank": 262,
 			"name": "NOAA",
 			"code": ["!nws", "!noaa", "!wgov"],
@@ -2685,7 +2379,6 @@
 			}
 		},
 		{
-			"ddgr": 150,
 			"rank": 263,
 			"name": "Norwegian Wikipedia",
 			"code": ["!wno", "!nowiki", "!wikino"],
@@ -2695,7 +2388,6 @@
 			}
 		},
 		{
-			"ddgr": 149,
 			"rank": 264,
 			"name": "RebeccaBlackTech",
 			"code": ["!rbt"],
@@ -2705,7 +2397,6 @@
 			}
 		},
 		{
-			"ddgr": 149,
 			"rank": 265,
 			"name": "Startpage Images",
 			"code": ["!spi", "!startpageimages"],
@@ -2715,7 +2406,6 @@
 			}
 		},
 		{
-			"ddgr": 148,
 			"rank": 266,
 			"name": "Google CH",
 			"code": ["!gch"],
@@ -2725,7 +2415,6 @@
 			}
 		},
 		{
-			"ddgr": 148,
 			"rank": 267,
 			"name": "Homebrew",
 			"code": ["!brew"],
@@ -2735,7 +2424,6 @@
 			}
 		},
 		{
-			"ddgr": 148,
 			"rank": 268,
 			"name": "Keepa",
 			"code": ["!keepa"],
@@ -2745,7 +2433,6 @@
 			}
 		},
 		{
-			"ddgr": 147,
 			"rank": 269,
 			"name": "Google US",
 			"code": ["!gus"],
@@ -2755,7 +2442,6 @@
 			}
 		},
 		{
-			"ddgr": 147,
 			"rank": 270,
 			"name": "Tineye",
 			"code": ["!tineye"],
@@ -2765,7 +2451,6 @@
 			}
 		},
 		{
-			"ddgr": 146,
 			"rank": 271,
 			"name": "Alpine packages",
 			"code": ["!alpine"],
@@ -2775,7 +2460,6 @@
 			}
 		},
 		{
-			"ddgr": 146,
 			"rank": 272,
 			"name": "Yelp",
 			"code": ["!yelp"],
@@ -2785,7 +2469,6 @@
 			}
 		},
 		{
-			"ddgr": 145,
 			"rank": 273,
 			"name": "PTT",
 			"code": ["!ptt"],
@@ -2795,7 +2478,6 @@
 			}
 		},
 		{
-			"ddgr": 144,
 			"rank": 274,
 			"name": "utexas.edu",
 			"code": ["!ut"],
@@ -2805,7 +2487,6 @@
 			}
 		},
 		{
-			"ddgr": 144,
 			"rank": 275,
 			"name": "Yandex Images (en)",
 			"code": ["!ymg", "!iya"],
@@ -2815,7 +2496,6 @@
 			}
 		},
 		{
-			"ddgr": 143,
 			"rank": 276,
 			"name": "Chinese Wikipedia",
 			"code": ["!wzh", "!zhwiki", "!wizh", "!wikizh"],
@@ -2825,7 +2505,6 @@
 			}
 		},
 		{
-			"ddgr": 143,
 			"rank": 277,
 			"name": "Czech Wikipedia",
 			"code": ["!wcs", "!cswiki", "!wcz", "!wikics"],
@@ -2835,7 +2514,6 @@
 			}
 		},
 		{
-			"ddgr": 142,
 			"rank": 278,
 			"name": "Hex Docs",
 			"code": ["!hexdocs"],
@@ -2845,7 +2523,6 @@
 			}
 		},
 		{
-			"ddgr": 141,
 			"rank": 279,
 			"name": "weblio 英和辞典",
 			"code": ["!weblioe"],
@@ -2855,7 +2532,6 @@
 			}
 		},
 		{
-			"ddgr": 139,
 			"rank": 280,
 			"name": "Oxford Advanced Learner's Dictionary",
 			"code": ["!oald"],
@@ -2865,7 +2541,6 @@
 			}
 		},
 		{
-			"ddgr": 138,
 			"rank": 281,
 			"name": "CTAN.org",
 			"code": ["!ctan"],
@@ -2875,7 +2550,6 @@
 			}
 		},
 		{
-			"ddgr": 136,
 			"rank": 282,
 			"name": "Digital Object Identifier",
 			"code": ["!doi"],
@@ -2885,7 +2559,6 @@
 			}
 		},
 		{
-			"ddgr": 136,
 			"rank": 283,
 			"name": "Merriam-Webster",
 			"code": ["!mw", "!merriamwebster", "!mwd", "!dic", "!dmw", "!mweb"],
@@ -2895,7 +2568,6 @@
 			}
 		},
 		{
-			"ddgr": 133,
 			"rank": 284,
 			"name": "Anilist",
 			"code": ["!ani", "!anilist"],
@@ -2905,7 +2577,6 @@
 			}
 		},
 		{
-			"ddgr": 133,
 			"rank": 285,
 			"name": "NPR.org",
 			"code": ["!npr"],
@@ -2915,7 +2586,6 @@
 			}
 		},
 		{
-			"ddgr": 133,
 			"rank": 286,
 			"name": "Yandex Translate",
 			"code": ["!ys", "!ytr", "!yaslovari", "!яп", "!яс", "!yad", "!slov"],
@@ -2925,7 +2595,6 @@
 			}
 		},
 		{
-			"ddgr": 132,
 			"rank": 287,
 			"name": "Finviz",
 			"code": ["!fv", "!fvz"],
@@ -2935,7 +2604,6 @@
 			}
 		},
 		{
-			"ddgr": 130,
 			"rank": 288,
 			"name": "bol.com",
 			"code": ["!bol"],
@@ -2945,7 +2613,6 @@
 			}
 		},
 		{
-			"ddgr": 130,
 			"rank": 289,
 			"name": "Facebook",
 			"code": ["!fb", "!facebook", "!fbk"],
@@ -2955,7 +2622,6 @@
 			}
 		},
 		{
-			"ddgr": 130,
 			"rank": 290,
 			"name": "Vkontakte",
 			"code": ["!vk", "!вк"],
@@ -2965,7 +2631,6 @@
 			}
 		},
 		{
-			"ddgr": 130,
 			"rank": 291,
 			"name": "Wiktionary",
 			"code": ["!wt", "!wictionary", "!wkten", "!wdic", "!wtionary"],
@@ -2975,7 +2640,6 @@
 			}
 		},
 		{
-			"ddgr": 130,
 			"rank": 292,
 			"name": "Yodobashi.com",
 			"code": ["!yodobashi"],
@@ -2985,7 +2649,6 @@
 			}
 		},
 		{
-			"ddgr": 129,
 			"rank": 293,
 			"name": "OED - Oxford English Dictionary",
 			"code": ["!oed"],
@@ -2995,7 +2658,6 @@
 			}
 		},
 		{
-			"ddgr": 128,
 			"rank": 294,
 			"name": "Lowes",
 			"code": ["!lowes"],
@@ -3005,7 +2667,6 @@
 			}
 		},
 		{
-			"ddgr": 127,
 			"rank": 295,
 			"name": "Den Danske Ordbog",
 			"code": ["!ddo", "!ordnet", "!dkord"],
@@ -3015,7 +2676,6 @@
 			}
 		},
 		{
-			"ddgr": 127,
 			"rank": 296,
 			"name": "NationStats (nation)",
 			"code": ["!nsn"],
@@ -3025,7 +2685,6 @@
 			}
 		},
 		{
-			"ddgr": 125,
 			"rank": 297,
 			"name": "baidu",
 			"code": ["!bd"],
@@ -3035,7 +2694,6 @@
 			}
 		},
 		{
-			"ddgr": 125,
 			"rank": 298,
 			"name": "Cricinfo",
 			"code": ["!cricinfo"],
@@ -3045,7 +2703,6 @@
 			}
 		},
 		{
-			"ddgr": 125,
 			"rank": 299,
 			"name": "Google SE",
 			"code": ["!gse"],
@@ -3055,7 +2712,6 @@
 			}
 		},
 		{
-			"ddgr": 125,
 			"rank": 300,
 			"name": "OneLook",
 			"code": ["!onelook"],
@@ -3065,7 +2721,6 @@
 			}
 		},
 		{
-			"ddgr": 124,
 			"rank": 301,
 			"name": "42 Intra",
 			"code": ["!42"],
@@ -3075,7 +2730,6 @@
 			}
 		},
 		{
-			"ddgr": 124,
 			"rank": 302,
 			"name": "Google Translate (to Spanish)",
 			"code": ["!gtes", "!gt-spanish", "!gtspanish"],
@@ -3085,7 +2739,6 @@
 			}
 		},
 		{
-			"ddgr": 123,
 			"rank": 303,
 			"name": "Setlist.fm",
 			"code": ["!sl", "!setlist"],
@@ -3095,7 +2748,6 @@
 			}
 		},
 		{
-			"ddgr": 122,
 			"rank": 304,
 			"name": "Encyclopaedia metallum",
 			"code": ["!mab", "!metal", "!metalarch", "!metallum", "!march", "!maband"],
@@ -3105,7 +2757,6 @@
 			}
 		},
 		{
-			"ddgr": 122,
 			"rank": 305,
 			"name": "Google Photos",
 			"code": ["!гфото", "!gphotos"],
@@ -3115,7 +2766,6 @@
 			}
 		},
 		{
-			"ddgr": 122,
 			"rank": 306,
 			"name": "Hacker News Search",
 			"code": ["!yc"],
@@ -3125,7 +2775,6 @@
 			}
 		},
 		{
-			"ddgr": 122,
 			"rank": 307,
 			"name": "Mastodon Social",
 			"code": ["!msocial"],
@@ -3135,7 +2784,6 @@
 			}
 		},
 		{
-			"ddgr": 122,
 			"rank": 308,
 			"name": "Rakuten Infoseek",
 			"code": ["!infoseek"],
@@ -3145,7 +2793,6 @@
 			}
 		},
 		{
-			"ddgr": 122,
 			"rank": 309,
 			"name": "Shopee",
 			"code": ["!shopeeph"],
@@ -3155,7 +2802,6 @@
 			}
 		},
 		{
-			"ddgr": 121,
 			"rank": 310,
 			"name": "Diccionario de la Lengua Española",
 			"code": ["!drae"],
@@ -3165,7 +2811,6 @@
 			}
 		},
 		{
-			"ddgr": 121,
 			"rank": 311,
 			"name": "The Cutting Room Floor",
 			"code": ["!tcrf"],
@@ -3175,7 +2820,6 @@
 			}
 		},
 		{
-			"ddgr": 120,
 			"rank": 312,
 			"name": "Het Laatste Nieuws",
 			"code": ["!hln"],
@@ -3185,7 +2829,6 @@
 			}
 		},
 		{
-			"ddgr": 119,
 			"rank": 313,
 			"name": "F-Droid search",
 			"code": ["!fdroid"],
@@ -3195,7 +2838,6 @@
 			}
 		},
 		{
-			"ddgr": 119,
 			"rank": 314,
 			"name": "Roblox Marketplace",
 			"code": ["!rblx"],
@@ -3205,7 +2847,6 @@
 			}
 		},
 		{
-			"ddgr": 119,
 			"rank": 315,
 			"name": "Wordhippo",
 			"code": ["!whip", "!wordhippo"],
@@ -3215,7 +2856,6 @@
 			}
 		},
 		{
-			"ddgr": 118,
 			"rank": 316,
 			"name": "Dicio",
 			"code": ["!dpt", "!dicio"],
@@ -3225,7 +2865,6 @@
 			}
 		},
 		{
-			"ddgr": 118,
 			"rank": 317,
 			"name": "Flathub",
 			"code": ["!flat", "!flathub", "!fthub"],
@@ -3235,7 +2874,6 @@
 			}
 		},
 		{
-			"ddgr": 118,
 			"rank": 318,
 			"name": "Google IT",
 			"code": ["!gitl"],
@@ -3245,7 +2883,6 @@
 			}
 		},
 		{
-			"ddgr": 117,
 			"rank": 319,
 			"name": "NAVER",
 			"code": ["!ㄴ", "!naver", "!na", "!nv"],
@@ -3255,7 +2892,6 @@
 			}
 		},
 		{
-			"ddgr": 117,
 			"rank": 320,
 			"name": "The On-Line Encyclopedia of Integer Sequences",
 			"code": ["!oeis"],
@@ -3265,7 +2901,6 @@
 			}
 		},
 		{
-			"ddgr": 116,
 			"rank": 321,
 			"name": "Heureka!",
 			"code": ["!heureka"],
@@ -3275,7 +2910,6 @@
 			}
 		},
 		{
-			"ddgr": 113,
 			"rank": 322,
 			"name": "Elektronik-Kompendium",
 			"code": ["!ek"],
@@ -3285,7 +2919,6 @@
 			}
 		},
 		{
-			"ddgr": 113,
 			"rank": 323,
 			"name": "Walmart US",
 			"code": ["!wus"],
@@ -3295,7 +2928,6 @@
 			}
 		},
 		{
-			"ddgr": 112,
 			"rank": 324,
 			"name": "Bitcoinity Markets",
 			"code": ["!btcm"],
@@ -3305,7 +2937,6 @@
 			}
 		},
 		{
-			"ddgr": 112,
 			"rank": 325,
 			"name": "Google Translate (to French)",
 			"code": ["!gtfr", "!gtrad", "!gt-french", "!gtfrench"],
@@ -3315,7 +2946,6 @@
 			}
 		},
 		{
-			"ddgr": 112,
 			"rank": 326,
 			"name": "InspireHEP",
 			"code": ["!ihep", "!inspire"],
@@ -3325,7 +2955,6 @@
 			}
 		},
 		{
-			"ddgr": 111,
 			"rank": 327,
 			"name": "Doom Wiki",
 			"code": ["!doom"],
@@ -3335,7 +2964,6 @@
 			}
 		},
 		{
-			"ddgr": 111,
 			"rank": 328,
 			"name": "Weather.com",
 			"code": ["!weather"],
@@ -3345,7 +2973,6 @@
 			}
 		},
 		{
-			"ddgr": 110,
 			"rank": 329,
 			"name": "messenger.com",
 			"code": ["!msg"],
@@ -3355,7 +2982,6 @@
 			}
 		},
 		{
-			"ddgr": 109,
 			"rank": 330,
 			"name": "Google Reverse Image Search",
 			"code": ["!gri", "!rgi"],
@@ -3365,7 +2991,6 @@
 			}
 		},
 		{
-			"ddgr": 108,
 			"rank": 331,
 			"name": "9gag",
 			"code": ["!9g", "!9gag"],
@@ -3375,7 +3000,6 @@
 			}
 		},
 		{
-			"ddgr": 108,
 			"rank": 332,
 			"name": "Chief Delphi",
 			"code": ["!chief"],
@@ -3385,7 +3009,6 @@
 			}
 		},
 		{
-			"ddgr": 108,
 			"rank": 333,
 			"name": "WhatsApp",
 			"code": ["!wapp"],
@@ -3395,7 +3018,6 @@
 			}
 		},
 		{
-			"ddgr": 107,
 			"rank": 334,
 			"name": "Hungarian Wikipedia",
 			"code": ["!whu", "!huwiki", "!wikihu"],
@@ -3405,7 +3027,6 @@
 			}
 		},
 		{
-			"ddgr": 107,
 			"rank": 335,
 			"name": "OLX.pl",
 			"code": ["!olx", "!olxpoland", "!olxpl"],
@@ -3415,7 +3036,6 @@
 			}
 		},
 		{
-			"ddgr": 106,
 			"rank": 336,
 			"name": "NixOS Wiki",
 			"code": ["!nix", "!nixoswiki", "!nixos"],
@@ -3425,7 +3045,6 @@
 			}
 		},
 		{
-			"ddgr": 106,
 			"rank": 337,
 			"name": "Product Hunt",
 			"code": ["!ph", "!producthunt"],
@@ -3435,7 +3054,6 @@
 			}
 		},
 		{
-			"ddgr": 105,
 			"rank": 338,
 			"name": "Baidu",
 			"code": ["!baidu"],
@@ -3445,7 +3063,6 @@
 			}
 		},
 		{
-			"ddgr": 105,
 			"rank": 339,
 			"name": "Serebii",
 			"code": ["!serebii"],
@@ -3455,7 +3072,6 @@
 			}
 		},
 		{
-			"ddgr": 104,
 			"rank": 340,
 			"name": "Google JP",
 			"code": ["!gjp"],
@@ -3465,7 +3081,6 @@
 			}
 		},
 		{
-			"ddgr": 103,
 			"rank": 341,
 			"name": "Gentoo Packages",
 			"code": ["!gpo", "!genpkg", "!gentoopkg", "!emerge", "!ebuild", "!gpackages", "!ebuilds"],
@@ -3475,7 +3090,6 @@
 			}
 		},
 		{
-			"ddgr": 103,
 			"rank": 342,
 			"name": "Home Depot",
 			"code": ["!hdx", "!homedepot", "!hode"],
@@ -3485,7 +3099,6 @@
 			}
 		},
 		{
-			"ddgr": 103,
 			"rank": 343,
 			"name": "Mozilla Developer Network (JS)",
 			"code": ["!js", "!mdnjs"],
@@ -3495,7 +3108,6 @@
 			}
 		},
 		{
-			"ddgr": 103,
 			"rank": 344,
 			"name": "YouTube United States",
 			"code": ["!ytus"],
@@ -3505,7 +3117,6 @@
 			}
 		},
 		{
-			"ddgr": 102,
 			"rank": 345,
 			"name": "Firefox Add-ons",
 			"code": ["!amo", "!ffa", "!firefoxaddons", "!firefox", "!fad", "!mozaddon", "!firefoxaddon"],
@@ -3515,7 +3126,6 @@
 			}
 		},
 		{
-			"ddgr": 102,
 			"rank": 346,
 			"name": "Wikimapia",
 			"code": ["!wikimapia"],
@@ -3525,7 +3135,6 @@
 			}
 		},
 		{
-			"ddgr": 101,
 			"rank": 347,
 			"name": "Catalan Wikipedia",
 			"code": ["!wca", "!viquipedia", "!wcat", "!cawiki", "!wikica"],
@@ -3535,7 +3144,6 @@
 			}
 		},
 		{
-			"ddgr": 100,
 			"rank": 348,
 			"name": "Songsterr",
 			"code": ["!stabs", "!songsterr"],
@@ -3545,7 +3153,6 @@
 			}
 		},
 		{
-			"ddgr": 99,
 			"rank": 349,
 			"name": "Books.google.com",
 			"code": ["!gbooks", "!гкниги"],
@@ -3555,7 +3162,6 @@
 			}
 		},
 		{
-			"ddgr": 98,
 			"rank": 350,
 			"name": "Can I use...",
 			"code": ["!cu", "!caniuse", "!ciu", "!cius"],
@@ -3565,7 +3171,6 @@
 			}
 		},
 		{
-			"ddgr": 97,
 			"rank": 351,
 			"name": "Funnyjunk",
 			"code": ["!fj"],
@@ -3575,7 +3180,6 @@
 			}
 		},
 		{
-			"ddgr": 97,
 			"rank": 352,
 			"name": "NBA.com",
 			"code": ["!nba"],
@@ -3585,7 +3189,6 @@
 			}
 		},
 		{
-			"ddgr": 97,
 			"rank": 353,
 			"name": "Startpage Videos",
 			"code": ["!spv", "!startpagevideos"],
@@ -3595,7 +3198,6 @@
 			}
 		},
 		{
-			"ddgr": 97,
 			"rank": 354,
 			"name": "Yahoo! News",
 			"code": ["!ynews"],
@@ -3605,7 +3207,6 @@
 			}
 		},
 		{
-			"ddgr": 95,
 			"rank": 355,
 			"name": "Wiktionary, das freie Wörterbuch",
 			"code": ["!wiktde"],
@@ -3615,7 +3216,6 @@
 			}
 		},
 		{
-			"ddgr": 95,
 			"rank": 356,
 			"name": "Yahoo! Auctions Japan",
 			"code": ["!yajp"],
@@ -3625,7 +3225,6 @@
 			}
 		},
 		{
-			"ddgr": 94,
 			"rank": 357,
 			"name": "Chocolatey",
 			"code": ["!choco", "!chocolatey", "!cinst"],
@@ -3635,7 +3234,6 @@
 			}
 		},
 		{
-			"ddgr": 94,
 			"rank": 358,
 			"name": "Linguee (Deutsch/Englisch)",
 			"code": ["!lide", "!linguee"],
@@ -3645,7 +3243,6 @@
 			}
 		},
 		{
-			"ddgr": 93,
 			"rank": 359,
 			"name": "Blu-ray.com",
 			"code": ["!bluray"],
@@ -3655,7 +3252,6 @@
 			}
 		},
 		{
-			"ddgr": 93,
 			"rank": 360,
 			"name": "Collins Dictionary",
 			"code": ["!cd", "!collins"],
@@ -3665,7 +3261,6 @@
 			}
 		},
 		{
-			"ddgr": 92,
 			"rank": 361,
 			"name": "Yandex Translate (en)",
 			"code": ["!yat", "!ytren"],
@@ -3675,7 +3270,6 @@
 			}
 		},
 		{
-			"ddgr": 91,
 			"rank": 362,
 			"name": "GoDoc",
 			"code": ["!godoc"],
@@ -3685,7 +3279,6 @@
 			}
 		},
 		{
-			"ddgr": 91,
 			"rank": 363,
 			"name": "MDBG Dictionary",
 			"code": ["!mdbg"],
@@ -3695,7 +3288,6 @@
 			}
 		},
 		{
-			"ddgr": 90,
 			"rank": 364,
 			"name": "Ceneo",
 			"code": ["!ceneo"],
@@ -3705,7 +3297,6 @@
 			}
 		},
 		{
-			"ddgr": 90,
 			"rank": 365,
 			"name": "WikiWoordenboek",
 			"code": ["!wtnl"],
@@ -3715,7 +3306,6 @@
 			}
 		},
 		{
-			"ddgr": 89,
 			"rank": 366,
 			"name": "Google Maps FR",
 			"code": ["!mapsfr"],
@@ -3725,7 +3315,6 @@
 			}
 		},
 		{
-			"ddgr": 89,
 			"rank": 367,
 			"name": "Longman Dictionary of Contemporary English",
 			"code": ["!ld"],
@@ -3735,7 +3324,6 @@
 			}
 		},
 		{
-			"ddgr": 88,
 			"rank": 368,
 			"name": "bilibili",
 			"code": ["!bili", "!bilibili", "!blbl"],
@@ -3745,7 +3333,6 @@
 			}
 		},
 		{
-			"ddgr": 88,
 			"rank": 369,
 			"name": "Forvo",
 			"code": ["!forvo"],
@@ -3755,7 +3342,6 @@
 			}
 		},
 		{
-			"ddgr": 88,
 			"rank": 370,
 			"name": "Google translate en-es",
 			"code": ["!enes", "!gtsp"],
@@ -3765,7 +3351,6 @@
 			}
 		},
 		{
-			"ddgr": 88,
 			"rank": 371,
 			"name": "IMSLP",
 			"code": ["!imslp"],
@@ -3775,7 +3360,6 @@
 			}
 		},
 		{
-			"ddgr": 88,
 			"rank": 372,
 			"name": "Letterboxd",
 			"code": ["!lb", "!letterboxd", "!ltr", "!lbx"],
@@ -3785,7 +3369,6 @@
 			}
 		},
 		{
-			"ddgr": 88,
 			"rank": 373,
 			"name": "note",
 			"code": ["!note"],
@@ -3795,7 +3378,6 @@
 			}
 		},
 		{
-			"ddgr": 88,
 			"rank": 374,
 			"name": "openSUSE Bugzilla",
 			"code": ["!boo", "!susebug"],
@@ -3805,7 +3387,6 @@
 			}
 		},
 		{
-			"ddgr": 87,
 			"rank": 375,
 			"name": "Cambridge Traditional Chinese",
 			"code": ["!camtw"],
@@ -3815,7 +3396,6 @@
 			}
 		},
 		{
-			"ddgr": 87,
 			"rank": 376,
 			"name": "IETF RFC",
 			"code": ["!rfc"],
@@ -3825,7 +3405,6 @@
 			}
 		},
 		{
-			"ddgr": 87,
 			"rank": 377,
 			"name": "PokéWiki.de",
 			"code": ["!pwde", "!pokewiki"],
@@ -3835,7 +3414,6 @@
 			}
 		},
 		{
-			"ddgr": 86,
 			"rank": 378,
 			"name": "Skroutz",
 			"code": ["!skroutz"],
@@ -3845,7 +3423,6 @@
 			}
 		},
 		{
-			"ddgr": 85,
 			"rank": 379,
 			"name": "ADS bumblebee",
 			"code": ["!ads", "!adsbeta"],
@@ -3855,7 +3432,6 @@
 			}
 		},
 		{
-			"ddgr": 85,
 			"rank": 380,
 			"name": "LEO Dictionary Spanish",
 			"code": ["!leos"],
@@ -3865,7 +3441,6 @@
 			}
 		},
 		{
-			"ddgr": 84,
 			"rank": 381,
 			"name": "Hex.pm",
 			"code": ["!hx", "!hexpm"],
@@ -3875,7 +3450,6 @@
 			}
 		},
 		{
-			"ddgr": 84,
 			"rank": 382,
 			"name": "NRK",
 			"code": ["!nrk"],
@@ -3885,7 +3459,6 @@
 			}
 		},
 		{
-			"ddgr": 84,
 			"rank": 383,
 			"name": "RustDocs",
 			"code": ["!rust", "!rustdoc", "!ruststd", "!rustd"],
@@ -3895,7 +3468,6 @@
 			}
 		},
 		{
-			"ddgr": 83,
 			"rank": 384,
 			"name": "Netflix",
 			"code": ["!nf", "!netflix", "!net"],
@@ -3905,7 +3477,6 @@
 			}
 		},
 		{
-			"ddgr": 82,
 			"rank": 385,
 			"name": "itch.io",
 			"code": ["!itch"],
@@ -3915,7 +3486,6 @@
 			}
 		},
 		{
-			"ddgr": 81,
 			"rank": 386,
 			"name": "The New York Times",
 			"code": ["!nyt", "!nytimes"],
@@ -3925,7 +3495,6 @@
 			}
 		},
 		{
-			"ddgr": 80,
 			"rank": 387,
 			"name": "Alc Japanese English Dictionary",
 			"code": ["!alc", "!eijirou"],
@@ -3935,7 +3504,6 @@
 			}
 		},
 		{
-			"ddgr": 80,
 			"rank": 388,
 			"name": "Marktplaats",
 			"code": ["!mar", "!marktplaats"],
@@ -3945,7 +3513,6 @@
 			}
 		},
 		{
-			"ddgr": 80,
 			"rank": 389,
 			"name": "NYPost",
 			"code": ["!nypost"],
@@ -3955,7 +3522,6 @@
 			}
 		},
 		{
-			"ddgr": 80,
 			"rank": 390,
 			"name": "Rotten Tomatoes",
 			"code": ["!rt", "!rottentomatoes", "!rottentomato"],
@@ -3965,7 +3531,6 @@
 			}
 		},
 		{
-			"ddgr": 80,
 			"rank": 391,
 			"name": "xkcd",
 			"code": ["!xkcd"],
@@ -3975,7 +3540,6 @@
 			}
 		},
 		{
-			"ddgr": 79,
 			"rank": 392,
 			"name": "YouTube (DE)",
 			"code": ["!ytde"],
@@ -3985,7 +3549,6 @@
 			}
 		},
 		{
-			"ddgr": 78,
 			"rank": 393,
 			"name": "DuckDuckGo Maps",
 			"code": ["!ddgm"],
@@ -3995,7 +3558,6 @@
 			}
 		},
 		{
-			"ddgr": 78,
 			"rank": 394,
 			"name": "LCSC",
 			"code": ["!lcsc"],
@@ -4005,7 +3567,6 @@
 			}
 		},
 		{
-			"ddgr": 78,
 			"rank": 395,
 			"name": "Nexus Mods",
 			"code": ["!nm"],
@@ -4015,7 +3576,6 @@
 			}
 		},
 		{
-			"ddgr": 78,
 			"rank": 396,
 			"name": "npm",
 			"code": ["!npm", "!npmjs"],
@@ -4025,7 +3585,6 @@
 			}
 		},
 		{
-			"ddgr": 78,
 			"rank": 397,
 			"name": "stocktwits",
 			"code": ["!st"],
@@ -4035,7 +3594,6 @@
 			}
 		},
 		{
-			"ddgr": 78,
 			"rank": 398,
 			"name": "Wallapop",
 			"code": ["!wallapop"],
@@ -4045,7 +3603,6 @@
 			}
 		},
 		{
-			"ddgr": 77,
 			"rank": 399,
 			"name": "Google DK",
 			"code": ["!gdk"],
@@ -4055,7 +3612,6 @@
 			}
 		},
 		{
-			"ddgr": 77,
 			"rank": 400,
 			"name": "Moby Games",
 			"code": ["!mobygames"],
@@ -4065,7 +3621,6 @@
 			}
 		},
 		{
-			"ddgr": 77,
 			"rank": 401,
 			"name": "Phoronix",
 			"code": ["!phoronix"],
@@ -4075,7 +3630,6 @@
 			}
 		},
 		{
-			"ddgr": 77,
 			"rank": 402,
 			"name": "www.virustotal.com",
 			"code": ["!vtip"],
@@ -4085,7 +3639,6 @@
 			}
 		},
 		{
-			"ddgr": 76,
 			"rank": 403,
 			"name": "Digi-Key",
 			"code": ["!digikey"],
@@ -4095,7 +3648,6 @@
 			}
 		},
 		{
-			"ddgr": 76,
 			"rank": 404,
 			"name": "DuckDuckGo Safe Off",
 			"code": ["!nsfw"],
@@ -4105,7 +3657,6 @@
 			}
 		},
 		{
-			"ddgr": 76,
 			"rank": 405,
 			"name": "geizhals.de",
 			"code": ["!geizhalsde"],
@@ -4115,7 +3666,6 @@
 			}
 		},
 		{
-			"ddgr": 76,
 			"rank": 406,
 			"name": "Google RU",
 			"code": ["!gru"],
@@ -4125,7 +3675,6 @@
 			}
 		},
 		{
-			"ddgr": 76,
 			"rank": 407,
 			"name": "Linux.org.ru",
 			"code": ["!lor", "!лор"],
@@ -4135,7 +3684,6 @@
 			}
 		},
 		{
-			"ddgr": 75,
 			"rank": 408,
 			"name": "AllKeyShop",
 			"code": ["!aks"],
@@ -4145,7 +3693,6 @@
 			}
 		},
 		{
-			"ddgr": 75,
 			"rank": 409,
 			"name": "Beatport",
 			"code": ["!beatport"],
@@ -4155,7 +3702,6 @@
 			}
 		},
 		{
-			"ddgr": 75,
 			"rank": 410,
 			"name": "Craigslist",
 			"code": ["!cl", "!craigslist"],
@@ -4165,7 +3711,6 @@
 			}
 		},
 		{
-			"ddgr": 75,
 			"rank": 411,
 			"name": "Fox News",
 			"code": ["!fox"],
@@ -4175,7 +3720,6 @@
 			}
 		},
 		{
-			"ddgr": 74,
 			"rank": 412,
 			"name": "Binding of Isaac: Rebirth Wiki",
 			"code": ["!boi", "!rebirth", "!isaac"],
@@ -4185,7 +3729,6 @@
 			}
 		},
 		{
-			"ddgr": 74,
 			"rank": 413,
 			"name": "nLab",
 			"code": ["!nlab", "!ncatlab"],
@@ -4195,7 +3738,6 @@
 			}
 		},
 		{
-			"ddgr": 74,
 			"rank": 414,
 			"name": "NPM Direct",
 			"code": ["!npmd"],
@@ -4205,7 +3747,6 @@
 			}
 		},
 		{
-			"ddgr": 73,
 			"rank": 415,
 			"name": "YouTube (past day)",
 			"code": ["!yt24", "!ytday"],
@@ -4215,7 +3756,6 @@
 			}
 		},
 		{
-			"ddgr": 72,
 			"rank": 416,
 			"name": "abebooks",
 			"code": ["!abebooks"],
@@ -4225,7 +3765,6 @@
 			}
 		},
 		{
-			"ddgr": 72,
 			"rank": 417,
 			"name": "Google Encrypted",
 			"code": ["!ge"],
@@ -4235,7 +3774,6 @@
 			}
 		},
 		{
-			"ddgr": 72,
 			"rank": 418,
 			"name": "PkmnCards",
 			"code": ["!ptcg"],
@@ -4245,7 +3783,6 @@
 			}
 		},
 		{
-			"ddgr": 72,
 			"rank": 419,
 			"name": "tweakers.net",
 			"code": ["!tweakers"],
@@ -4255,7 +3792,6 @@
 			}
 		},
 		{
-			"ddgr": 72,
 			"rank": 420,
 			"name": "Valve Developer Community",
 			"code": ["!vdc"],
@@ -4265,7 +3801,6 @@
 			}
 		},
 		{
-			"ddgr": 71,
 			"rank": 421,
 			"name": "Hatena Bookmark",
 			"code": ["!hatebu"],
@@ -4275,7 +3810,6 @@
 			}
 		},
 		{
-			"ddgr": 71,
 			"rank": 422,
 			"name": "NAOB – Det Norske Akademis ordbok",
 			"code": ["!naob"],
@@ -4285,7 +3819,6 @@
 			}
 		},
 		{
-			"ddgr": 70,
 			"rank": 423,
 			"name": "Texas Tribune",
 			"code": ["!tt"],
@@ -4295,7 +3828,6 @@
 			}
 		},
 		{
-			"ddgr": 70,
 			"rank": 424,
 			"name": "Yubnub",
 			"code": ["!yn", "!yubnub"],
@@ -4305,7 +3837,6 @@
 			}
 		},
 		{
-			"ddgr": 69,
 			"rank": 425,
 			"name": "DuckDuckGo SafeOff",
 			"code": ["!soff", "!s-off", "!ssoff"],
@@ -4315,7 +3846,6 @@
 			}
 		},
 		{
-			"ddgr": 69,
 			"rank": 426,
 			"name": "LEO Dictionary French",
 			"code": ["!leof", "!leofr"],
@@ -4325,7 +3855,6 @@
 			}
 		},
 		{
-			"ddgr": 68,
 			"rank": 427,
 			"name": "Google Shopping UK",
 			"code": ["!gsuk"],
@@ -4335,7 +3864,6 @@
 			}
 		},
 		{
-			"ddgr": 68,
 			"rank": 428,
 			"name": "Mecurial",
 			"code": ["!hg"],
@@ -4345,7 +3873,6 @@
 			}
 		},
 		{
-			"ddgr": 68,
 			"rank": 429,
 			"name": "The Wirecutter",
 			"code": ["!wirecutter"],
@@ -4355,7 +3882,6 @@
 			}
 		},
 		{
-			"ddgr": 67,
 			"rank": 430,
 			"name": "4chan, /vg/",
 			"code": ["!4cvg"],
@@ -4365,7 +3891,6 @@
 			}
 		},
 		{
-			"ddgr": 67,
 			"rank": 431,
 			"name": "Cagematch - The Internet Wrestling Database",
 			"code": ["!cagematch"],
@@ -4375,7 +3900,6 @@
 			}
 		},
 		{
-			"ddgr": 67,
 			"rank": 432,
 			"name": "DevDocs",
 			"code": ["!dd", "!devdocs", "!dev"],
@@ -4385,7 +3909,6 @@
 			}
 		},
 		{
-			"ddgr": 67,
 			"rank": 433,
 			"name": "Google New Zealand",
 			"code": ["!gnz"],
@@ -4395,7 +3918,6 @@
 			}
 		},
 		{
-			"ddgr": 67,
 			"rank": 434,
 			"name": "Google Translate (en2ru)",
 			"code": ["!enru", "!en2ru"],
@@ -4405,7 +3927,6 @@
 			}
 		},
 		{
-			"ddgr": 67,
 			"rank": 435,
 			"name": "Nookipedia",
 			"code": ["!nook"],
@@ -4415,7 +3936,6 @@
 			}
 		},
 		{
-			"ddgr": 67,
 			"rank": 436,
 			"name": "Pr0gramm",
 			"code": ["!pr0"],
@@ -4425,7 +3945,6 @@
 			}
 		},
 		{
-			"ddgr": 66,
 			"rank": 437,
 			"name": "Bestbuy",
 			"code": ["!bby", "!bestbuy"],
@@ -4435,7 +3954,6 @@
 			}
 		},
 		{
-			"ddgr": 66,
 			"rank": 438,
 			"name": "Menards",
 			"code": ["!menards"],
@@ -4445,7 +3963,6 @@
 			}
 		},
 		{
-			"ddgr": 66,
 			"rank": 439,
 			"name": "Prime Video",
 			"code": ["!pv"],
@@ -4455,7 +3972,6 @@
 			}
 		},
 		{
-			"ddgr": 66,
 			"rank": 440,
 			"name": "Reelgood",
 			"code": ["!reelgood"],
@@ -4465,7 +3981,6 @@
 			}
 		},
 		{
-			"ddgr": 66,
 			"rank": 441,
 			"name": "Wiktionary (Finnish)",
 			"code": ["!wtfi"],
@@ -4475,7 +3990,6 @@
 			}
 		},
 		{
-			"ddgr": 66,
 			"rank": 442,
 			"name": "Yahoo!",
 			"code": ["!y", "!yahoo"],
@@ -4485,7 +3999,6 @@
 			}
 		},
 		{
-			"ddgr": 65,
 			"rank": 443,
 			"name": "Avito",
 			"code": ["!avito", "!авито"],
@@ -4495,7 +4008,6 @@
 			}
 		},
 		{
-			"ddgr": 65,
 			"rank": 444,
 			"name": "The Age",
 			"code": ["!theage"],
@@ -4505,7 +4017,6 @@
 			}
 		},
 		{
-			"ddgr": 64,
 			"rank": 445,
 			"name": "Amazon México",
 			"code": ["!amx", "!amazonmx"],
@@ -4515,7 +4026,6 @@
 			}
 		},
 		{
-			"ddgr": 64,
 			"rank": 446,
 			"name": "ClojureDocs",
 			"code": ["!clj"],
@@ -4525,7 +4035,6 @@
 			}
 		},
 		{
-			"ddgr": 64,
 			"rank": 447,
 			"name": "ebay.ca",
 			"code": ["!eca", "!ebayca", "!ebca"],
@@ -4535,7 +4044,6 @@
 			}
 		},
 		{
-			"ddgr": 64,
 			"rank": 448,
 			"name": "Linguee (es2en)",
 			"code": ["!les", "!linesin", "!lingues", "!lies", "!ltrans"],
@@ -4545,7 +4053,6 @@
 			}
 		},
 		{
-			"ddgr": 64,
 			"rank": 449,
 			"name": "Mac Rumors",
 			"code": ["!mr", "!macrumors"],
@@ -4555,7 +4062,6 @@
 			}
 		},
 		{
-			"ddgr": 64,
 			"rank": 450,
 			"name": "Oxford Advanced Learners' dictionary",
 			"code": ["!oxl"],
@@ -4565,7 +4071,6 @@
 			}
 		},
 		{
-			"ddgr": 64,
 			"rank": 451,
 			"name": "Pokepedia",
 			"code": ["!pokepedia"],
@@ -4575,7 +4080,6 @@
 			}
 		},
 		{
-			"ddgr": 63,
 			"rank": 452,
 			"name": "Booking.com",
 			"code": ["!book", "!booking"],
@@ -4585,7 +4089,6 @@
 			}
 		},
 		{
-			"ddgr": 63,
 			"rank": 453,
 			"name": "CC-Canto - A Cantonese Dictionary",
 			"code": ["!canto"],
@@ -4595,7 +4098,6 @@
 			}
 		},
 		{
-			"ddgr": 62,
 			"rank": 454,
 			"name": "Artstation",
 			"code": ["!artstation"],
@@ -4605,7 +4107,6 @@
 			}
 		},
 		{
-			"ddgr": 62,
 			"rank": 455,
 			"name": "Audible.com",
 			"code": ["!audible", "!audible.com"],
@@ -4615,7 +4116,6 @@
 			}
 		},
 		{
-			"ddgr": 62,
 			"rank": 456,
 			"name": "CantoDict",
 			"code": ["!cantodict"],
@@ -4625,7 +4125,6 @@
 			}
 		},
 		{
-			"ddgr": 62,
 			"rank": 457,
 			"name": "Danish Wikipedia",
 			"code": ["!wda", "!wikida", "!wdk"],
@@ -4635,7 +4134,6 @@
 			}
 		},
 		{
-			"ddgr": 62,
 			"rank": 458,
 			"name": "Dutch Wiktionary",
 			"code": ["!wiktnl"],
@@ -4645,7 +4143,6 @@
 			}
 		},
 		{
-			"ddgr": 62,
 			"rank": 459,
 			"name": "Lexicanum",
 			"code": ["!lexicanum"],
@@ -4655,7 +4152,6 @@
 			}
 		},
 		{
-			"ddgr": 62,
 			"rank": 460,
 			"name": "PDFs",
 			"code": ["!pdf"],
@@ -4665,7 +4161,6 @@
 			}
 		},
 		{
-			"ddgr": 62,
 			"rank": 461,
 			"name": "Pokémon Database",
 			"code": ["!pokedb", "!pokemondb"],
@@ -4675,7 +4170,6 @@
 			}
 		},
 		{
-			"ddgr": 62,
 			"rank": 462,
 			"name": "Store Norske Leksikon",
 			"code": ["!snl"],
@@ -4685,7 +4179,6 @@
 			}
 		},
 		{
-			"ddgr": 61,
 			"rank": 463,
 			"name": "AniDB",
 			"code": ["!anime", "!anidb"],
@@ -4695,7 +4188,6 @@
 			}
 		},
 		{
-			"ddgr": 61,
 			"rank": 464,
 			"name": "Octopart",
 			"code": ["!octo", "!octopart"],
@@ -4705,7 +4197,6 @@
 			}
 		},
 		{
-			"ddgr": 61,
 			"rank": 465,
 			"name": "Słownik Języka Polskiego",
 			"code": ["!sjp"],
@@ -4715,7 +4206,6 @@
 			}
 		},
 		{
-			"ddgr": 61,
 			"rank": 466,
 			"name": "TVmaze",
 			"code": ["!tvmaze"],
@@ -4725,7 +4215,6 @@
 			}
 		},
 		{
-			"ddgr": 60,
 			"rank": 467,
 			"name": "ArchWikiJP",
 			"code": ["!archjp"],
@@ -4735,7 +4224,6 @@
 			}
 		},
 		{
-			"ddgr": 60,
 			"rank": 468,
 			"name": "Basketball-Reference",
 			"code": ["!bbr", "!bkr"],
@@ -4745,7 +4233,6 @@
 			}
 		},
 		{
-			"ddgr": 60,
 			"rank": 469,
 			"name": "King James Bible Online",
 			"code": ["!kjv"],
@@ -4755,7 +4242,6 @@
 			}
 		},
 		{
-			"ddgr": 60,
 			"rank": 470,
 			"name": "Nixpkgs Repository",
 			"code": ["!nr"],
@@ -4765,7 +4251,6 @@
 			}
 		},
 		{
-			"ddgr": 60,
 			"rank": 471,
 			"name": "numpy",
 			"code": ["!numpy"],
@@ -4775,7 +4260,6 @@
 			}
 		},
 		{
-			"ddgr": 60,
 			"rank": 472,
 			"name": "SauceNAO",
 			"code": ["!saucenao"],
@@ -4785,7 +4269,6 @@
 			}
 		},
 		{
-			"ddgr": 59,
 			"rank": 473,
 			"name": "Deezer",
 			"code": ["!dz", "!deezer"],
@@ -4795,7 +4278,6 @@
 			}
 		},
 		{
-			"ddgr": 59,
 			"rank": 474,
 			"name": "Dejure",
 			"code": ["!durhg", "!dejure"],
@@ -4805,7 +4287,6 @@
 			}
 		},
 		{
-			"ddgr": 59,
 			"rank": 475,
 			"name": "GitHub Code",
 			"code": ["!ghc", "!ghcode"],
@@ -4815,7 +4296,6 @@
 			}
 		},
 		{
-			"ddgr": 59,
 			"rank": 476,
 			"name": "Humblebundle",
 			"code": ["!hb", "!humble"],
@@ -4825,7 +4305,6 @@
 			}
 		},
 		{
-			"ddgr": 59,
 			"rank": 477,
 			"name": "Mercado Livre",
 			"code": ["!mlbr", "!mercadolivre", "!mlivre"],
@@ -4835,7 +4314,6 @@
 			}
 		},
 		{
-			"ddgr": 59,
 			"rank": 478,
 			"name": "OZON",
 			"code": ["!ozon", "!озон"],
@@ -4845,7 +4323,6 @@
 			}
 		},
 		{
-			"ddgr": 59,
 			"rank": 479,
 			"name": "Plurk",
 			"code": ["!plurk"],
@@ -4855,7 +4332,6 @@
 			}
 		},
 		{
-			"ddgr": 59,
 			"rank": 480,
 			"name": "Qobuz",
 			"code": ["!qobuz"],
@@ -4865,7 +4341,6 @@
 			}
 		},
 		{
-			"ddgr": 59,
 			"rank": 481,
 			"name": "SensCritique",
 			"code": ["!scq", "!senscritique", "!scri", "!scritique"],
@@ -4875,7 +4350,6 @@
 			}
 		},
 		{
-			"ddgr": 59,
 			"rank": 482,
 			"name": "Türk Dil Kurumu",
 			"code": ["!tdk"],
@@ -4885,7 +4359,6 @@
 			}
 		},
 		{
-			"ddgr": 58,
 			"rank": 483,
 			"name": "ABCNews",
 			"code": ["!abcnews"],
@@ -4895,7 +4368,6 @@
 			}
 		},
 		{
-			"ddgr": 58,
 			"rank": 484,
 			"name": "Elixir Documentation",
 			"code": ["!elixir"],
@@ -4905,7 +4377,6 @@
 			}
 		},
 		{
-			"ddgr": 58,
 			"rank": 485,
 			"name": "Godot Docs",
 			"code": ["!gdd", "!godot"],
@@ -4915,7 +4386,6 @@
 			}
 		},
 		{
-			"ddgr": 58,
 			"rank": 486,
 			"name": "IGN",
 			"code": ["!ign"],
@@ -4925,7 +4395,6 @@
 			}
 		},
 		{
-			"ddgr": 58,
 			"rank": 487,
 			"name": "Seznam Slovník",
 			"code": ["!slovnik"],
@@ -4935,7 +4404,6 @@
 			}
 		},
 		{
-			"ddgr": 58,
 			"rank": 488,
 			"name": "Yeggi",
 			"code": ["!yeggi"],
@@ -4945,7 +4413,6 @@
 			}
 		},
 		{
-			"ddgr": 57,
 			"rank": 489,
 			"name": "Google Maps UK",
 			"code": ["!mapsuk"],
@@ -4955,7 +4422,6 @@
 			}
 		},
 		{
-			"ddgr": 57,
 			"rank": 490,
 			"name": "HowLongToBeat",
 			"code": ["!hlb", "!hltb", "!howlongtobeat"],
@@ -4965,7 +4431,6 @@
 			}
 		},
 		{
-			"ddgr": 57,
 			"rank": 491,
 			"name": "Lobsters",
 			"code": ["!lobsters"],
@@ -4975,7 +4440,6 @@
 			}
 		},
 		{
-			"ddgr": 57,
 			"rank": 492,
 			"name": "OCLC Worldcat",
 			"code": ["!oclc"],
@@ -4985,7 +4449,6 @@
 			}
 		},
 		{
-			"ddgr": 57,
 			"rank": 493,
 			"name": "wetter.com",
 			"code": ["!wetter"],
@@ -4995,7 +4458,6 @@
 			}
 		},
 		{
-			"ddgr": 56,
 			"rank": 494,
 			"name": "Debian Manpages",
 			"code": ["!dman", "!debman"],
@@ -5005,7 +4467,6 @@
 			}
 		},
 		{
-			"ddgr": 56,
 			"rank": 495,
 			"name": "Politico",
 			"code": ["!politico"],
@@ -5015,7 +4476,6 @@
 			}
 		},
 		{
-			"ddgr": 56,
 			"rank": 496,
 			"name": "Svenska Akademiens Ordböcker",
 			"code": ["!saob", "!svenska"],
@@ -5025,7 +4485,6 @@
 			}
 		},
 		{
-			"ddgr": 55,
 			"rank": 497,
 			"name": "PC Gamer",
 			"code": ["!pcg"],
@@ -5035,7 +4494,6 @@
 			}
 		},
 		{
-			"ddgr": 55,
 			"rank": 498,
 			"name": "Super Mario Wiki",
 			"code": ["!smw", "!mariowiki", "!mario"],
@@ -5045,7 +4503,6 @@
 			}
 		},
 		{
-			"ddgr": 55,
 			"rank": 499,
 			"name": "The Weather Channel",
 			"code": ["!wc", "!weatherchannel"],
@@ -5055,7 +4512,6 @@
 			}
 		},
 		{
-			"ddgr": 54,
 			"rank": 500,
 			"name": "3Bmeteo",
 			"code": ["!3bm"],
@@ -5065,7 +4521,6 @@
 			}
 		},
 		{
-			"ddgr": 54,
 			"rank": 501,
 			"name": "Al Jazeera America",
 			"code": ["!aja"],
@@ -5075,7 +4530,6 @@
 			}
 		},
 		{
-			"ddgr": 54,
 			"rank": 502,
 			"name": "Google Maps DE",
 			"code": ["!gmde", "!mapsde", "!gmnl"],
@@ -5085,7 +4539,6 @@
 			}
 		},
 		{
-			"ddgr": 54,
 			"rank": 503,
 			"name": "Japan Dict",
 			"code": ["!jpd"],
@@ -5095,7 +4548,6 @@
 			}
 		},
 		{
-			"ddgr": 54,
 			"rank": 504,
 			"name": "MuseScore.com",
 			"code": ["!musescore"],
@@ -5105,7 +4557,6 @@
 			}
 		},
 		{
-			"ddgr": 54,
 			"rank": 505,
 			"name": "Reddit User",
 			"code": ["!reu", "!rusr"],
@@ -5115,25 +4566,15 @@
 			}
 		},
 		{
-			"ddgr": 54,
 			"rank": 506,
 			"name": "Wayback Machine",
-			"code": [
-				"!ia",
-				"!wayback",
-				"!waybackmachine",
-				"!wbm",
-				"!webarchive",
-				"!archived",
-				"!archiveweb"
-			],
+			"code": ["!ia", "!wayback", "!waybackmachine", "!wbm", "!webarchive", "!archived", "!archiveweb"],
 			"tags": ["Online Services/Tools (URLs)"],
 			"urls": {
 				"s": "https://web.archive.org/web/*/%s"
 			}
 		},
 		{
-			"ddgr": 54,
 			"rank": 507,
 			"name": "Yandex Reverse Image Search",
 			"code": ["!yri"],
@@ -5143,7 +4584,6 @@
 			}
 		},
 		{
-			"ddgr": 53,
 			"rank": 508,
 			"name": "9to5Mac",
 			"code": ["!95mac"],
@@ -5153,7 +4593,6 @@
 			}
 		},
 		{
-			"ddgr": 53,
 			"rank": 509,
 			"name": "Explain xkcd",
 			"code": ["!exkcd", "!expxkcd"],
@@ -5163,7 +4602,6 @@
 			}
 		},
 		{
-			"ddgr": 53,
 			"rank": 510,
 			"name": "Mankier",
 			"code": ["!mankier"],
@@ -5173,7 +4611,6 @@
 			}
 		},
 		{
-			"ddgr": 53,
 			"rank": 511,
 			"name": "Power Thesaurus",
 			"code": ["!powt"],
@@ -5183,7 +4620,6 @@
 			}
 		},
 		{
-			"ddgr": 53,
 			"rank": 512,
 			"name": "werstreamt.es",
 			"code": ["!wer"],
@@ -5193,7 +4629,6 @@
 			}
 		},
 		{
-			"ddgr": 53,
 			"rank": 513,
 			"name": "Wikivoyage",
 			"code": ["!wv", "!wikivoyage"],
@@ -5203,25 +4638,15 @@
 			}
 		},
 		{
-			"ddgr": 52,
 			"rank": 514,
 			"name": "Chrome Web Store",
-			"code": [
-				"!cws",
-				"!chrome",
-				"!chromewebstore",
-				"!cwebstore",
-				"!crx",
-				"!cstore",
-				"!chromestore"
-			],
+			"code": ["!cws", "!chrome", "!chromewebstore", "!cwebstore", "!crx", "!cstore", "!chromestore"],
 			"tags": ["Tech/Downloads (add-ons)"],
 			"urls": {
 				"s": "https://chromewebstore.google.com/search/%s"
 			}
 		},
 		{
-			"ddgr": 51,
 			"rank": 515,
 			"name": "Escape From Tarkov Wiki",
 			"code": ["!tarkov"],
@@ -5231,7 +4656,6 @@
 			}
 		},
 		{
-			"ddgr": 51,
 			"rank": 516,
 			"name": "Google define",
 			"code": ["!gdef"],
@@ -5241,7 +4665,6 @@
 			}
 		},
 		{
-			"ddgr": 51,
 			"rank": 517,
 			"name": "Man7 Linux Pages (Kagi Search)",
 			"code": ["!man7"],
@@ -5251,7 +4674,6 @@
 			}
 		},
 		{
-			"ddgr": 51,
 			"rank": 518,
 			"name": "Wordreference (fren)",
 			"code": ["!wrfe", "!wrfren", "!wfren"],
@@ -5261,7 +4683,6 @@
 			}
 		},
 		{
-			"ddgr": 51,
 			"rank": 519,
 			"name": "YouTube (sort by date)",
 			"code": ["!ytdate"],
@@ -5271,7 +4692,6 @@
 			}
 		},
 		{
-			"ddgr": 50,
 			"rank": 520,
 			"name": "CoinGecko",
 			"code": ["!gecko", "!coingecko"],
@@ -5281,7 +4701,6 @@
 			}
 		},
 		{
-			"ddgr": 50,
 			"rank": 521,
 			"name": "ebay.com.au",
 			"code": ["!eau", "!ebayau", "!ebau"],
@@ -5291,7 +4710,6 @@
 			}
 		},
 		{
-			"ddgr": 50,
 			"rank": 522,
 			"name": "NetHack Wiki",
 			"code": ["!nh", "!nethack", "!nhw"],
@@ -5301,7 +4719,6 @@
 			}
 		},
 		{
-			"ddgr": 50,
 			"rank": 523,
 			"name": "Wordreference (es)",
 			"code": ["!wdr", "!wrs", "!wordreference", "!wrensp"],
@@ -5311,7 +4728,6 @@
 			}
 		},
 		{
-			"ddgr": 49,
 			"rank": 524,
 			"name": "Google: I'm Feeling Lucky",
 			"code": ["!gifl"],
@@ -5321,7 +4737,6 @@
 			}
 		},
 		{
-			"ddgr": 49,
 			"rank": 525,
 			"name": "Heise.de Preisvergleich",
 			"code": ["!hpv"],
@@ -5331,7 +4746,6 @@
 			}
 		},
 		{
-			"ddgr": 49,
 			"rank": 526,
 			"name": "Idealo",
 			"code": ["!ide", "!idealo", "!idealode"],
@@ -5341,7 +4755,6 @@
 			}
 		},
 		{
-			"ddgr": 49,
 			"rank": 527,
 			"name": "OMG! Ubuntu!",
 			"code": ["!omg", "!omgubuntu", "!omgu"],
@@ -5351,7 +4764,6 @@
 			}
 		},
 		{
-			"ddgr": 49,
 			"rank": 528,
 			"name": "Packagist",
 			"code": ["!pack", "!packagist"],
@@ -5361,7 +4773,6 @@
 			}
 		},
 		{
-			"ddgr": 49,
 			"rank": 529,
 			"name": "Toppreise.ch",
 			"code": ["!toppreise"],
@@ -5371,7 +4782,6 @@
 			}
 		},
 		{
-			"ddgr": 48,
 			"rank": 530,
 			"name": "Derpibooru",
 			"code": ["!dpb", "!derpi", "!derpibooruorg", "!derpibooru"],
@@ -5381,7 +4791,6 @@
 			}
 		},
 		{
-			"ddgr": 48,
 			"rank": 531,
 			"name": "Django Docs",
 			"code": ["!dj", "!django"],
@@ -5391,7 +4800,6 @@
 			}
 		},
 		{
-			"ddgr": 48,
 			"rank": 532,
 			"name": "Le Monde",
 			"code": ["!monde", "!lemonde"],
@@ -5401,7 +4809,6 @@
 			}
 		},
 		{
-			"ddgr": 48,
 			"rank": 533,
 			"name": "Linux Packages Search",
 			"code": ["!pkgs"],
@@ -5411,7 +4818,6 @@
 			}
 		},
 		{
-			"ddgr": 48,
 			"rank": 534,
 			"name": "McMaster-Carr",
 			"code": ["!mmc", "!mcmaster"],
@@ -5421,7 +4827,6 @@
 			}
 		},
 		{
-			"ddgr": 48,
 			"rank": 535,
 			"name": "node.js docs",
 			"code": ["!node"],
@@ -5431,7 +4836,6 @@
 			}
 		},
 		{
-			"ddgr": 48,
 			"rank": 536,
 			"name": "Puzzling",
 			"code": ["!puzzse"],
@@ -5441,7 +4845,6 @@
 			}
 		},
 		{
-			"ddgr": 47,
 			"rank": 537,
 			"name": "Check-host.net",
 			"code": ["!checkhost"],
@@ -5451,7 +4854,6 @@
 			}
 		},
 		{
-			"ddgr": 47,
 			"rank": 538,
 			"name": "Fire Emblem Wiki",
 			"code": ["!few", "!fewiki"],
@@ -5461,7 +4863,6 @@
 			}
 		},
 		{
-			"ddgr": 47,
 			"rank": 539,
 			"name": "Google Maps (uk)",
 			"code": ["!gmuk"],
@@ -5471,7 +4872,6 @@
 			}
 		},
 		{
-			"ddgr": 47,
 			"rank": 540,
 			"name": "Hitta.se",
 			"code": ["!hitta"],
@@ -5481,7 +4881,6 @@
 			}
 		},
 		{
-			"ddgr": 47,
 			"rank": 541,
 			"name": "ipinfo.io",
 			"code": ["!ipinfo"],
@@ -5491,7 +4890,6 @@
 			}
 		},
 		{
-			"ddgr": 47,
 			"rank": 542,
 			"name": "Kupujemprodajem",
 			"code": ["!kp"],
@@ -5501,7 +4899,6 @@
 			}
 		},
 		{
-			"ddgr": 47,
 			"rank": 543,
 			"name": "PlayStation Store",
 			"code": ["!pss"],
@@ -5511,7 +4908,6 @@
 			}
 		},
 		{
-			"ddgr": 47,
 			"rank": 544,
 			"name": "pub.dev",
 			"code": ["!pubdev"],
@@ -5521,7 +4917,6 @@
 			}
 		},
 		{
-			"ddgr": 47,
 			"rank": 545,
 			"name": "shodan",
 			"code": ["!sh", "!shodan"],
@@ -5531,7 +4926,6 @@
 			}
 		},
 		{
-			"ddgr": 47,
 			"rank": 546,
 			"name": "The Guardian (Kagi Search)",
 			"code": ["!gu"],
@@ -5541,7 +4935,6 @@
 			}
 		},
 		{
-			"ddgr": 46,
 			"rank": 547,
 			"name": "american heritage dictionary",
 			"code": ["!ahd"],
@@ -5551,7 +4944,6 @@
 			}
 		},
 		{
-			"ddgr": 46,
 			"rank": 548,
 			"name": "Apple",
 			"code": ["!apple"],
@@ -5561,7 +4953,6 @@
 			}
 		},
 		{
-			"ddgr": 46,
 			"rank": 549,
 			"name": "Google map (Taiwan)",
 			"code": ["!gmtw"],
@@ -5571,7 +4962,6 @@
 			}
 		},
 		{
-			"ddgr": 46,
 			"rank": 550,
 			"name": "Google Translate (to Russian)",
 			"code": ["!gtru", "!gt-russian", "!gtrussian"],
@@ -5581,7 +4971,6 @@
 			}
 		},
 		{
-			"ddgr": 46,
 			"rank": 551,
 			"name": "HTTP Status Codes",
 			"code": ["!http"],
@@ -5591,7 +4980,6 @@
 			}
 		},
 		{
-			"ddgr": 46,
 			"rank": 552,
 			"name": "Prisjakt",
 			"code": ["!pj", "!prisjakt", "!pris"],
@@ -5601,7 +4989,6 @@
 			}
 		},
 		{
-			"ddgr": 46,
 			"rank": 553,
 			"name": "REI",
 			"code": ["!rei"],
@@ -5611,7 +4998,6 @@
 			}
 		},
 		{
-			"ddgr": 46,
 			"rank": 554,
 			"name": "Willhaben",
 			"code": ["!wlhb", "!willhaben"],
@@ -5621,7 +5007,6 @@
 			}
 		},
 		{
-			"ddgr": 45,
 			"rank": 555,
 			"name": "Art of Manliness",
 			"code": ["!aom"],
@@ -5631,7 +5016,6 @@
 			}
 		},
 		{
-			"ddgr": 45,
 			"rank": 556,
 			"name": "filmaffinity",
 			"code": ["!film"],
@@ -5641,7 +5025,6 @@
 			}
 		},
 		{
-			"ddgr": 45,
 			"rank": 557,
 			"name": "Google Feeling Lucky",
 			"code": ["!fl", "!lucky", "!gluck", "!фл", "!гмп"],
@@ -5651,7 +5034,6 @@
 			}
 		},
 		{
-			"ddgr": 45,
 			"rank": 558,
 			"name": "Google RO",
 			"code": ["!gro"],
@@ -5661,7 +5043,6 @@
 			}
 		},
 		{
-			"ddgr": 45,
 			"rank": 559,
 			"name": "Ikea",
 			"code": ["!ikea"],
@@ -5671,7 +5052,6 @@
 			}
 		},
 		{
-			"ddgr": 45,
 			"rank": 560,
 			"name": "kicker online",
 			"code": ["!kicker"],
@@ -5681,7 +5061,6 @@
 			}
 		},
 		{
-			"ddgr": 45,
 			"rank": 561,
 			"name": "Scribd.com",
 			"code": ["!docs", "!scribd"],
@@ -5691,7 +5070,6 @@
 			}
 		},
 		{
-			"ddgr": 45,
 			"rank": 562,
 			"name": "unsplash.com",
 			"code": ["!unspl", "!unsplash"],
@@ -5701,7 +5079,6 @@
 			}
 		},
 		{
-			"ddgr": 45,
 			"rank": 563,
 			"name": "Vimeo",
 			"code": ["!vimeo"],
@@ -5711,7 +5088,6 @@
 			}
 		},
 		{
-			"ddgr": 45,
 			"rank": 564,
 			"name": "Word Reference EN-IT",
 			"code": ["!wrei", "!wrenit"],
@@ -5721,7 +5097,6 @@
 			}
 		},
 		{
-			"ddgr": 45,
 			"rank": 565,
 			"name": "Wordnik",
 			"code": ["!wnk", "!wordnik"],
@@ -5731,7 +5106,6 @@
 			}
 		},
 		{
-			"ddgr": 45,
 			"rank": 566,
 			"name": "Yahoo Mail",
 			"code": ["!ymail"],
@@ -5741,7 +5115,6 @@
 			}
 		},
 		{
-			"ddgr": 44,
 			"rank": 567,
 			"name": "Depop",
 			"code": ["!depop"],
@@ -5751,7 +5124,6 @@
 			}
 		},
 		{
-			"ddgr": 44,
 			"rank": 568,
 			"name": "Google SK",
 			"code": ["!gsk"],
@@ -5761,7 +5133,6 @@
 			}
 		},
 		{
-			"ddgr": 44,
 			"rank": 569,
 			"name": "Google Translate URL",
 			"code": ["!gturl"],
@@ -5771,7 +5142,6 @@
 			}
 		},
 		{
-			"ddgr": 44,
 			"rank": 570,
 			"name": "Mozilla Developer Network CSS",
 			"code": ["!css", "!mdncss"],
@@ -5781,7 +5151,6 @@
 			}
 		},
 		{
-			"ddgr": 44,
 			"rank": 571,
 			"name": "MyFigureCollection",
 			"code": ["!mfc"],
@@ -5791,7 +5160,6 @@
 			}
 		},
 		{
-			"ddgr": 44,
 			"rank": 572,
 			"name": "Newegg",
 			"code": ["!ne", "!newegg"],
@@ -5801,7 +5169,6 @@
 			}
 		},
 		{
-			"ddgr": 44,
 			"rank": 573,
 			"name": "Racket",
 			"code": ["!rkt", "!racket"],
@@ -5811,7 +5178,6 @@
 			}
 		},
 		{
-			"ddgr": 44,
 			"rank": 574,
 			"name": "RemyWiki",
 			"code": ["!remy", "!remywiki"],
@@ -5821,7 +5187,6 @@
 			}
 		},
 		{
-			"ddgr": 44,
 			"rank": 575,
 			"name": "Speedrun.com",
 			"code": ["!speedrun"],
@@ -5831,7 +5196,6 @@
 			}
 		},
 		{
-			"ddgr": 44,
 			"rank": 576,
 			"name": "TradingView",
 			"code": ["!tview", "!tradingview"],
@@ -5841,7 +5205,6 @@
 			}
 		},
 		{
-			"ddgr": 44,
 			"rank": 577,
 			"name": "World of Warcraft",
 			"code": ["!wow"],
@@ -5851,7 +5214,6 @@
 			}
 		},
 		{
-			"ddgr": 43,
 			"rank": 578,
 			"name": "AEMET",
 			"code": ["!aemet"],
@@ -5861,7 +5223,6 @@
 			}
 		},
 		{
-			"ddgr": 43,
 			"rank": 579,
 			"name": "endic.naver.com",
 			"code": ["!endic"],
@@ -5871,7 +5232,6 @@
 			}
 		},
 		{
-			"ddgr": 43,
 			"rank": 580,
 			"name": "Google (Past 24h)",
 			"code": ["!g24", "!gday"],
@@ -5881,7 +5241,6 @@
 			}
 		},
 		{
-			"ddgr": 43,
 			"rank": 581,
 			"name": "Google Translate (ruen)",
 			"code": ["!ruen", "!кгут", "!руан", "!руен"],
@@ -5891,7 +5250,6 @@
 			}
 		},
 		{
-			"ddgr": 43,
 			"rank": 582,
 			"name": "Kubernetes",
 			"code": ["!k8s", "!kubernetes"],
@@ -5901,7 +5259,6 @@
 			}
 		},
 		{
-			"ddgr": 43,
 			"rank": 583,
 			"name": "LaserDisc Database",
 			"code": ["!lddb"],
@@ -5911,7 +5268,6 @@
 			}
 		},
 		{
-			"ddgr": 43,
 			"rank": 584,
 			"name": "Lutris - Open Gaming Platform",
 			"code": ["!lutris"],
@@ -5921,7 +5277,6 @@
 			}
 		},
 		{
-			"ddgr": 43,
 			"rank": 585,
 			"name": "openSUSE Build Service",
 			"code": ["!obs"],
@@ -5931,7 +5286,6 @@
 			}
 		},
 		{
-			"ddgr": 43,
 			"rank": 586,
 			"name": "Sam's Club",
 			"code": ["!samsclub"],
@@ -5941,7 +5295,6 @@
 			}
 		},
 		{
-			"ddgr": 43,
 			"rank": 587,
 			"name": "TMZ",
 			"code": ["!tmz"],
@@ -5951,7 +5304,6 @@
 			}
 		},
 		{
-			"ddgr": 43,
 			"rank": 588,
 			"name": "Wiktionary (SV)",
 			"code": ["!wtsv"],
@@ -5961,7 +5313,6 @@
 			}
 		},
 		{
-			"ddgr": 43,
 			"rank": 589,
 			"name": "Wirecutter (A New York Times Company)",
 			"code": ["!twc"],
@@ -5971,7 +5322,6 @@
 			}
 		},
 		{
-			"ddgr": 43,
 			"rank": 590,
 			"name": "YouTube India",
 			"code": ["!yti"],
@@ -5981,7 +5331,6 @@
 			}
 		},
 		{
-			"ddgr": 42,
 			"rank": 591,
 			"name": "Chess.com",
 			"code": ["!chess"],
@@ -5991,7 +5340,6 @@
 			}
 		},
 		{
-			"ddgr": 42,
 			"rank": 592,
 			"name": "Dexonline",
 			"code": ["!dexonline"],
@@ -6001,7 +5349,6 @@
 			}
 		},
 		{
-			"ddgr": 42,
 			"rank": 593,
 			"name": "Games",
 			"code": ["!games"],
@@ -6011,7 +5358,6 @@
 			}
 		},
 		{
-			"ddgr": 42,
 			"rank": 594,
 			"name": "GOG Database",
 			"code": ["!gogdb"],
@@ -6021,7 +5367,6 @@
 			}
 		},
 		{
-			"ddgr": 42,
 			"rank": 595,
 			"name": "Google Cloud Search",
 			"code": ["!gcs"],
@@ -6031,7 +5376,6 @@
 			}
 		},
 		{
-			"ddgr": 42,
 			"rank": 596,
 			"name": "Google IE",
 			"code": ["!gie"],
@@ -6041,7 +5385,6 @@
 			}
 		},
 		{
-			"ddgr": 42,
 			"rank": 597,
 			"name": "This MIght Be a Wiki",
 			"code": ["!tmbw"],
@@ -6051,7 +5394,6 @@
 			}
 		},
 		{
-			"ddgr": 42,
 			"rank": 598,
 			"name": "Wired",
 			"code": ["!wired"],
@@ -6061,7 +5403,6 @@
 			}
 		},
 		{
-			"ddgr": 41,
 			"rank": 599,
 			"name": "Danawa",
 			"code": ["!dnw", "!danawa"],
@@ -6071,7 +5412,6 @@
 			}
 		},
 		{
-			"ddgr": 41,
 			"rank": 600,
 			"name": "DuckDuckGo in Japan",
 			"code": ["!ddgja"],
@@ -6081,7 +5421,6 @@
 			}
 		},
 		{
-			"ddgr": 41,
 			"rank": 601,
 			"name": "Google UA",
 			"code": ["!gua"],
@@ -6091,7 +5430,6 @@
 			}
 		},
 		{
-			"ddgr": 41,
 			"rank": 602,
 			"name": "Imgflip",
 			"code": ["!imgflip"],
@@ -6101,7 +5439,6 @@
 			}
 		},
 		{
-			"ddgr": 41,
 			"rank": 603,
 			"name": "Microsoft/Bing Translator",
 			"code": ["!bt"],
@@ -6111,7 +5448,6 @@
 			}
 		},
 		{
-			"ddgr": 41,
 			"rank": 604,
 			"name": "Morfix",
 			"code": ["!mfx", "!מורפיקס", "!morfix"],
@@ -6121,7 +5457,6 @@
 			}
 		},
 		{
-			"ddgr": 41,
 			"rank": 605,
 			"name": "Multitran",
 			"code": ["!mt", "!multitran"],
@@ -6131,7 +5466,6 @@
 			}
 		},
 		{
-			"ddgr": 41,
 			"rank": 606,
 			"name": "MyDealz",
 			"code": ["!mydealz"],
@@ -6141,7 +5475,6 @@
 			}
 		},
 		{
-			"ddgr": 41,
 			"rank": 607,
 			"name": "OpenGL",
 			"code": ["!gl"],
@@ -6151,7 +5484,6 @@
 			}
 		},
 		{
-			"ddgr": 41,
 			"rank": 608,
 			"name": "Subito.it",
 			"code": ["!subito"],
@@ -6161,7 +5493,6 @@
 			}
 		},
 		{
-			"ddgr": 41,
 			"rank": 609,
 			"name": "TF2 Wiki",
 			"code": ["!tf2", "!tf2wiki"],
@@ -6171,7 +5502,6 @@
 			}
 		},
 		{
-			"ddgr": 41,
 			"rank": 610,
 			"name": "tripadvisor",
 			"code": ["!ta"],
@@ -6181,7 +5511,6 @@
 			}
 		},
 		{
-			"ddgr": 41,
 			"rank": 611,
 			"name": "Tyda.se",
 			"code": ["!tyd", "!tyda"],
@@ -6191,7 +5520,6 @@
 			}
 		},
 		{
-			"ddgr": 40,
 			"rank": 612,
 			"name": "alibris",
 			"code": ["!alibris"],
@@ -6201,7 +5529,6 @@
 			}
 		},
 		{
-			"ddgr": 40,
 			"rank": 613,
 			"name": "BBC News",
 			"code": ["!bbcnews"],
@@ -6211,7 +5538,6 @@
 			}
 		},
 		{
-			"ddgr": 40,
 			"rank": 614,
 			"name": "CMake documentation",
 			"code": ["!cmake"],
@@ -6221,7 +5547,6 @@
 			}
 		},
 		{
-			"ddgr": 40,
 			"rank": 615,
 			"name": "ebay.fr",
 			"code": ["!efr", "!ebayfr", "!ebfr"],
@@ -6231,7 +5556,6 @@
 			}
 		},
 		{
-			"ddgr": 40,
 			"rank": 616,
 			"name": "Google Translate (to German)",
 			"code": ["!gtde", "!translatede", "!gtgerman", "!gt-german"],
@@ -6241,7 +5565,6 @@
 			}
 		},
 		{
-			"ddgr": 40,
 			"rank": 617,
 			"name": "Google translate es-en",
 			"code": ["!esen"],
@@ -6251,7 +5574,6 @@
 			}
 		},
 		{
-			"ddgr": 40,
 			"rank": 618,
 			"name": "Internet Movie Firearms Database",
 			"code": ["!imfdb"],
@@ -6261,7 +5583,6 @@
 			}
 		},
 		{
-			"ddgr": 40,
 			"rank": 619,
 			"name": "Kagi (calculator)",
 			"code": ["!calc", "!calculator"],
@@ -6271,7 +5592,6 @@
 			}
 		},
 		{
-			"ddgr": 40,
 			"rank": 620,
 			"name": "LEO Dictionary Italian",
 			"code": ["!leoi"],
@@ -6281,7 +5601,6 @@
 			}
 		},
 		{
-			"ddgr": 40,
 			"rank": 621,
 			"name": "Linguee (pt2en)",
 			"code": ["!linbr"],
@@ -6291,7 +5610,6 @@
 			}
 		},
 		{
-			"ddgr": 40,
 			"rank": 622,
 			"name": "The Open Group Base Specifications",
 			"code": ["!posix"],
@@ -6301,7 +5619,6 @@
 			}
 		},
 		{
-			"ddgr": 40,
 			"rank": 623,
 			"name": "Ukrainian Wikipedia",
 			"code": ["!wuk", "!ukwiki", "!wikiuk"],
@@ -6311,7 +5628,6 @@
 			}
 		},
 		{
-			"ddgr": 40,
 			"rank": 624,
 			"name": "ZDF",
 			"code": ["!zdf"],
@@ -6321,7 +5637,6 @@
 			}
 		},
 		{
-			"ddgr": 39,
 			"rank": 625,
 			"name": "Behind the Name",
 			"code": ["!btname", "!behindthename"],
@@ -6331,7 +5646,6 @@
 			}
 		},
 		{
-			"ddgr": 39,
 			"rank": 626,
 			"name": "Factorio wiki",
 			"code": ["!ftw", "!factorio"],
@@ -6341,7 +5655,6 @@
 			}
 		},
 		{
-			"ddgr": 39,
 			"rank": 627,
 			"name": "FotMob",
 			"code": ["!fot"],
@@ -6351,7 +5664,6 @@
 			}
 		},
 		{
-			"ddgr": 39,
 			"rank": 628,
 			"name": "Girls with muscle",
 			"code": ["!gwm"],
@@ -6361,7 +5673,6 @@
 			}
 		},
 		{
-			"ddgr": 39,
 			"rank": 629,
 			"name": "JoyReactor",
 			"code": ["!jr"],
@@ -6371,7 +5682,6 @@
 			}
 		},
 		{
-			"ddgr": 39,
 			"rank": 630,
 			"name": "MusicBrainz Recordings",
 			"code": ["!mbrc", "!mbrecording"],
@@ -6381,7 +5691,6 @@
 			}
 		},
 		{
-			"ddgr": 39,
 			"rank": 631,
 			"name": "Naver Map",
 			"code": ["!nmap"],
@@ -6391,7 +5700,6 @@
 			}
 		},
 		{
-			"ddgr": 39,
 			"rank": 632,
 			"name": "RuTube",
 			"code": ["!рт", "!rutube", "!рутуб"],
@@ -6401,7 +5709,6 @@
 			}
 		},
 		{
-			"ddgr": 39,
 			"rank": 633,
 			"name": "Veekun Pokedex",
 			"code": ["!veekun"],
@@ -6411,7 +5718,6 @@
 			}
 		},
 		{
-			"ddgr": 38,
 			"rank": 634,
 			"name": "Akakçe",
 			"code": ["!akakce"],
@@ -6421,7 +5727,6 @@
 			}
 		},
 		{
-			"ddgr": 38,
 			"rank": 635,
 			"name": "alpine linux wiki",
 			"code": ["!alw"],
@@ -6431,7 +5736,6 @@
 			}
 		},
 		{
-			"ddgr": 38,
 			"rank": 636,
 			"name": "Esperanto Wikipedia",
 			"code": ["!vo", "!weo", "!vikipedio", "!eowiki", "!wikieo"],
@@ -6441,7 +5745,6 @@
 			}
 		},
 		{
-			"ddgr": 38,
 			"rank": 637,
 			"name": "GitHub Gists",
 			"code": ["!gist"],
@@ -6451,7 +5754,6 @@
 			}
 		},
 		{
-			"ddgr": 38,
 			"rank": 638,
 			"name": "Il Fatto Quotidiano",
 			"code": ["!ilfatto"],
@@ -6461,7 +5763,6 @@
 			}
 		},
 		{
-			"ddgr": 38,
 			"rank": 639,
 			"name": "Kagi Assistant - Research",
 			"code": ["!kir", "!research", "!ki_research", "!ki-research"],
@@ -6471,7 +5772,6 @@
 			}
 		},
 		{
-			"ddgr": 38,
 			"rank": 640,
 			"name": "Oracle Java Docs",
 			"code": ["!jdk", "!java", "!java9"],
@@ -6481,7 +5781,6 @@
 			}
 		},
 		{
-			"ddgr": 38,
 			"rank": 641,
 			"name": "picsearch",
 			"code": ["!pic"],
@@ -6491,7 +5790,6 @@
 			}
 		},
 		{
-			"ddgr": 38,
 			"rank": 642,
 			"name": "pro-football-reference.com",
 			"code": ["!pfr"],
@@ -6501,7 +5799,6 @@
 			}
 		},
 		{
-			"ddgr": 38,
 			"rank": 643,
 			"name": "Sebsauvage",
 			"code": ["!seb"],
@@ -6511,7 +5808,6 @@
 			}
 		},
 		{
-			"ddgr": 38,
 			"rank": 644,
 			"name": "Stanford Encyclopedia of Philosophy",
 			"code": ["!sep", "!plato"],
@@ -6521,7 +5817,6 @@
 			}
 		},
 		{
-			"ddgr": 38,
 			"rank": 645,
 			"name": "Tori",
 			"code": ["!tori"],
@@ -6531,7 +5826,6 @@
 			}
 		},
 		{
-			"ddgr": 38,
 			"rank": 646,
 			"name": "WooordHunt",
 			"code": ["!woo", "!воо"],
@@ -6541,7 +5835,6 @@
 			}
 		},
 		{
-			"ddgr": 38,
 			"rank": 647,
 			"name": "쿠팡",
 			"code": ["!coupang"],
@@ -6551,7 +5844,6 @@
 			}
 		},
 		{
-			"ddgr": 37,
 			"rank": 648,
 			"name": "Bitbucket",
 			"code": ["!bb", "!bitbucket"],
@@ -6561,7 +5853,6 @@
 			}
 		},
 		{
-			"ddgr": 37,
 			"rank": 649,
 			"name": "DriveThruRPG",
 			"code": ["!dtrpg"],
@@ -6571,7 +5862,6 @@
 			}
 		},
 		{
-			"ddgr": 37,
 			"rank": 650,
 			"name": "ebay.it",
 			"code": ["!eit", "!ebayit", "!ebit"],
@@ -6581,7 +5871,6 @@
 			}
 		},
 		{
-			"ddgr": 37,
 			"rank": 651,
 			"name": "Galaxus.ch",
 			"code": ["!galaxus"],
@@ -6591,7 +5880,6 @@
 			}
 		},
 		{
-			"ddgr": 37,
 			"rank": 652,
 			"name": "Google Images (Animated)",
 			"code": ["!ggif", "!ггиф"],
@@ -6601,7 +5889,6 @@
 			}
 		},
 		{
-			"ddgr": 37,
 			"rank": 653,
 			"name": "JPC",
 			"code": ["!jpc"],
@@ -6611,7 +5898,6 @@
 			}
 		},
 		{
-			"ddgr": 37,
 			"rank": 654,
 			"name": "Pokémon Showdown",
 			"code": ["!showdown"],
@@ -6621,7 +5907,6 @@
 			}
 		},
 		{
-			"ddgr": 37,
 			"rank": 655,
 			"name": "Qwant",
 			"code": ["!qw", "!qwant", "!qwt"],
@@ -6631,7 +5916,6 @@
 			}
 		},
 		{
-			"ddgr": 37,
 			"rank": 656,
 			"name": "Rails API",
 			"code": ["!rails"],
@@ -6641,7 +5925,6 @@
 			}
 		},
 		{
-			"ddgr": 37,
 			"rank": 657,
 			"name": "Sweetwater",
 			"code": ["!swtr", "!sweetwater"],
@@ -6651,7 +5934,6 @@
 			}
 		},
 		{
-			"ddgr": 37,
 			"rank": 658,
 			"name": "The KoLwiki",
 			"code": ["!kol", "!kolw"],
@@ -6661,7 +5943,6 @@
 			}
 		},
 		{
-			"ddgr": 36,
 			"rank": 659,
 			"name": "AccuWeather",
 			"code": ["!accuweather"],
@@ -6671,7 +5952,6 @@
 			}
 		},
 		{
-			"ddgr": 36,
 			"rank": 660,
 			"name": "Alibaba",
 			"code": ["!baba", "!alibaba"],
@@ -6681,7 +5961,6 @@
 			}
 		},
 		{
-			"ddgr": 36,
 			"rank": 661,
 			"name": "Arte (FR)",
 			"code": ["!arte", "!artefr"],
@@ -6691,7 +5970,6 @@
 			}
 		},
 		{
-			"ddgr": 36,
 			"rank": 662,
 			"name": "Canadian Tire",
 			"code": ["!ct", "!canadiantire"],
@@ -6701,7 +5979,6 @@
 			}
 		},
 		{
-			"ddgr": 36,
 			"rank": 663,
 			"name": "DuckDuckGo Lite",
 			"code": ["!lite"],
@@ -6711,7 +5988,6 @@
 			}
 		},
 		{
-			"ddgr": 36,
 			"rank": 664,
 			"name": "Epic Games",
 			"code": ["!epic"],
@@ -6721,7 +5997,6 @@
 			}
 		},
 		{
-			"ddgr": 36,
 			"rank": 665,
 			"name": "Fallout Wiki",
 			"code": ["!fallout"],
@@ -6731,7 +6006,6 @@
 			}
 		},
 		{
-			"ddgr": 36,
 			"rank": 666,
 			"name": "Google Slides",
 			"code": ["!гс", "!gslides", "!гпрезентации", "!гпрез", "!гслайд", "!гслайдс"],
@@ -6741,7 +6015,6 @@
 			}
 		},
 		{
-			"ddgr": 36,
 			"rank": 667,
 			"name": "HabraHabr",
 			"code": ["!habr", "!хабр"],
@@ -6751,7 +6024,6 @@
 			}
 		},
 		{
-			"ddgr": 36,
 			"rank": 668,
 			"name": "Inkpedia",
 			"code": ["!splatoon"],
@@ -6761,7 +6033,6 @@
 			}
 		},
 		{
-			"ddgr": 36,
 			"rank": 669,
 			"name": "Priberam",
 			"code": ["!dlpo", "!priberam"],
@@ -6771,7 +6042,6 @@
 			}
 		},
 		{
-			"ddgr": 36,
 			"rank": 670,
 			"name": "Ricardo",
 			"code": ["!ricardo"],
@@ -6781,7 +6051,6 @@
 			}
 		},
 		{
-			"ddgr": 36,
 			"rank": 671,
 			"name": "StartPage safeoff eng",
 			"code": ["!spp"],
@@ -6791,7 +6060,6 @@
 			}
 		},
 		{
-			"ddgr": 35,
 			"rank": 672,
 			"name": "Bestbuy.ca",
 			"code": ["!bbyc", "!bestbuyca"],
@@ -6801,7 +6069,6 @@
 			}
 		},
 		{
-			"ddgr": 35,
 			"rank": 673,
 			"name": "Google India",
 			"code": ["!gin", "!googlein"],
@@ -6811,7 +6078,6 @@
 			}
 		},
 		{
-			"ddgr": 35,
 			"rank": 674,
 			"name": "Guild Wars Wiki",
 			"code": ["!gww"],
@@ -6821,7 +6087,6 @@
 			}
 		},
 		{
-			"ddgr": 35,
 			"rank": 675,
 			"name": "Kakaku.com",
 			"code": ["!kakaku"],
@@ -6831,7 +6096,6 @@
 			}
 		},
 		{
-			"ddgr": 35,
 			"rank": 676,
 			"name": "LiveChart.me",
 			"code": ["!livec"],
@@ -6841,7 +6105,6 @@
 			}
 		},
 		{
-			"ddgr": 35,
 			"rank": 677,
 			"name": "mojeek",
 			"code": ["!mojeek"],
@@ -6851,7 +6114,6 @@
 			}
 		},
 		{
-			"ddgr": 35,
 			"rank": 678,
 			"name": "NDTV",
 			"code": ["!ndtv"],
@@ -6861,7 +6123,6 @@
 			}
 		},
 		{
-			"ddgr": 35,
 			"rank": 679,
 			"name": "Wikibooks",
 			"code": ["!wb", "!wikibooks"],
@@ -6871,7 +6132,6 @@
 			}
 		},
 		{
-			"ddgr": 34,
 			"rank": 680,
 			"name": "4chan Catalog",
 			"code": ["!4chc"],
@@ -6881,7 +6141,6 @@
 			}
 		},
 		{
-			"ddgr": 34,
 			"rank": 681,
 			"name": "CeX",
 			"code": ["!cex"],
@@ -6891,7 +6150,6 @@
 			}
 		},
 		{
-			"ddgr": 34,
 			"rank": 682,
 			"name": "fnac",
 			"code": ["!fnac"],
@@ -6901,7 +6159,6 @@
 			}
 		},
 		{
-			"ddgr": 34,
 			"rank": 683,
 			"name": "Here WeGo",
 			"code": ["!hm", "!here"],
@@ -6911,7 +6168,6 @@
 			}
 		},
 		{
-			"ddgr": 34,
 			"rank": 684,
 			"name": "Pitchfork Media",
 			"code": ["!p4k", "!pitchfork"],
@@ -6921,7 +6177,6 @@
 			}
 		},
 		{
-			"ddgr": 34,
 			"rank": 685,
 			"name": "wikiFeet",
 			"code": ["!feet", "!wikifeet", "!wfeet"],
@@ -6931,7 +6186,6 @@
 			}
 		},
 		{
-			"ddgr": 34,
 			"rank": 686,
 			"name": "Wordreference (en-fr)",
 			"code": ["!wref", "!wrenfr", "!wenfr"],
@@ -6941,7 +6195,6 @@
 			}
 		},
 		{
-			"ddgr": 34,
 			"rank": 687,
 			"name": "WordReference (EN)",
 			"code": ["!wr", "!wren", "!wrn"],
@@ -6951,7 +6204,6 @@
 			}
 		},
 		{
-			"ddgr": 33,
 			"rank": 688,
 			"name": "All in One",
 			"code": ["!all"],
@@ -6961,7 +6213,6 @@
 			}
 		},
 		{
-			"ddgr": 33,
 			"rank": 689,
 			"name": "ARD Mediathek",
 			"code": ["!ard"],
@@ -6971,7 +6222,6 @@
 			}
 		},
 		{
-			"ddgr": 33,
 			"rank": 690,
 			"name": "Gmail by account",
 			"code": ["!gba"],
@@ -6981,7 +6231,6 @@
 			}
 		},
 		{
-			"ddgr": 33,
 			"rank": 691,
 			"name": "Google ZA",
 			"code": ["!gza"],
@@ -6991,7 +6240,6 @@
 			}
 		},
 		{
-			"ddgr": 33,
 			"rank": 692,
 			"name": "Hurricane Electrics Internet Services",
 			"code": ["!bgp"],
@@ -7001,7 +6249,6 @@
 			}
 		},
 		{
-			"ddgr": 33,
 			"rank": 693,
 			"name": "Kinopoisk",
 			"code": ["!кп", "!kino", "!кинопоиск", "!kpoisk"],
@@ -7011,7 +6258,6 @@
 			}
 		},
 		{
-			"ddgr": 33,
 			"rank": 694,
 			"name": "Magic Card Market",
 			"code": ["!mcm", "!mkm", "!magiccardmarket", "!mtgcm"],
@@ -7021,7 +6267,6 @@
 			}
 		},
 		{
-			"ddgr": 33,
 			"rank": 695,
 			"name": "Mass Effect Wiki",
 			"code": ["!me"],
@@ -7031,7 +6276,6 @@
 			}
 		},
 		{
-			"ddgr": 33,
 			"rank": 696,
 			"name": "MTG Salvation Wiki",
 			"code": ["!mtgs"],
@@ -7041,7 +6285,6 @@
 			}
 		},
 		{
-			"ddgr": 33,
 			"rank": 697,
 			"name": "MXToolbox (dns)",
 			"code": ["!dns"],
@@ -7051,7 +6294,6 @@
 			}
 		},
 		{
-			"ddgr": 33,
 			"rank": 698,
 			"name": "WikiDex",
 			"code": ["!wikidex"],
@@ -7061,7 +6303,6 @@
 			}
 		},
 		{
-			"ddgr": 33,
 			"rank": 699,
 			"name": "YouTube Playlists",
 			"code": ["!ytp"],
@@ -7071,7 +6312,6 @@
 			}
 		},
 		{
-			"ddgr": 32,
 			"rank": 700,
 			"name": "Albert Heijn",
 			"code": ["!ah", "!alberthein", "!appie"],
@@ -7081,7 +6321,6 @@
 			}
 		},
 		{
-			"ddgr": 32,
 			"rank": 701,
 			"name": "Basketball Reference",
 			"code": ["!bkref", "!basketballreference", "!bballref"],
@@ -7091,7 +6330,6 @@
 			}
 		},
 		{
-			"ddgr": 32,
 			"rank": 702,
 			"name": "Crunchyroll",
 			"code": ["!crs"],
@@ -7101,7 +6339,6 @@
 			}
 		},
 		{
-			"ddgr": 32,
 			"rank": 703,
 			"name": "Dealabs",
 			"code": ["!dealabs"],
@@ -7111,7 +6348,6 @@
 			}
 		},
 		{
-			"ddgr": 32,
 			"rank": 704,
 			"name": "El Tiempo",
 			"code": ["!et"],
@@ -7121,7 +6357,6 @@
 			}
 		},
 		{
-			"ddgr": 32,
 			"rank": 705,
 			"name": "Flightradar24",
 			"code": ["!fr24", "!flightradar", "!fr24f"],
@@ -7131,7 +6366,6 @@
 			}
 		},
 		{
-			"ddgr": 32,
 			"rank": 706,
 			"name": "Korean Wikipedia",
 			"code": ["!wko", "!kowiki", "!wikiko"],
@@ -7141,7 +6375,6 @@
 			}
 		},
 		{
-			"ddgr": 32,
 			"rank": 707,
 			"name": "maps.google.com",
 			"code": ["!gmfr"],
@@ -7151,7 +6384,6 @@
 			}
 		},
 		{
-			"ddgr": 32,
 			"rank": 708,
 			"name": "NOS",
 			"code": ["!nos"],
@@ -7161,7 +6393,6 @@
 			}
 		},
 		{
-			"ddgr": 32,
 			"rank": 709,
 			"name": "Reddit (subreddit)",
 			"code": ["!srs", "!subredditsearch"],
@@ -7171,7 +6402,6 @@
 			}
 		},
 		{
-			"ddgr": 32,
 			"rank": 710,
 			"name": "wikiHow",
 			"code": ["!wh", "!wikihow", "!whw", "!whow"],
@@ -7181,7 +6411,6 @@
 			}
 		},
 		{
-			"ddgr": 31,
 			"rank": 711,
 			"name": "Amazon Nederland",
 			"code": ["!amazonnl"],
@@ -7191,7 +6420,6 @@
 			}
 		},
 		{
-			"ddgr": 31,
 			"rank": 712,
 			"name": "Micro Center",
 			"code": ["!microcenter"],
@@ -7201,7 +6429,6 @@
 			}
 		},
 		{
-			"ddgr": 31,
 			"rank": 713,
 			"name": "Mouser Electronics",
 			"code": ["!mouser"],
@@ -7211,7 +6438,6 @@
 			}
 		},
 		{
-			"ddgr": 31,
 			"rank": 714,
 			"name": "NotebookCheck",
 			"code": ["!nbc"],
@@ -7221,7 +6447,6 @@
 			}
 		},
 		{
-			"ddgr": 31,
 			"rank": 715,
 			"name": "Rust Nightly Standard Library Documentation",
 			"code": ["!rustn"],
@@ -7231,7 +6456,6 @@
 			}
 		},
 		{
-			"ddgr": 31,
 			"rank": 716,
 			"name": "SOLO: Search Oxford Libraries Online",
 			"code": ["!solo"],
@@ -7241,7 +6465,6 @@
 			}
 		},
 		{
-			"ddgr": 31,
 			"rank": 717,
 			"name": "TCGPlayer",
 			"code": ["!tcgp", "!tcgplayer"],
@@ -7251,7 +6474,6 @@
 			}
 		},
 		{
-			"ddgr": 31,
 			"rank": 718,
 			"name": "Telegram",
 			"code": ["!tlgrm"],
@@ -7261,7 +6483,6 @@
 			}
 		},
 		{
-			"ddgr": 31,
 			"rank": 719,
 			"name": "Vgmdb",
 			"code": ["!vgmdb"],
@@ -7271,7 +6492,6 @@
 			}
 		},
 		{
-			"ddgr": 31,
 			"rank": 720,
 			"name": "Yahoo Image Search",
 			"code": ["!yi"],
@@ -7281,7 +6501,6 @@
 			}
 		},
 		{
-			"ddgr": 31,
 			"rank": 721,
 			"name": "英辞郎 on the WEB Pro",
 			"code": ["!eow"],
@@ -7291,7 +6510,6 @@
 			}
 		},
 		{
-			"ddgr": 30,
 			"rank": 722,
 			"name": "Amazon Kindle",
 			"code": ["!kindle"],
@@ -7301,7 +6519,6 @@
 			}
 		},
 		{
-			"ddgr": 30,
 			"rank": 723,
 			"name": "Comic Vine",
 			"code": ["!comicvine"],
@@ -7311,7 +6528,6 @@
 			}
 		},
 		{
-			"ddgr": 30,
 			"rank": 724,
 			"name": "Google Flights",
 			"code": ["!gfl", "!gflights"],
@@ -7321,7 +6537,6 @@
 			}
 		},
 		{
-			"ddgr": 30,
 			"rank": 725,
 			"name": "Hdblog",
 			"code": ["!hdblog"],
@@ -7331,7 +6546,6 @@
 			}
 		},
 		{
-			"ddgr": 30,
 			"rank": 726,
 			"name": "HEB Grocery Company",
 			"code": ["!heb"],
@@ -7341,7 +6555,6 @@
 			}
 		},
 		{
-			"ddgr": 30,
 			"rank": 727,
 			"name": "Mercado Libre Venezuela",
 			"code": ["!mlve"],
@@ -7351,7 +6564,6 @@
 			}
 		},
 		{
-			"ddgr": 30,
 			"rank": 728,
 			"name": "Newgrounds",
 			"code": ["!newgrounds"],
@@ -7361,7 +6573,6 @@
 			}
 		},
 		{
-			"ddgr": 30,
 			"rank": 729,
 			"name": "Nintendo Life",
 			"code": ["!nlife", "!ninlife", "!nintendolife"],
@@ -7371,7 +6582,6 @@
 			}
 		},
 		{
-			"ddgr": 30,
 			"rank": 730,
 			"name": "PCGamingWiki",
 			"code": ["!pcgw", "!pcgamingwiki"],
@@ -7381,7 +6591,6 @@
 			}
 		},
 		{
-			"ddgr": 30,
 			"rank": 731,
 			"name": "Perldoc Browser",
 			"code": ["!perldoc"],
@@ -7391,7 +6600,6 @@
 			}
 		},
 		{
-			"ddgr": 30,
 			"rank": 732,
 			"name": "Pexels",
 			"code": ["!pexels"],
@@ -7401,7 +6609,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 733,
 			"name": "Amazon India",
 			"code": ["!ain", "!amazon.in", "!amin", "!amazonin", "!a.in", "!amznin", "!azi"],
@@ -7411,7 +6618,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 734,
 			"name": "BookMY Show",
 			"code": ["!bms", "!bookmyshow"],
@@ -7421,7 +6627,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 735,
 			"name": "Dictionary.com",
 			"code": ["!dxn", "!dcom", "!d.com"],
@@ -7431,7 +6636,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 736,
 			"name": "Gentoo's Bugzilla",
 			"code": ["!gbugs"],
@@ -7441,7 +6645,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 737,
 			"name": "Google Maps Australia",
 			"code": ["!gmau"],
@@ -7451,7 +6654,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 738,
 			"name": "Google NO",
 			"code": ["!gno"],
@@ -7461,7 +6663,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 739,
 			"name": "Jacobin Magazine",
 			"code": ["!jacobin"],
@@ -7471,7 +6672,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 740,
 			"name": "MangaDex",
 			"code": ["!mdx", "!mangadex"],
@@ -7481,7 +6681,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 741,
 			"name": "Mercadolibre México",
 			"code": ["!mlmx", "!mercadolibremx"],
@@ -7491,7 +6690,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 742,
 			"name": "MLB.com",
 			"code": ["!mlb"],
@@ -7501,7 +6699,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 743,
 			"name": "MusicBrainz Artists",
 			"code": ["!mbartist"],
@@ -7511,7 +6708,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 744,
 			"name": "Nico Nico Pedia",
 			"code": ["!nicodic"],
@@ -7521,7 +6717,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 745,
 			"name": "Pinboard",
 			"code": ["!pb", "!pinboard", "!pinf"],
@@ -7531,7 +6726,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 746,
 			"name": "Plena Ilustrita Vortaro",
 			"code": ["!piv", "!vortaro"],
@@ -7541,7 +6735,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 747,
 			"name": "Roller Coaster Database",
 			"code": ["!rcdb"],
@@ -7551,7 +6744,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 748,
 			"name": "SCP Foundation",
 			"code": ["!scp"],
@@ -7561,7 +6753,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 749,
 			"name": "Strava",
 			"code": ["!strava"],
@@ -7571,7 +6762,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 750,
 			"name": "Süddeutsche Zeitung",
 			"code": ["!sz"],
@@ -7581,7 +6771,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 751,
 			"name": "Texdoc",
 			"code": ["!texdoc"],
@@ -7591,7 +6780,6 @@
 			}
 		},
 		{
-			"ddgr": 29,
 			"rank": 752,
 			"name": "TimeAndDate",
 			"code": ["!td"],
@@ -7601,7 +6789,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 753,
 			"name": "Alza.cz",
 			"code": ["!alza"],
@@ -7611,7 +6798,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 754,
 			"name": "Ansa",
 			"code": ["!ansa"],
@@ -7621,7 +6807,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 755,
 			"name": "ArchLinux Package Search",
 			"code": ["!archpackages"],
@@ -7631,7 +6816,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 756,
 			"name": "chefkoch.de",
 			"code": ["!chefkoch"],
@@ -7641,7 +6825,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 757,
 			"name": "Den Blå Avis",
 			"code": ["!dba"],
@@ -7651,7 +6834,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 758,
 			"name": "EDHREC",
 			"code": ["!edhrec"],
@@ -7661,7 +6843,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 759,
 			"name": "EtherScan",
 			"code": ["!eth", "!etherscan"],
@@ -7671,7 +6852,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 760,
 			"name": "FlightAware",
 			"code": ["!faw", "!flightaware"],
@@ -7681,7 +6861,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 761,
 			"name": "GitHub User",
 			"code": ["!ghr", "!ghrepo", "!ghus"],
@@ -7691,7 +6870,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 762,
 			"name": "Google (Past Week)",
 			"code": ["!gweek"],
@@ -7701,7 +6879,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 763,
 			"name": "Google GR",
 			"code": ["!γ", "!ggr"],
@@ -7711,7 +6888,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 764,
 			"name": "Google Translate - pt-en",
 			"code": ["!pten"],
@@ -7721,7 +6897,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 765,
 			"name": "Kobo",
 			"code": ["!kobo"],
@@ -7731,7 +6906,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 766,
 			"name": "Laravel",
 			"code": ["!laravel"],
@@ -7741,7 +6915,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 767,
 			"name": "Naver English Dictionary",
 			"code": ["!ndic"],
@@ -7751,7 +6924,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 768,
 			"name": "Next INpact",
 			"code": ["!nxi"],
@@ -7761,7 +6933,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 769,
 			"name": "ProtonDB",
 			"code": ["!ptn", "!protondb", "!proton", "!prdb"],
@@ -7771,7 +6942,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 770,
 			"name": "RaiPlay",
 			"code": ["!rai"],
@@ -7781,7 +6951,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 771,
 			"name": "Semantic Scholar",
 			"code": ["!s2", "!semantic", "!ssch", "!smsc"],
@@ -7791,7 +6960,6 @@
 			}
 		},
 		{
-			"ddgr": 28,
 			"rank": 772,
 			"name": "Touhou Wiki",
 			"code": ["!touhou"],
@@ -7801,7 +6969,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 773,
 			"name": "Amazon Automotive",
 			"code": ["!aa"],
@@ -7811,7 +6978,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 774,
 			"name": "arXiv.org",
 			"code": ["!arx", "!arxiv"],
@@ -7821,7 +6987,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 775,
 			"name": "Boston Globe",
 			"code": ["!bostonglobe"],
@@ -7831,7 +6996,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 776,
 			"name": "CommonLisp HyperSpec",
 			"code": ["!clhs"],
@@ -7841,7 +7005,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 777,
 			"name": "crate.io",
 			"code": ["!crate"],
@@ -7851,7 +7014,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 778,
 			"name": "Epic Games Store",
 			"code": ["!egs"],
@@ -7861,7 +7023,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 779,
 			"name": "Indeed",
 			"code": ["!jobs", "!indeed"],
@@ -7871,7 +7032,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 780,
 			"name": "Israel National News - Arutz Sheva 7",
 			"code": ["!inn"],
@@ -7881,7 +7041,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 781,
 			"name": "Ling.pl Angielsko-Polski",
 			"code": ["!ling"],
@@ -7891,7 +7050,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 782,
 			"name": "MSDN",
 			"code": ["!md", "!msdocs", "!dotnet", "!msdn", "!msd", "!posh"],
@@ -7901,7 +7059,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 783,
 			"name": "MTG Salvation",
 			"code": ["!mtgwiki"],
@@ -7911,7 +7068,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 784,
 			"name": "Naver Papago",
 			"code": ["!ppg", "!nvenkr"],
@@ -7921,7 +7077,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 785,
 			"name": "NCBI",
 			"code": ["!ncbi"],
@@ -7931,7 +7086,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 786,
 			"name": "OpenStreetMap Taginfo",
 			"code": ["!taginfo"],
@@ -7941,7 +7095,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 787,
 			"name": "Project Gutenberg",
 			"code": ["!pg", "!gutenberg", "!projectgutenberg"],
@@ -7951,7 +7104,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 788,
 			"name": "Protein Data Bank",
 			"code": ["!pdb"],
@@ -7961,7 +7113,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 789,
 			"name": "Ridibooks",
 			"code": ["!ridi"],
@@ -7971,7 +7122,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 790,
 			"name": "Slovarji Inštituta za slovenski jezik Frana Ramovša ZRC SAZU",
 			"code": ["!fran"],
@@ -7981,7 +7131,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 791,
 			"name": "Tweakers Pricewatch",
 			"code": ["!tpw", "!pricewatch", "!twpw"],
@@ -7991,7 +7140,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 792,
 			"name": "Wiby",
 			"code": ["!wiby"],
@@ -8001,7 +7149,6 @@
 			}
 		},
 		{
-			"ddgr": 27,
 			"rank": 793,
 			"name": "WordReference es > it",
 			"code": ["!wresit"],
@@ -8011,7 +7158,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 794,
 			"name": "DHL German",
 			"code": ["!dhlde"],
@@ -8021,7 +7167,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 795,
 			"name": "emag.ro",
 			"code": ["!emag"],
@@ -8031,7 +7176,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 796,
 			"name": "English StackExchange",
 			"code": ["!en", "!seenglish", "!enstex"],
@@ -8041,7 +7185,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 797,
 			"name": "FreeBSD Ports",
 			"code": ["!fports", "!freebsd"],
@@ -8051,7 +7194,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 798,
 			"name": "Frinkiac",
 			"code": ["!frinkiac"],
@@ -8061,7 +7203,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 799,
 			"name": "Geizhals",
 			"code": ["!gzh", "!geizhals", "!giez", "!giezhals"],
@@ -8071,7 +7212,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 800,
 			"name": "go.mail.ru",
 			"code": ["!mailru", "!мейлру"],
@@ -8081,7 +7221,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 801,
 			"name": "Google Translate (en2de)",
 			"code": ["!ende"],
@@ -8091,7 +7230,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 802,
 			"name": "Kagi Knowledgebase",
 			"code": ["!help"],
@@ -8101,7 +7239,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 803,
 			"name": "LanguageTool",
 			"code": ["!lang"],
@@ -8111,7 +7248,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 804,
 			"name": "Ludwig",
 			"code": ["!lwg", "!ludwig"],
@@ -8121,7 +7257,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 805,
 			"name": "mercari US",
 			"code": ["!mercari"],
@@ -8131,7 +7266,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 806,
 			"name": "OpenBSD",
 			"code": ["!openbsd"],
@@ -8141,7 +7275,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 807,
 			"name": "SmashWiki",
 			"code": ["!ssb"],
@@ -8151,7 +7284,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 808,
 			"name": "Tibia",
 			"code": ["!tbc", "!tibia"],
@@ -8161,7 +7293,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 809,
 			"name": "Trade Me",
 			"code": ["!tm", "!trademe"],
@@ -8171,7 +7302,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 810,
 			"name": "Turkish Wikipedia",
 			"code": ["!wtr", "!trwiki", "!wikitr"],
@@ -8181,7 +7311,6 @@
 			}
 		},
 		{
-			"ddgr": 26,
 			"rank": 811,
 			"name": "Ubuntu Packages Search",
 			"code": ["!apt", "!puc"],
@@ -8191,7 +7320,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 812,
 			"name": "1881.no",
 			"code": ["!1881"],
@@ -8201,7 +7329,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 813,
 			"name": "aladin",
 			"code": ["!aladin"],
@@ -8211,7 +7338,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 814,
 			"name": "Argos UK",
 			"code": ["!argos"],
@@ -8221,7 +7347,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 815,
 			"name": "CBC News",
 			"code": ["!cbc"],
@@ -8231,7 +7356,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 816,
 			"name": "Debian",
 			"code": ["!debian"],
@@ -8241,7 +7365,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 817,
 			"name": "ebay (ES)",
 			"code": ["!ees", "!ebayes", "!ebes"],
@@ -8251,7 +7374,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 818,
 			"name": "Grand Dictionnaire Terminologique",
 			"code": ["!gdt"],
@@ -8261,7 +7383,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 819,
 			"name": "IGDB - Internet Game Database",
 			"code": ["!igdb"],
@@ -8271,7 +7392,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 820,
 			"name": "JSTOR",
 			"code": ["!jstor"],
@@ -8281,7 +7401,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 821,
 			"name": "Lazada Philippines",
 			"code": ["!laz", "!lzd", "!lazadaph", "!lzdph"],
@@ -8291,7 +7410,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 822,
 			"name": "linguee.com German - English",
 			"code": ["!lied"],
@@ -8301,7 +7419,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 823,
 			"name": "Polygon",
 			"code": ["!polygon"],
@@ -8311,7 +7428,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 824,
 			"name": "Repology",
 			"code": ["!repology"],
@@ -8321,7 +7437,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 825,
 			"name": "RhymeZone",
 			"code": ["!rz", "!rhyme"],
@@ -8331,7 +7446,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 826,
 			"name": "ru.wiktionary.org",
 			"code": ["!wtru"],
@@ -8341,7 +7455,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 827,
 			"name": "Star Tribune",
 			"code": ["!strib"],
@@ -8351,7 +7464,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 828,
 			"name": "Thesaurus.com",
 			"code": ["!t", "!thesaurus", "!thes", "!syn", "!synonym", "!like", "!synonyms", "!tref"],
@@ -8361,7 +7473,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 829,
 			"name": "Tldr",
 			"code": ["!tldr"],
@@ -8371,7 +7482,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 830,
 			"name": "Tweakers",
 			"code": ["!tweak"],
@@ -8381,7 +7491,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 831,
 			"name": "Udemy",
 			"code": ["!udemy"],
@@ -8391,7 +7500,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 832,
 			"name": "Wikcionario",
 			"code": ["!wtes", "!wiktes"],
@@ -8401,7 +7509,6 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 833,
 			"name": "Wikcionário (PT)",
 			"code": ["!wtpt", "!wiktpt"],
@@ -8411,13 +7518,1506 @@
 			}
 		},
 		{
-			"ddgr": 25,
 			"rank": 834,
 			"name": "Wikiquote",
 			"code": ["!wikiquote"],
 			"tags": ["Multimedia/Docs"],
 			"urls": {
 				"s": "https://en.wikiquote.org/w/index.php?search=%s"
+			}
+		},
+		{
+			"rank": 835,
+			"name": "Acronyms",
+			"code": ["!acro", "!acronyms", "!acronym"],
+			"tags": ["Research/Reference (words)"],
+			"urls": {
+				"s": "https://www.acronymfinder.com/~/search/af.aspx?string=exact&Acronym=%s"
+			}
+		},
+		{
+			"rank": 836,
+			"name": "AP News",
+			"code": ["!ap", "!apnews"],
+			"tags": ["News/Broadcast"],
+			"urls": {
+				"s": "https://apnews.com/search?q=%s"
+			}
+		},
+		{
+			"rank": 837,
+			"name": "beck-online",
+			"code": ["!beck"],
+			"tags": ["Research/Law"],
+			"urls": {
+				"s": "https://beck-online.beck.de/Search?words=%s"
+			}
+		},
+		{
+			"rank": 838,
+			"name": "Blockchain",
+			"code": ["!bc"],
+			"tags": ["Shopping/Online (marketplace)"],
+			"urls": {
+				"s": "https://blockchain.info/search/%s"
+			}
+		},
+		{
+			"rank": 839,
+			"name": "Brickset",
+			"code": ["!brickset"],
+			"tags": ["Entertainment/Misc"],
+			"urls": {
+				"s": "https://brickset.com/sets?query=%s"
+			}
+		},
+		{
+			"rank": 840,
+			"name": "Curseforge Minecraft Mods",
+			"code": ["!mcmods"],
+			"tags": ["Entertainment/Games (Minecraft)"],
+			"urls": {
+				"s": "https://www.curseforge.com/minecraft/mc-mods/search?search=%s"
+			}
+		},
+		{
+			"rank": 841,
+			"name": "Dailymotion",
+			"code": ["!dm", "!dailymotion"],
+			"tags": ["Multimedia/Video"],
+			"urls": {
+				"s": "https://www.dailymotion.com/search/%s"
+			}
+		},
+		{
+			"rank": 842,
+			"name": "DoctorOfCredit",
+			"code": ["!doc"],
+			"tags": ["Research/Travel"],
+			"urls": {
+				"s": "https://www.doctorofcredit.com/?s=%s"
+			}
+		},
+		{
+			"rank": 843,
+			"name": "GameBanana",
+			"code": ["!gban", "!gamebanana"],
+			"tags": ["Entertainment/Games (general)"],
+			"urls": {
+				"s": "https://gamebanana.com/skins/search?search=%s"
+			}
+		},
+		{
+			"rank": 844,
+			"name": "Gesetze im Internet",
+			"code": ["!gii"],
+			"tags": ["Research/Law"],
+			"urls": {
+				"s": "https://www.gesetze-im-internet.de/cgi-bin/htsearch?config=Gesamt_bmjhome2005&method=and&words=%s"
+			}
+		},
+		{
+			"rank": 845,
+			"name": "Google Patents",
+			"code": ["!gpat", "!patent"],
+			"tags": ["Research/Law"],
+			"urls": {
+				"s": "https://patents.google.com/?oq=%s"
+			}
+		},
+		{
+			"rank": 846,
+			"name": "Google TR",
+			"code": ["!gtr"],
+			"tags": ["Online Services/Google"],
+			"urls": {
+				"s": "https://www.google.com.tr/search?q=%s&meta=&aq=f&aqi=g10&aql=&gs_rfai="
+			}
+		},
+		{
+			"rank": 847,
+			"name": "Hacking With Swift",
+			"code": ["!hws"],
+			"tags": ["Tech/Blogs"],
+			"urls": {
+				"s": "https://www.hackingwithswift.com/search/%s"
+			}
+		},
+		{
+			"rank": 848,
+			"name": "Hebrew Wikipedia",
+			"code": ["!whe", "!hebwiki", "!ויקי", "!hewiki", "!wikihe"],
+			"tags": ["Research/Reference"],
+			"urls": {
+				"s": "https://he.wikipedia.org/w/index.php?search=%s"
+			}
+		},
+		{
+			"rank": 849,
+			"name": "iNaturalist",
+			"code": ["!inat"],
+			"tags": ["Research/Reference"],
+			"urls": {
+				"s": "https://www.inaturalist.org/search?q=%s"
+			}
+		},
+		{
+			"rank": 850,
+			"name": "IP Location",
+			"code": ["!iploc", "!iplocation"],
+			"tags": ["Tech/Sysadmin (network)"],
+			"urls": {
+				"s": "https://www.iplocation.net/?query=%s"
+			}
+		},
+		{
+			"rank": 851,
+			"name": "Kagi Safe Search: On",
+			"code": ["!safe", "!safeon"],
+			"tags": [],
+			"urls": {
+				"s": "https://kagi.com/search?q=%s&safe=true"
+			}
+		},
+		{
+			"rank": 852,
+			"name": "Linguee (en2fr)",
+			"code": ["!lin", "!linef"],
+			"tags": ["Research/Reference (words)"],
+			"urls": {
+				"s": "https://www.linguee.com/english-french/search?source=auto&query=%s"
+			}
+		},
+		{
+			"rank": 853,
+			"name": "Linux Cross Reference",
+			"code": ["!lxr"],
+			"tags": ["Tech/Sysadmin"],
+			"urls": {
+				"s": "https://elixir.bootlin.com/linux/latest/ident/%s"
+			}
+		},
+		{
+			"rank": 854,
+			"name": "mercari JP",
+			"code": ["!mercarijp"],
+			"tags": ["Shopping/Online (marketplace)"],
+			"urls": {
+				"s": "https://www.mercari.com/jp/search/?keyword=%s"
+			}
+		},
+		{
+			"rank": 855,
+			"name": "Pouet",
+			"code": ["!pouet"],
+			"tags": ["Tech/Downloads (software)"],
+			"urls": {
+				"s": "https://pouet.net/search.php?what=%s&type=prod"
+			}
+		},
+		{
+			"rank": 856,
+			"name": "PubChem",
+			"code": ["!pubchem"],
+			"tags": ["Research/Reference (science)"],
+			"urls": {
+				"s": "https://www.ncbi.nlm.nih.gov/pccompound/?term=%s"
+			}
+		},
+		{
+			"rank": 857,
+			"name": "Songkick",
+			"code": ["!sk", "!songkick"],
+			"tags": ["Entertainment/Audio"],
+			"urls": {
+				"s": "https://www.songkick.com/search?query=%s"
+			}
+		},
+		{
+			"rank": 858,
+			"name": "Wikidex",
+			"code": ["!wdx", "!wkdx"],
+			"tags": ["Entertainment/Games (Pokemon)"],
+			"urls": {
+				"s": "https://www.wikidex.net/index.php?title=Especial:Buscar&search=%s"
+			}
+		},
+		{
+			"rank": 859,
+			"name": "Wikirby",
+			"code": ["!wikirby"],
+			"tags": ["Entertainment/Games (specific)"],
+			"urls": {
+				"s": "https://wikirby.com/w/index.php?title=Special:Search&search=%s&go=Go"
+			}
+		},
+		{
+			"rank": 860,
+			"name": "Ahmia.fi",
+			"code": ["!ahmia"],
+			"tags": ["Tech/Domains"],
+			"urls": {
+				"s": "https://ahmia.fi/search/?q=%s"
+			}
+		},
+		{
+			"rank": 861,
+			"name": "Digitec",
+			"code": ["!digitec"],
+			"tags": ["Shopping/Tech"],
+			"urls": {
+				"s": "https://www.digitec.ch/Search?q=%s"
+			}
+		},
+		{
+			"rank": 862,
+			"name": "DuckDuckGo Video Search",
+			"code": ["!ddgv"],
+			"tags": ["Multimedia/Video"],
+			"urls": {
+				"s": "https://duckduckgo.com/?q=%s&iar=videos&iax=videos&ia=videos"
+			}
+		},
+		{
+			"rank": 863,
+			"name": "geeksforgeeks",
+			"code": ["!gfg", "!geeks"],
+			"tags": ["Tech/Programming"],
+			"urls": {
+				"s": "https://www.geeksforgeeks.org/search/?gq=%s"
+			}
+		},
+		{
+			"rank": 864,
+			"name": "Google (Past Year)",
+			"code": ["!gy", "!gyear"],
+			"tags": ["Online Services/Google"],
+			"urls": {
+				"s": "https://www.google.com/search?q=%s&tbs=qdr:y"
+			}
+		},
+		{
+			"rank": 865,
+			"name": "Google News French",
+			"code": ["!gnfr"],
+			"tags": ["Online Services/Google"],
+			"urls": {
+				"s": "https://www.google.fr/search?aq=f&hl=fr&gl=fr&tbm=nws&btnmeta_news_search=1&q=%s"
+			}
+		},
+		{
+			"rank": 866,
+			"name": "grailed",
+			"code": ["!grailed"],
+			"tags": ["Shopping/Online (marketplace)"],
+			"urls": {
+				"s": "https://www.grailed.com/search?search=%s"
+			}
+		},
+		{
+			"rank": 867,
+			"name": "IsThereAnyDeal",
+			"code": ["!itad", "!isthereanydeal"],
+			"tags": ["Shopping/Online (deals)"],
+			"urls": {
+				"s": "https://isthereanydeal.com/search/?q=%s"
+			}
+		},
+		{
+			"rank": 868,
+			"name": "Jehovah's Witnesses",
+			"code": ["!jw"],
+			"tags": ["Research/Reference (religion)"],
+			"urls": {
+				"s": "https://www.jw.org/en/search/?q=%s"
+			}
+		},
+		{
+			"rank": 869,
+			"name": "Jorudan",
+			"code": ["!jorudan"],
+			"tags": ["Online Services/Tools"],
+			"urls": {
+				"s": "https://www.jorudan.co.jp/jt/cgi/qsearch/qsearch.cgi?s=%s"
+			}
+		},
+		{
+			"rank": 870,
+			"name": "JustWatch UK",
+			"code": ["!justwatchuk"],
+			"tags": ["Multimedia/Video"],
+			"urls": {
+				"s": "https://www.justwatch.com/uk/search?q=%s"
+			}
+		},
+		{
+			"rank": 871,
+			"name": "KAYAK",
+			"code": ["!kayak"],
+			"tags": ["Shopping/Online"],
+			"urls": {
+				"s": "https://www.kayak.com/sherlock/opensearch/search?q=%s"
+			}
+		},
+		{
+			"rank": 872,
+			"name": "Khan Academy",
+			"code": ["!ka", "!khanacademy", "!khan"],
+			"tags": ["Research/Academic"],
+			"urls": {
+				"s": "https://www.khanacademy.org/search?page_search_query=%s"
+			}
+		},
+		{
+			"rank": 873,
+			"name": "Mercado Libre Colombia",
+			"code": ["!mlco", "!mlibreco"],
+			"tags": ["Shopping/Online"],
+			"urls": {
+				"s": "https://listado.mercadolibre.com.co/%s"
+			}
+		},
+		{
+			"rank": 874,
+			"name": "Mercadolibre.cl",
+			"code": ["!mlcl", "!mercadolibrecl"],
+			"tags": ["Shopping/Online"],
+			"urls": {
+				"s": "https://listado.mercadolibre.cl/%s"
+			}
+		},
+		{
+			"rank": 875,
+			"name": "MyAnimeList Manga",
+			"code": ["!mml", "!manga"],
+			"tags": ["Multimedia/Books"],
+			"urls": {
+				"s": "https://myanimelist.net/manga.php?q=%s"
+			}
+		},
+		{
+			"rank": 876,
+			"name": "Nicovideo jp",
+			"code": ["!ncvi"],
+			"tags": ["Multimedia/Video"],
+			"urls": {
+				"s": "https://www.nicovideo.jp/search/%s?track=nicouni_search_keyword"
+			}
+		},
+		{
+			"rank": 877,
+			"name": "One Piece Wiki",
+			"code": ["!onepiece"],
+			"tags": ["Entertainment/Misc"],
+			"urls": {
+				"s": "https://onepiece.wikia.com/wiki/Special:Search?search=%s"
+			}
+		},
+		{
+			"rank": 878,
+			"name": "Slovníkový portál",
+			"code": ["!juls"],
+			"tags": ["Online Services/Tools"],
+			"urls": {
+				"s": "https://slovniky.juls.savba.sk/?w=%s&s=exact&c=608a&d=kssj4&d=psp&d=sssj&d=scs&d=sss&d=peciar&d=ma&d=hssjV&d=bernolak&d=obce&d=priezviska&d=un&d=locutio&d=pskcs&d=psken&d=noundb&ie=utf-8&oe=utf-8#"
+			}
+		},
+		{
+			"rank": 879,
+			"name": "Ubuntu Packages",
+			"code": ["!up", "!ubuntupack", "!upackages"],
+			"tags": ["Tech/Sysadmin (packages)"],
+			"urls": {
+				"s": "https://packages.ubuntu.com/search?keywords=%s"
+			}
+		},
+		{
+			"rank": 880,
+			"name": "Webster's Dictionary (1913)",
+			"code": ["!web1913"],
+			"tags": ["Research/Reference (words)"],
+			"urls": {
+				"s": "https://www.websters1913.com/words/%s"
+			}
+		},
+		{
+			"rank": 881,
+			"name": "WordPress Code Reference",
+			"code": ["!wpdev"],
+			"tags": ["Research/Reference"],
+			"urls": {
+				"s": "https://developer.wordpress.org/?s=%s"
+			}
+		},
+		{
+			"rank": 882,
+			"name": "WordReference (esfr)",
+			"code": ["!wrsf", "!wresfr"],
+			"tags": ["Research/Reference (words intl)"],
+			"urls": {
+				"s": "https://www.wordreference.com/esfr/%s"
+			}
+		},
+		{
+			"rank": 883,
+			"name": "ZesteDeSavoir",
+			"code": ["!zds"],
+			"tags": ["Tech/Programming"],
+			"urls": {
+				"s": "https://zestedesavoir.com/rechercher/?q=%s"
+			}
+		},
+		{
+			"rank": 884,
+			"name": "CrunchBase",
+			"code": ["!cb", "!crunchbase", "!crunch"],
+			"tags": ["Online Services/Tools", "Tech/Companies"],
+			"urls": {
+				"s": "https://www.crunchbase.com/textsearch?q=%s"
+			}
+		},
+		{
+			"rank": 885,
+			"name": "Duckduckgo Germany",
+			"code": ["!dde", "!ddgde"],
+			"tags": ["Online Services/Search (DDG)"],
+			"urls": {
+				"s": "https://duckduckgo.com/?kl=de-de&q=%s"
+			}
+		},
+		{
+			"rank": 886,
+			"name": "FurAffinity User",
+			"code": ["!fauser"],
+			"tags": ["Multimedia/Images"],
+			"urls": {
+				"s": "https://furaffinity.net/user/%s"
+			}
+		},
+		{
+			"rank": 887,
+			"name": "GitLab",
+			"code": ["!glab", "!gitlab"],
+			"tags": ["Tech/Programming"],
+			"urls": {
+				"s": "https://gitlab.com/search?utf8=%E2%9C%93&search=%s"
+			}
+		},
+		{
+			"rank": 888,
+			"name": "Google Images (Safe Off)",
+			"code": ["!gisoff", "!gisafeoff"],
+			"tags": ["Online Services/Google"],
+			"urls": {
+				"s": "https://www.google.com/images?safe=off&q=%s"
+			}
+		},
+		{
+			"rank": 889,
+			"name": "linguee",
+			"code": ["!linge"],
+			"tags": ["Online Services/Search"],
+			"urls": {
+				"s": "https://www.linguee.com/deutsch-englisch/search?source=auto&query=%s"
+			}
+		},
+		{
+			"rank": 890,
+			"name": "Pixabay",
+			"code": ["!px", "!pixabay", "!pxb"],
+			"tags": ["Multimedia/Images"],
+			"urls": {
+				"s": "https://pixabay.com/en/photos/?q=%s"
+			}
+		},
+		{
+			"rank": 891,
+			"name": "Presto Classical",
+			"code": ["!presto"],
+			"tags": ["Shopping/Online"],
+			"urls": {
+				"s": "https://www.prestoclassical.co.uk/search.php?searchString=%s"
+			}
+		},
+		{
+			"rank": 892,
+			"name": "Python PEP",
+			"code": ["!pep"],
+			"tags": ["Tech/Languages (python)"],
+			"urls": {
+				"s": "https://www.python.org/dev/peps/pep-%s/"
+			}
+		},
+		{
+			"rank": 893,
+			"name": "Trovaprezzi.it",
+			"code": ["!trovaprezzi"],
+			"tags": ["Shopping/Services"],
+			"urls": {
+				"s": "https://www.trovaprezzi.it/categoria.aspx?libera=%s&id=-1&prezzomin=&prezzomax="
+			}
+		},
+		{
+			"rank": 894,
+			"name": "UniprotKB",
+			"code": ["!uniprot"],
+			"tags": ["Research/Academic"],
+			"urls": {
+				"s": "https://www.uniprot.org/uniprot/?query=%s"
+			}
+		},
+		{
+			"rank": 895,
+			"name": "Void GNU/Linux",
+			"code": ["!void", "!voidwiki"],
+			"tags": ["Tech/Sysadmin"],
+			"urls": {
+				"s": "https://wiki.voidlinux.org/index.php?search=%s"
+			}
+		},
+		{
+			"rank": 896,
+			"name": "Warframe",
+			"code": ["!wfw", "!warframe", "!wfwiki", "!wfen", "!wframe"],
+			"tags": ["Entertainment/Games (specific)"],
+			"urls": {
+				"s": "https://wiki.warframe.com/?search=%s"
+			}
+		},
+		{
+			"rank": 897,
+			"name": "4chan (Kagi Search)",
+			"code": ["!4chan"],
+			"tags": ["Multimedia/Images"],
+			"urls": {
+				"s": "https://kagi.com/search?q=%s+site:4chan.org"
+			}
+		},
+		{
+			"rank": 898,
+			"name": "Amazon ES",
+			"code": ["!aes", "!amazones", "!ames", "!a.es", "!aze"],
+			"tags": ["Shopping/Online (marketplace)"],
+			"urls": {
+				"s": "https://www.amazon.es/s?k=%s"
+			}
+		},
+		{
+			"rank": 899,
+			"name": "ArchLinux User Repository",
+			"code": ["!archaur"],
+			"tags": ["Tech/Languages (other)"],
+			"urls": {
+				"s": "https://aur.archlinux.org/packages?O=0&K=%s"
+			}
+		},
+		{
+			"rank": 900,
+			"name": "Bokmålsordboka og Nynorskordboka",
+			"code": ["!uib", "!ordbok", "!norsk"],
+			"tags": ["Research/Reference (words intl)"],
+			"urls": {
+				"s": "https://ordbokene.no/nob/bm,nn/%s"
+			}
+		},
+		{
+			"rank": 901,
+			"name": "DistroWatch",
+			"code": ["!iso", "!distrowatch", "!distro"],
+			"tags": ["Tech/Downloads (software)"],
+			"urls": {
+				"s": "https://distrowatch.com/table.php?distribution=%s"
+			}
+		},
+		{
+			"rank": 902,
+			"name": "El Pais",
+			"code": ["!elpais"],
+			"tags": ["News/Newspaper (intl)"],
+			"urls": {
+				"s": "https://elpais.com/buscador/?qt=%s"
+			}
+		},
+		{
+			"rank": 903,
+			"name": "explain xkcd",
+			"code": ["!explainxkcd"],
+			"tags": ["Entertainment/Comics"],
+			"urls": {
+				"s": "https://www.explainxkcd.com/wiki/index.php?search=%s"
+			}
+		},
+		{
+			"rank": 904,
+			"name": "Finn.no",
+			"code": ["!finn"],
+			"tags": ["Shopping/Online (marketplace)"],
+			"urls": {
+				"s": "https://www.finn.no/globalsearchlander?q=%s"
+			}
+		},
+		{
+			"rank": 905,
+			"name": "Google Maps Directions",
+			"code": ["!gmd", "!gmdir", "!mapsr"],
+			"tags": ["Online Services/Maps"],
+			"urls": {
+				"s": "https://www.google.com/maps/dir/%s"
+			}
+		},
+		{
+			"rank": 906,
+			"name": "Google Maps Lite",
+			"code": ["!ml"],
+			"tags": ["Online Services/Maps"],
+			"urls": {
+				"s": "https://google.com/maps/search/%s?force=canvas"
+			}
+		},
+		{
+			"rank": 907,
+			"name": "Google News Italian",
+			"code": ["!gnit"],
+			"tags": ["News/Aggregators"],
+			"urls": {
+				"s": "https://www.google.it/search?q=%s&hl=it&tbm=nws"
+			}
+		},
+		{
+			"rank": 908,
+			"name": "Google Translate to Spanish",
+			"code": ["!tes"],
+			"tags": ["Online Services/Google"],
+			"urls": {
+				"s": "https://translate.google.com/?hl=es&tab=TT#auto/es/%s"
+			}
+		},
+		{
+			"rank": 909,
+			"name": "Hockeydb.com",
+			"code": ["!hdb"],
+			"tags": ["Entertainment/Sports"],
+			"urls": {
+				"s": "https://www.hockeydb.com/ihdb/stats/find_player.php?full_name=%s"
+			}
+		},
+		{
+			"rank": 910,
+			"name": "Kerbal Space Program Wiki",
+			"code": ["!ksp", "!kspwiki"],
+			"tags": ["Entertainment/Games (specific)"],
+			"urls": {
+				"s": "https://wiki.kerbalspaceprogram.com/index.php?search=%s"
+			}
+		},
+		{
+			"rank": 911,
+			"name": "Know Your Meme",
+			"code": ["!kym", "!knowyourmeme", "!meme"],
+			"tags": ["Research/Reference (fun)"],
+			"urls": {
+				"s": "https://knowyourmeme.com/search?utf8=%E2%9C%93&q=%s"
+			}
+		},
+		{
+			"rank": 912,
+			"name": "Libération",
+			"code": ["!libe"],
+			"tags": ["News/Newspaper"],
+			"urls": {
+				"s": "https://www.liberation.fr/recherche/?q=%s"
+			}
+		},
+		{
+			"rank": 913,
+			"name": "Linguee (Fr-En)",
+			"code": ["!lingfe", "!lingfr"],
+			"tags": ["Research/Reference (words intl)"],
+			"urls": {
+				"s": "https://www.linguee.fr/francais-anglais/search?source=auto&query=%s"
+			}
+		},
+		{
+			"rank": 914,
+			"name": "nu.nl",
+			"code": ["!nu"],
+			"tags": ["News/Online"],
+			"urls": {
+				"s": "https://www.nu.nl/zoeken?q=%s"
+			}
+		},
+		{
+			"rank": 915,
+			"name": "Pixiv Dictionary",
+			"code": ["!dicpixiv"],
+			"tags": ["Multimedia/General"],
+			"urls": {
+				"s": "https://dic.pixiv.net/a/%s"
+			}
+		},
+		{
+			"rank": 916,
+			"name": "Real Academia Galega",
+			"code": ["!rag"],
+			"tags": ["Research/Academic"],
+			"urls": {
+				"s": "https://academia.gal/dicionario/-/termo/busca/%s"
+			}
+		},
+		{
+			"rank": 917,
+			"name": "RTBF Info",
+			"code": ["!rtbf"],
+			"tags": ["News/Broadcast"],
+			"urls": {
+				"s": "https://www.rtbf.be/info/recherche?q=%s"
+			}
+		},
+		{
+			"rank": 918,
+			"name": "SegaRetro",
+			"code": ["!sega"],
+			"tags": ["Entertainment/Games (specific)"],
+			"urls": {
+				"s": "https://segaretro.org/index.php?search=%s"
+			}
+		},
+		{
+			"rank": 919,
+			"name": "Sony Entertainment Network",
+			"code": ["!sen"],
+			"tags": ["Entertainment/Misc"],
+			"urls": {
+				"s": "https://store.sonyentertainmentnetwork.com/#!/en-us/search/q=%s"
+			}
+		},
+		{
+			"rank": 920,
+			"name": "Trakt Movies",
+			"code": ["!tkm"],
+			"tags": ["Entertainment/Movies"],
+			"urls": {
+				"s": "https://trakt.tv/search/movies?q=%s"
+			}
+		},
+		{
+			"rank": 921,
+			"name": "Transformers Wiki",
+			"code": ["!tfwiki"],
+			"tags": ["Entertainment/TV"],
+			"urls": {
+				"s": "https://tfwiki.net/wiki/Special:Search?search=%s&go=Go"
+			}
+		},
+		{
+			"rank": 922,
+			"name": "Wikipedia Deutsch Mobile",
+			"code": ["!wmde"],
+			"tags": ["Research/Learning"],
+			"urls": {
+				"s": "https://de.m.wikipedia.org/w/index.php?search=%s"
+			}
+		},
+		{
+			"rank": 923,
+			"name": "Yle",
+			"code": ["!yle"],
+			"tags": ["News/Broadcast"],
+			"urls": {
+				"s": "https://haku.yle.fi/?query=%s"
+			}
+		},
+		{
+			"rank": 924,
+			"name": "AbuseIPDB",
+			"code": ["!abuseip"],
+			"tags": ["Tech/Sysadmin"],
+			"urls": {
+				"s": "https://www.abuseipdb.com/check/%s"
+			}
+		},
+		{
+			"rank": 925,
+			"name": "dcinside",
+			"code": ["!dcinside"],
+			"tags": ["Entertainment/Forum"],
+			"urls": {
+				"s": "https://search.dcinside.com/combine/q/%s"
+			}
+		},
+		{
+			"rank": 926,
+			"name": "Dustloop Wiki",
+			"code": ["!dustloop"],
+			"tags": ["Entertainment/Games (specific)"],
+			"urls": {
+				"s": "https://www.dustloop.com/wiki/index.php?search=%s"
+			}
+		},
+		{
+			"rank": 927,
+			"name": "Dynasty Reader",
+			"code": ["!dyn"],
+			"tags": ["Entertainment/Comics"],
+			"urls": {
+				"s": "https://dynasty-scans.com/search?q=%s"
+			}
+		},
+		{
+			"rank": 928,
+			"name": "Emulation General Wiki",
+			"code": ["!emu"],
+			"tags": ["Entertainment/Games (offline)"],
+			"urls": {
+				"s": "https://emulation.gametechwiki.com/index.php?search=%s"
+			}
+		},
+		{
+			"rank": 929,
+			"name": "Fiverr",
+			"code": ["!5"],
+			"tags": ["Online Services/Jobs"],
+			"urls": {
+				"s": "https://fiverr.com/gigs/search?query=%s"
+			}
+		},
+		{
+			"rank": 930,
+			"name": "Google No Country Redirect",
+			"code": ["!gncr"],
+			"tags": ["Online Services/Google"],
+			"urls": {
+				"s": "https://www.google.com/search?gws_rd=cr&gl=us&hl=en&num=20&q=%s"
+			}
+		},
+		{
+			"rank": 931,
+			"name": "Google Translate (to Bulgarian)",
+			"code": ["!gtbg", "!gt-bulgarian", "!gtbulgarian"],
+			"tags": ["Translation/Google"],
+			"urls": {
+				"s": "https://translate.google.com/#auto/bg/%s"
+			}
+		},
+		{
+			"rank": 932,
+			"name": "JustWatch India",
+			"code": ["!jwi"],
+			"tags": ["Entertainment/Movies"],
+			"urls": {
+				"s": "https://www.justwatch.com/in/search?q=%s"
+			}
+		},
+		{
+			"rank": 933,
+			"name": "LDS.org",
+			"code": ["!lds"],
+			"tags": ["Research/Reference (religion)"],
+			"urls": {
+				"s": "https://www.lds.org/search?lang=eng&query=%s"
+			}
+		},
+		{
+			"rank": 934,
+			"name": "Linux.die.net man pages",
+			"code": ["!die", "!lpm"],
+			"tags": ["Tech/Programming"],
+			"urls": {
+				"s": "https://www.die.net/search/?q=%s"
+			}
+		},
+		{
+			"rank": 935,
+			"name": "OCaml Lib Ref",
+			"code": ["!ocaml"],
+			"tags": ["Tech/Languages (other)"],
+			"urls": {
+				"s": "https://caml.inria.fr/pub/docs/manual-ocaml/libref/%s.html"
+			}
+		},
+		{
+			"rank": 936,
+			"name": "Pandas",
+			"code": ["!pandas"],
+			"tags": ["Tech/Languages (python)"],
+			"urls": {
+				"s": "https://pandas.pydata.org/pandas-docs/stable/search.html?q=%s&check_keywords=yes&area=default"
+			}
+		},
+		{
+			"rank": 937,
+			"name": "PhilPapers",
+			"code": ["!philpapers"],
+			"tags": ["Research/Academic"],
+			"urls": {
+				"s": "https://philpapers.org/s/%s"
+			}
+		},
+		{
+			"rank": 938,
+			"name": "Sanakirja.org",
+			"code": ["!sana", "!sanakirja"],
+			"tags": ["Research/Reference (words intl)"],
+			"urls": {
+				"s": "https://www.sanakirja.org/search.php?q=%s"
+			}
+		},
+		{
+			"rank": 939,
+			"name": "The Coppermind",
+			"code": ["!coppermind"],
+			"tags": ["Entertainment/Misc"],
+			"urls": {
+				"s": "https://coppermind.net/wiki/Special:Search?search=%s"
+			}
+		},
+		{
+			"rank": 940,
+			"name": "The Onion",
+			"code": ["!onion", "!theonion"],
+			"tags": ["Entertainment/Blogs"],
+			"urls": {
+				"s": "https://www.theonion.com/search/?q=%s"
+			}
+		},
+		{
+			"rank": 941,
+			"name": "Visual Studio Code Extensions",
+			"code": ["!vscode"],
+			"tags": ["Tech/Programming"],
+			"urls": {
+				"s": "https://marketplace.visualstudio.com/search?term=%s&target=VSCode&sortBy=Relevance"
+			}
+		},
+		{
+			"rank": 942,
+			"name": "Wiktionary Mobile",
+			"code": ["!wtm"],
+			"tags": ["Research/Reference (words)"],
+			"urls": {
+				"s": "https://en.m.wiktionary.org/wiki/%s"
+			}
+		},
+		{
+			"rank": 943,
+			"name": "America's Test Kitchen",
+			"code": ["!atk", "!americastestkitchen"],
+			"tags": ["Research/Food"],
+			"urls": {
+				"s": "https://americastestkitchen.com/search?q=%s"
+			}
+		},
+		{
+			"rank": 944,
+			"name": "Árukereső",
+			"code": ["!aru", "!arukereso"],
+			"tags": ["Shopping/Online"],
+			"urls": {
+				"s": "https://www.arukereso.hu/CategorySearch.php?st=%s"
+			}
+		},
+		{
+			"rank": 945,
+			"name": "DuckDuckGo",
+			"code": ["!dax", "!ddg", "!duckduckgo"],
+			"tags": ["Online Services/Search"],
+			"urls": {
+				"s": "https://duckduckgo.com/?q=%s"
+			}
+		},
+		{
+			"rank": 946,
+			"name": "EPFL",
+			"code": ["!epfl"],
+			"tags": ["Research/Academic"],
+			"urls": {
+				"s": "https://search.epfl.ch/web.action?q=%s"
+			}
+		},
+		{
+			"rank": 947,
+			"name": "Etymologiebank",
+			"code": ["!etynl"],
+			"tags": ["Research/Reference (words)"],
+			"urls": {
+				"s": "https://etymologiebank.nl/trefwoord/%s"
+			}
+		},
+		{
+			"rank": 948,
+			"name": "Fandom",
+			"code": ["!fandom"],
+			"tags": ["Entertainment/Misc"],
+			"urls": {
+				"s": "https://www.fandom.com/?s=%s"
+			}
+		},
+		{
+			"rank": 949,
+			"name": "Google (Past Month)",
+			"code": ["!gmonth"],
+			"tags": ["Online Services/Google"],
+			"urls": {
+				"s": "https://www.google.com/search?q=%s&tbs=qdr:m"
+			}
+		},
+		{
+			"rank": 950,
+			"name": "Google CZ",
+			"code": ["!gcz"],
+			"tags": ["Online Services/Google"],
+			"urls": {
+				"s": "https://www.google.cz/search?q=%s&meta=&aq=f&aqi=g10&aql=&gs_rfai="
+			}
+		},
+		{
+			"rank": 951,
+			"name": "Google Translate no-en",
+			"code": ["!noen"],
+			"tags": ["Online Services/Google"],
+			"urls": {
+				"s": "https://translate.google.com/#no/en/%s"
+			}
+		},
+		{
+			"rank": 952,
+			"name": "Instant Gaming",
+			"code": ["!instantgaming"],
+			"tags": ["Shopping/Online (deals)"],
+			"urls": {
+				"s": "https://www.instant-gaming.com/en/search/?q=%s"
+			}
+		},
+		{
+			"rank": 953,
+			"name": "Korben",
+			"code": ["!kbn"],
+			"tags": ["Tech/Blogs"],
+			"urls": {
+				"s": "https://korben.info/?s=%s"
+			}
+		},
+		{
+			"rank": 954,
+			"name": "Mabinogi World Wiki",
+			"code": ["!mabiwiki"],
+			"tags": ["Entertainment/Games (specific)"],
+			"urls": {
+				"s": "https://wiki.mabinogiworld.com/index.php?search=%s"
+			}
+		},
+		{
+			"rank": 955,
+			"name": "man.openbsd.org",
+			"code": ["!openbsdman"],
+			"tags": ["Tech/Sysadmin"],
+			"urls": {
+				"s": "https://man.openbsd.org/?query=%s&apropos=0&sec=0&arch=default&manpath=OpenBSD-current"
+			}
+		},
+		{
+			"rank": 956,
+			"name": "myinstants",
+			"code": ["!mi", "!myinstants"],
+			"tags": ["Multimedia/General"],
+			"urls": {
+				"s": "https://www.myinstants.com/search/?name=%s"
+			}
+		},
+		{
+			"rank": 957,
+			"name": "Patreon",
+			"code": ["!patreon"],
+			"tags": ["Online Services/Tools (fundraising)"],
+			"urls": {
+				"s": "https://www.patreon.com/search?q=%s"
+			}
+		},
+		{
+			"rank": 958,
+			"name": "PlayStation Store Deutschland",
+			"code": ["!psnde"],
+			"tags": ["Shopping/Online"],
+			"urls": {
+				"s": "https://store.playstation.com/de-de/search/%s"
+			}
+		},
+		{
+			"rank": 959,
+			"name": "PR Vademecum Argentina",
+			"code": ["!pr"],
+			"tags": ["Research/Health"],
+			"urls": {
+				"s": "https://ar.prvademecum.com/?s=%s"
+			}
+		},
+		{
+			"rank": 960,
+			"name": "Programming Puzzles & Code Golf Stack Exchange",
+			"code": ["!ppcg"],
+			"tags": ["Tech/Programming"],
+			"urls": {
+				"s": "https://codegolf.stackexchange.com/search?q=%s"
+			}
+		},
+		{
+			"rank": 961,
+			"name": "Radio télévision suisse",
+			"code": ["!rts"],
+			"tags": ["News/Aggregators"],
+			"urls": {
+				"s": "https://www.rts.ch/services/recherche/?q=%s"
+			}
+		},
+		{
+			"rank": 962,
+			"name": "Ravelry",
+			"code": ["!ravelry"],
+			"tags": ["Research/Reference (fun)"],
+			"urls": {
+				"s": "https://www.ravelry.com/patterns/search#query=%s"
+			}
+		},
+		{
+			"rank": 963,
+			"name": "SBB",
+			"code": ["!sbb"],
+			"tags": ["Online Services/Search"],
+			"urls": {
+				"s": "https://www.sbb.ch/de/kaufen/pages/fahrplan/fahrplan.xhtml?nach=%s&suche=false"
+			}
+		},
+		{
+			"rank": 964,
+			"name": "Sporcle",
+			"code": ["!sporcle"],
+			"tags": ["Entertainment/Misc"],
+			"urls": {
+				"s": "https://www.sporcle.com/games/tags/%s"
+			}
+		},
+		{
+			"rank": 965,
+			"name": "Svenska akademieons ordlista",
+			"code": ["!saol", "!svao"],
+			"tags": ["Online Services/Search (non-US)"],
+			"urls": {
+				"s": "https://svenska.se/tre/?sok=%s"
+			}
+		},
+		{
+			"rank": 966,
+			"name": "TAKOBOTO",
+			"code": ["!tako", "!takoboto"],
+			"tags": ["Research/Reference (words)"],
+			"urls": {
+				"s": "https://takoboto.jp/?q=%s"
+			}
+		},
+		{
+			"rank": 967,
+			"name": "Techcrunch",
+			"code": ["!tc", "!techcrunch"],
+			"tags": ["Tech/Blogs"],
+			"urls": {
+				"s": "https://techcrunch.com/search/%s"
+			}
+		},
+		{
+			"rank": 968,
+			"name": "Thalia.de",
+			"code": ["!thalia"],
+			"tags": ["Multimedia/Books"],
+			"urls": {
+				"s": "https://www.thalia.de/suche?sq=%s"
+			}
+		},
+		{
+			"rank": 969,
+			"name": "The Sydney Morning Herald",
+			"code": ["!smh"],
+			"tags": ["News/Newspaper"],
+			"urls": {
+				"s": "https://www.smh.com.au/search?text=%s"
+			}
+		},
+		{
+			"rank": 970,
+			"name": "Thesaurus Plus",
+			"code": ["!tp"],
+			"tags": ["Research/Reference (words)"],
+			"urls": {
+				"s": "https://thesaurus.plus/search?q=%s"
+			}
+		},
+		{
+			"rank": 971,
+			"name": "Unicode Character Search",
+			"code": ["!utf8", "!unicode"],
+			"tags": ["Tech/Blogs"],
+			"urls": {
+				"s": "https://www.fileformat.info/info/unicode/char/search.htm?q=%s&preview=entity"
+			}
+		},
+		{
+			"rank": 972,
+			"name": "WorldCat.org",
+			"code": ["!worldcat"],
+			"tags": ["Tech/Libraries/Frameworks"],
+			"urls": {
+				"s": "https://www.worldcat.org/search?qt=worldcat_org_all&q=%s"
+			}
+		},
+		{
+			"rank": 973,
+			"name": "yahoo japan map",
+			"code": ["!yjm"],
+			"tags": ["Online Services/Maps"],
+			"urls": {
+				"s": "https://map.yahoo.co.jp/mapsearch/search?p=%s"
+			}
+		},
+		{
+			"rank": 974,
+			"name": "DuckDuckGo Community",
+			"code": ["!dc", "!forum"],
+			"tags": ["Online Services/Search (DDG)"],
+			"urls": {
+				"s": "https://duck.co/forum/search?q=%s"
+			}
+		},
+		{
+			"rank": 975,
+			"name": "Egg Timer",
+			"code": ["!eggtimer"],
+			"tags": ["Online Services/Tools"],
+			"urls": {
+				"s": "https://e.ggtimer.com/%s"
+			}
+		},
+		{
+			"rank": 976,
+			"name": "Flashback",
+			"code": ["!flashback"],
+			"tags": ["Online Services/Social"],
+			"urls": {
+				"s": "https://www.flashback.org/sok/%s"
+			}
+		},
+		{
+			"rank": 977,
+			"name": "Fonts in Use",
+			"code": ["!fiu"],
+			"tags": ["Online Services/Tools"],
+			"urls": {
+				"s": "https://fontsinuse.com/search?terms=%s"
+			}
+		},
+		{
+			"rank": 978,
+			"name": "Geograph Britain and Ireland",
+			"code": ["!geograph"],
+			"tags": ["Research/Local"],
+			"urls": {
+				"s": "https://www.geograph.org.uk/of/%s"
+			}
+		},
+		{
+			"rank": 979,
+			"name": "Getchu.com",
+			"code": ["!getchu"],
+			"tags": ["Shopping/Online"],
+			"urls": {
+				"s": "https://www.getchu.com/php/nsearch.phtml?search_keyword=%s"
+			}
+		},
+		{
+			"rank": 980,
+			"name": "Google HU",
+			"code": ["!ghu"],
+			"tags": ["Online Services/Google"],
+			"urls": {
+				"s": "https://www.google.hu/search?q=%s&meta=&aq=f&aqi=g10&aql=&gs_rfai="
+			}
+		},
+		{
+			"rank": 981,
+			"name": "Harbor Freight Tools",
+			"code": ["!hft"],
+			"tags": ["Shopping/Big box/department"],
+			"urls": {
+				"s": "https://www.harborfreight.com/search?q=%s"
+			}
+		},
+		{
+			"rank": 982,
+			"name": "HUDOC",
+			"code": ["!hd"],
+			"tags": ["Research/Law"],
+			"urls": {
+				"s": "https://hudoc.echr.coe.int/eng#{\"fulltext\":[\"%s\"],\"documentcollectionid2\":[\"GRANDCHAMBER\",\"CHAMBER\"]}"
+			}
+		},
+		{
+			"rank": 983,
+			"name": "Instant Domain Search",
+			"code": ["!ids"],
+			"tags": ["Tech/Domains"],
+			"urls": {
+				"s": "https://instantdomainsearch.com/#search=%s"
+			}
+		},
+		{
+			"rank": 984,
+			"name": "Intel Processor Specification",
+			"code": ["!ark"],
+			"tags": ["Tech/Companies"],
+			"urls": {
+				"s": "https://ark.intel.com/search?q=%s"
+			}
+		},
+		{
+			"rank": 985,
+			"name": "ISBNdb",
+			"code": ["!isbn"],
+			"tags": ["Multimedia/Books"],
+			"urls": {
+				"s": "https://isbndb.com/search/books/%s"
+			}
+		},
+		{
+			"rank": 986,
+			"name": "Latvian Wikipedia",
+			"code": ["!wlv", "!lvwiki", "!wikilv"],
+			"tags": ["Research/Reference"],
+			"urls": {
+				"s": "https://lv.wikipedia.org/w/index.php?search=%s"
+			}
+		},
+		{
+			"rank": 987,
+			"name": "OLX.com.br",
+			"code": ["!olxbr"],
+			"tags": ["Shopping/Online (marketplace)"],
+			"urls": {
+				"s": "https://www.olx.com.br/brasil?q=%s"
+			}
+		},
+		{
+			"rank": 988,
+			"name": "Pubmed",
+			"code": ["!pm", "!pubmed", "!pmd", "!pub", "!pmid"],
+			"tags": ["Research/Academic"],
+			"urls": {
+				"s": "https://www.ncbi.nlm.nih.gov/pubmed/?term=%s"
+			}
+		},
+		{
+			"rank": 989,
+			"name": "RedFin",
+			"code": ["!redfin"],
+			"tags": ["Online Services/Search"],
+			"urls": {
+				"s": "https://www.redfin.com/homes-for-sale#!search_location=%s"
+			}
+		},
+		{
+			"rank": 990,
+			"name": "Reverso Context English-Russian",
+			"code": ["!rcenru"],
+			"tags": ["Translation/General"],
+			"urls": {
+				"s": "https://context.reverso.net/translation/english-russian/%s"
+			}
+		},
+		{
+			"rank": 991,
+			"name": "SimplyHired",
+			"code": ["!simplyhired"],
+			"tags": ["Online Services/Jobs"],
+			"urls": {
+				"s": "https://www.simplyhired.com/a/jobs/list/q-%s"
+			}
+		},
+		{
+			"rank": 992,
+			"name": "Socialblade YouTube",
+			"code": ["!sbyt"],
+			"tags": ["Online Services/Social (intl)"],
+			"urls": {
+				"s": "https://socialblade.com/youtube/user/%s"
+			}
+		},
+		{
+			"rank": 993,
+			"name": "SOFIFA",
+			"code": ["!sofifa"],
+			"tags": ["Entertainment/Games (general)"],
+			"urls": {
+				"s": "https://sofifa.com/players?keyword=%s"
+			}
+		},
+		{
+			"rank": 994,
+			"name": "Trustpilot",
+			"code": ["!trustpilot"],
+			"tags": ["Shopping/Services"],
+			"urls": {
+				"s": "https://www.trustpilot.com/search?query=%s"
+			}
+		},
+		{
+			"rank": 995,
+			"name": "Tutanota Mail",
+			"code": ["!tutanota"],
+			"tags": ["Online Services/Social"],
+			"urls": {
+				"s": "https://mail.tutanota.com/search/mail/LSWThzP--3-1?query=%s"
+			}
+		},
+		{
+			"rank": 996,
+			"name": "UK Companies House",
+			"code": ["!companieshouse"],
+			"tags": ["Online Services/Search (non-US)"],
+			"urls": {
+				"s": "https://beta.companieshouse.gov.uk/search/companies?q=%s"
+			}
+		},
+		{
+			"rank": 997,
+			"name": "Whois.com",
+			"code": ["!whois.com"],
+			"tags": ["Online Services/Tools"],
+			"urls": {
+				"s": "https://www.whois.com/search.php?query=%s"
+			}
+		},
+		{
+			"rank": 998,
+			"name": "Wiktionary German",
+			"code": ["!wtde", "!wktde"],
+			"tags": ["Research/Reference (words intl)"],
+			"urls": {
+				"s": "https://de.wiktionary.org/w/index.php?search=%s"
+			}
+		},
+		{
+			"rank": 999,
+			"name": "Wook",
+			"code": ["!wook"],
+			"tags": ["Shopping/Online"],
+			"urls": {
+				"s": "https://www.wook.pt/pesquisa/%s"
+			}
+		},
+		{
+			"rank": 1000,
+			"name": "XE",
+			"code": ["!xe"],
+			"tags": ["News/Business"],
+			"urls": {
+				"s": "https://kagi.com/search?q=%s+site:www.xe.com/currency"
 			}
 		}
 	]

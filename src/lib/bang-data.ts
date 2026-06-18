@@ -26,7 +26,6 @@ export type BangSourceDownloadResult =
 
 export type Zbang = {
 	rank: number;
-	ddgr?: number;
 	name: string;
 	code: string[];
 	tags: string[];
@@ -69,6 +68,7 @@ type SourceBangRecord = {
 };
 
 type NormalizedBang = Omit<Zbang, 'rank'> & {
+	popularity: number;
 	codeRanks: Record<string, number>;
 	domains: string[];
 };
@@ -79,7 +79,7 @@ type DedupeResult = {
 };
 
 type DuckDuckGoRank = {
-	ddgr: number;
+	popularity: number;
 	domain: string;
 };
 
@@ -277,16 +277,16 @@ function normalizeKagiRecord(
 	duckDuckGoByCode: Map<string, DuckDuckGoRank>
 ): NormalizedBang[] {
 	return normalizeSourceRecord(record, 'kagi').map((bang) => {
-		const ddgr = getKagiRecordDdgr(record, duckDuckGoByCode);
+		const popularity = getKagiRecordPopularity(record, duckDuckGoByCode);
 		const codeRanks = Object.fromEntries(
-			bang.code.map((code) => [code, duckDuckGoByCode.get(code)?.ddgr ?? 0])
+			bang.code.map((code) => [code, duckDuckGoByCode.get(code)?.popularity ?? 0])
 		);
 
-		return { ...bang, codeRanks, ddgr };
+		return { ...bang, codeRanks, popularity };
 	});
 }
 
-function getKagiRecordDdgr(
+function getKagiRecordPopularity(
 	record: SourceBangRecord,
 	duckDuckGoByCode: Map<string, DuckDuckGoRank>
 ) {
@@ -315,13 +315,13 @@ function getKagiRecordDdgr(
 		kagiDomain &&
 		duckDuckGoRank.domain !== kagiDomain &&
 		kagiDomain !== 'bang-provider' &&
-		duckDuckGoRank.ddgr > 1 &&
+		duckDuckGoRank.popularity > 1 &&
 		getDistanceRatio(duckDuckGoRank.domain, kagiDomain) > 0.7
 	) {
 		return 2;
 	}
 
-	return duckDuckGoRank.ddgr;
+	return duckDuckGoRank.popularity;
 }
 
 function normalizeSourceRecord(
@@ -341,15 +341,15 @@ function normalizeSourceRecord(
 		return [];
 	}
 
-	const ddgr = typeof record.r === 'number' && record.r > 0 ? record.r : undefined;
+	const popularity = typeof record.r === 'number' && record.r > 0 ? record.r : 1;
 
 	return [
 		{
-			...(ddgr ? { ddgr } : {}),
+			popularity,
 			name: record.s,
 			code,
 			codeRanks: Object.fromEntries(
-				code.map((trigger) => [trigger, trigger === code[0] ? (ddgr ?? 0) : 0])
+				code.map((trigger) => [trigger, trigger === code[0] ? popularity : 0])
 			),
 			tags: getBangTags(record),
 			urls: { s: url },
@@ -380,10 +380,10 @@ function dedupeNormalizedBangs(items: NormalizedBang[]): DedupeResult {
 }
 
 function mergeNormalizedBangs(a: NormalizedBang, b: NormalizedBang): NormalizedBang {
-	const ddgr = Math.max(a.ddgr ?? 0, b.ddgr ?? 0) || undefined;
+	const popularity = Math.max(a.popularity, b.popularity);
 
 	return {
-		...(ddgr ? { ddgr } : {}),
+		popularity,
 		name: getBestName(a, b),
 		code: uniqueStrings([...a.code, ...b.code]),
 		codeRanks: mergeCodeRanks(a.codeRanks, b.codeRanks),
@@ -406,11 +406,10 @@ function mergeCodeRanks(a: Record<string, number>, b: Record<string, number>) {
 function rankCatalogItems(items: NormalizedBang[]): Zbang[] {
 	return items
 		.sort((a, b) => {
-			const rankDifference = (b.ddgr ?? -1) - (a.ddgr ?? -1);
+			const rankDifference = b.popularity - a.popularity;
 			return rankDifference || a.name.localeCompare(b.name) || a.code[0].localeCompare(b.code[0]);
 		})
 		.map((item, index) => ({
-			...(item.ddgr ? { ddgr: item.ddgr } : {}),
 			rank: index + 1,
 			name: item.name,
 			code: sortBangCodes(item.code, item.codeRanks),
@@ -467,7 +466,7 @@ function getDuckDuckGoRankLookup(source: PersistedBangSource) {
 
 		if (code && url && domain) {
 			lookup.set(code, {
-				ddgr: typeof record.r === 'number' ? record.r : 1,
+				popularity: typeof record.r === 'number' ? record.r : 1,
 				domain
 			});
 		}
@@ -485,7 +484,7 @@ function getBangTags(record: SourceBangRecord) {
 }
 
 function getBestName(a: NormalizedBang, b: NormalizedBang) {
-	if ((b.ddgr ?? 0) > (a.ddgr ?? 0)) {
+	if (b.popularity > a.popularity) {
 		return b.name;
 	}
 

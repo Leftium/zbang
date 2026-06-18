@@ -89,10 +89,10 @@ Implemented route:
 That route should:
 
 1. Read the persisted generated Kagi and DDG catalogs.
-2. Select records above a minimum internal DDG popularity threshold for each provider.
+2. Select records above a maximum emitted `rank` for each provider.
 3. Render and download static JSON files that can be checked in.
 
-Use DDG popularity `r >= 25` as the initial bootstrap threshold. In the current generated catalog this keeps roughly 800 popular records, which is close to a top-1000 target without pulling in too much long-tail data. The durable setting should remain a minimum DDG popularity threshold because DDG `r` represents query volume/popularity rather than an arbitrary list position. This popularity signal can remain generation/bootstrap metadata and does not need to be emitted on runtime `Zbang` records.
+Use `rank <= 1000` as the bootstrap threshold. Provider generation may use DDG popularity internally to compute ranks, but the emitted runtime `Zbang` records should rely on `rank` and do not need to carry a separate DDG popularity field.
 
 Example generated files:
 
