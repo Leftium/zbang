@@ -14,7 +14,7 @@ export const launcherModes = [
 		label: 'Search',
 		description: 'Search the web with the configured provider or an alternate provider.',
 		path: '/search',
-		pluginIds: ['search', 'clipboard'],
+		pluginIds: ['bang-data', 'bang-compose', 'bangs', 'clipboard', 'search'],
 		keywords: ['web', 'query', 'provider']
 	},
 	{

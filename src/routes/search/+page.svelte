@@ -1,5 +1,5 @@
 <script lang="ts">
-	import ModePlaceholder from '$lib/components/ModePlaceholder.svelte';
+	import LauncherPage from '$lib/components/LauncherPage.svelte';
 </script>
 
-<ModePlaceholder modeId="search" />
+<LauncherPage modeId="search" />
