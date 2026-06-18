@@ -267,18 +267,21 @@ They should support:
 Search bangs are primarily text delivery actions.
 
 Bang execution should be opt-in at the launcher level. A bang from a provider catalog is available for discovery, but it
-is not locally executable until the user installs it. This keeps the long tail of stale or low-quality provider bangs out
-of zbang's trusted execution path while preserving provider compatibility.
+is not locally executable until the user saves it to My bangs. This keeps the long tail of stale or low-quality provider
+bangs out of zbang's trusted execution path while preserving provider compatibility.
 
 Bang states:
 
-- Available: present in the configured provider catalog and discoverable in bang search or completion.
-- Installed: explicitly approved by the user and eligible for local zbang execution.
+- Provider bang: present in the configured provider catalog and discoverable in bang search or completion. Provider
+  bangs are forwarded to the configured bang provider unless saved to My bangs.
+- My bang: explicitly saved by the user and eligible for local zbang execution. My bangs may be copied from a provider
+  catalog, edited locally, or created without any provider-catalog equivalent.
 - Queued: selected for the current launcher query or saved workflow.
 
-Installed bangs may be executed locally as fan-out delivery targets. Uninstalled or unknown bang tokens should be
-forwarded unchanged to the configured bang provider as a fallback search. This lets users keep using native provider
-bangs without requiring zbang to validate or curate the full catalog.
+My bangs may be executed locally as fan-out delivery targets. Provider-only or unknown bang tokens should be forwarded
+unchanged to the configured bang provider as a fallback search. This lets users keep using native provider bangs without
+requiring zbang to validate or curate the full catalog. Local execution may intentionally differ from provider execution,
+so a My bang with the same code as a Provider bang should take precedence for local execution.
 
 Example:
 
@@ -286,7 +289,7 @@ Example:
 !w !foo cats
 ```
 
-If `!w` is installed and `!foo` is not installed, pressing Enter should run a composed plan equivalent to:
+If `!w` is in My bangs and `!foo` is provider-only, pressing Enter should run a composed plan equivalent to:
 
 ```txt
 Open Wikipedia for "cats"
@@ -298,8 +301,8 @@ the UI should show a visible execution preview near the textarea using chips or 
 
 The preview should distinguish:
 
-- Installed bang chips that zbang will execute locally.
-- Uninstalled known bang chips that will be forwarded to the configured provider and may offer install actions.
+- My bang chips that zbang will execute locally.
+- Provider bang chips that will be forwarded to the configured provider and may offer actions to save them to My bangs.
 - Unknown bang chips that will be forwarded to the configured provider.
 - The payload text that local bangs and provider fallback searches will receive.
 
@@ -311,8 +314,15 @@ Forwarded: [!foo via Kagi]
 Query: cats
 ```
 
-Install actions should be available for known but uninstalled catalog bangs. Useful actions include install only, install
-and rerun/search, or continue with provider fallback.
+Save actions should be available for known Provider bangs. Useful actions include save to My bangs only, save and
+rerun/search locally, or continue with provider fallback.
+
+Grouped bang results should use `My bangs` and `Provider bangs` as the user-facing groups. My bangs are local definitions
+and should be ranked first when they match. Provider bangs are the configured provider catalog. In search-mode bang
+completion, the Provider bangs group can show the filter's full result set because completion is already scoped. In the
+focused `/bangs` management route, groups should support configurable collapsed limits so My bangs and Provider bangs can
+share a compact area. Once My bangs exists, Provider bangs may collapse to zero visible rows when My bangs has matches,
+while still showing a header with match counts and an expand affordance.
 
 ## Notes
 

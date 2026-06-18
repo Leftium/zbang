@@ -524,16 +524,18 @@ Some syntax may be ambiguous. For example, `@notes` could be a scope in the laun
 
 This model supports the observation that search bangs are similar to fancy bookmarks with template variables. A bookmark, bang, note tag, or task tag can all be represented as a named marker with behavior or metadata attached.
 
-### Installed Bangs And Provider Fallback
+### My Bangs And Provider Fallback
 
 Search bangs should use an opt-in trust model. The provider catalog is useful for discovery, but zbang should only
-execute bangs locally after the user installs them. This avoids treating the entire long tail of provider bangs as trusted
-local actions while still preserving native provider behavior.
+execute bangs locally after the user saves them to My bangs. This avoids treating the entire long tail of provider bangs
+as trusted local actions while still preserving native provider behavior.
 
 Useful states:
 
-- Available: present in the selected provider catalog.
-- Installed: approved by the user for local zbang execution.
+- Provider bang: present in the selected provider catalog. Provider bangs are forwarded to the configured bang provider
+  unless saved to My bangs.
+- My bang: approved by the user for local zbang execution. My bangs can be copied from the provider catalog, edited
+  locally, or created without a matching provider-catalog record.
 - Queued: selected for the current query or reusable workflow.
 
 When the textarea contains multiple bangs, zbang can split the query into local targets and provider fallback instead of
@@ -545,7 +547,7 @@ Example:
 !w !foo cats
 ```
 
-If `!w` is installed and `!foo` is not installed, the composed execution plan is:
+If `!w` is in My bangs and `!foo` is provider-only, the composed execution plan is:
 
 ```txt
 Local fan-out:
@@ -557,8 +559,10 @@ Kagi or DuckDuckGo -> !foo cats
 
 This preserves two important properties:
 
-- zbang only locally executes bangs the user installed.
-- Uninstalled or unknown bangs still work through the configured provider.
+- zbang only locally executes bangs saved to My bangs.
+- Provider-only or unknown bangs still work through the configured provider.
+- My bangs with the same code as Provider bangs take precedence because local execution may intentionally differ from
+  provider behavior.
 
 The main risk is surprise from partial handling. The mitigation is not to collapse the behavior into a vague primary
 button. The primary action can stay compact, such as `Run 2 actions`, while a nearby composition preview explains what
@@ -572,7 +576,7 @@ Targets: [!w Wikipedia]
 Forwarded: [!foo via Kagi]
 ```
 
-For a fully installed fan-out query:
+For a fully local fan-out query:
 
 ```txt
 !w !gi cats
@@ -585,17 +589,23 @@ Query: cats
 Targets: [!w Wikipedia] [!gi Google Images]
 ```
 
-For known but uninstalled catalog bangs, the action list can offer installation without changing what Enter currently
-does:
+For known Provider bangs, the action list can offer saving to My bangs without changing what Enter currently does:
 
 ```txt
-Install Foo bang
-Install Foo and search
+Save Foo to My bangs
+Save Foo and search locally
 Continue with Kagi fallback
 ```
 
-This makes installation a progressive enhancement rather than a compatibility wall. Raw provider bang behavior remains
-available, while installed bangs gain better ranking, local fan-out, reusable queues, and clearer composition UI.
+This makes My bangs a progressive enhancement rather than a compatibility wall. Raw provider bang behavior remains
+available, while My bangs gain better ranking, local fan-out, reusable queues, and clearer composition UI.
+
+Grouped bang results should use `My bangs` and `Provider bangs` as the user-facing labels. My bangs are local definitions
+that run in zbang. Provider bangs represent the selected provider catalog and normally forward to that provider. In the
+focused `/bangs` route, both groups should support configurable collapsed limits so management stays compact. In search
+mode bang completion, Provider bangs can show the filter's full result set because the picker is already scoped. Once My
+bangs exists, matching My bangs should appear first; Provider bangs can collapse to zero visible rows when My bangs has
+matches, while retaining a header with counts and an explicit expansion path.
 
 ## Notes UX
 
