@@ -19,7 +19,7 @@ pnpm build
 
 ## Bang Data
 
-The app ships static bootstrap bang catalogs and can refresh full DuckDuckGo/Kagi source data into IndexedDB from the settings page. In dev mode, `/dev/bootstrap-bangs` generates replacement bootstrap JSON files from refreshed local catalogs.
+The app ships full DuckDuckGo/Kagi catalog assets from `catalogs/`. Regenerate them manually with `pnpm run generate:catalogs`, review the JSON diff, and commit the updated artifacts.
 
 <details>
 <summary>This is a SvelteKit project; auto-generated README.</summary>

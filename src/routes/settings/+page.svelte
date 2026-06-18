@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { dev } from '$app/environment';
-	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
 
 	import {
@@ -367,10 +366,6 @@
 
 			{#if dev}
 				<div class="dev-tools">
-					<p>
-						Dev tool: <a href={resolve('/dev/bootstrap-bangs')}>generate bootstrap bang files</a>
-					</p>
-
 					<button
 						class="secondary outline"
 						disabled={isRefreshingBangData || isClearingBangData}

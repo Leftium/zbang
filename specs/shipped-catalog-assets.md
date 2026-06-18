@@ -155,12 +155,14 @@ Completed:
 - Added source-controlled generated catalogs in `catalogs/`.
 - Added `catalogs/README.md`.
 - Made generated catalog output deterministic for unchanged source hashes.
+- Added the `$catalogs` alias and Vite dev-server allow-listing for top-level catalog assets.
+- Switched launcher loading to `?url` fetched shipped catalogs.
+- Added runtime shipped-catalog validation and graceful failure handling.
+- Removed launcher stale-catalog reminders.
+- Removed obsolete dev bootstrap generation route and bootstrap JSON artifacts.
 
 Remaining:
 
-- Add the `$catalogs` alias.
-- Switch launcher loading to `?url` fetched shipped catalogs.
-- Add runtime shipped-catalog validation and graceful failure handling.
 - Remove runtime source refresh, stale reminders, settings refresh UI, non-user IndexedDB stores, and related API routes.
 
 ## API and Store Cleanup
@@ -206,9 +208,9 @@ Compare before and after the refactor:
 1. Extract catalog generation into browser-independent functions while preserving existing runtime behavior. Done.
 2. Add the manual CLI generator. Done.
 3. Generate full catalog files into `catalogs/`. Done.
-4. Add the `$catalogs` alias.
-5. Switch launcher loading to `?url` fetched catalogs on mount.
-6. Add runtime catalog validation and graceful failure handling.
-7. Remove runtime source refresh, stale reminders, and settings refresh UI.
+4. Add the `$catalogs` alias. Done.
+5. Switch launcher loading to `?url` fetched catalogs on mount. Done.
+6. Add runtime catalog validation and graceful failure handling. Done.
+7. Remove runtime source refresh, stale reminders, and settings refresh UI. In progress.
 8. Remove non-user IndexedDB stores and APIs.
 9. Verify build output and deployed asset cache headers.
