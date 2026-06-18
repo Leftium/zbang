@@ -171,3 +171,34 @@ The exact implementation can change, but settings should be data-driven enough t
 - Filtered results expose matching options without requiring manual group expansion.
 - Activating a filtered setting group toggles between matched options and all options.
 - Setting group headers are keyboard-selectable and shortcut-targetable.
+
+## Current Progress
+
+V1 is complete as of these commits:
+
+- `8980a30 feat: add read-only settings mode`
+- `d0f7776 feat: make settings mode interactive`
+- `f582efd docs: update settings mode spec`
+
+Implemented:
+
+- `/settings` renders launcher-native Settings mode.
+- The legacy editable form remains available at `/settings/form`.
+- The header settings link points to `/settings/form`.
+- Color scheme, default search provider, and bang catalog provider are grouped enum settings.
+- Empty Settings mode shows all groups closed in stable order.
+- Group headers show `Setting name: value`.
+- Group headers are keyboard-selectable and repeated-key shortcut-targetable.
+- Empty-filter group activation toggles the selected group open or closed and closes other groups.
+- Filtering scores both setting groups and option rows.
+- Filtered group activation toggles between directly matching options and all options.
+- Selecting an option updates the existing persisted setting value and keeps Settings mode open.
+- The selected enum option is shown with a radio-style indicator instead of duplicated status text.
+
+Deferred follow-ups:
+
+- Redesign the broader launcher group UX if the current group-header layout or behavior becomes limiting.
+- Decide the final production navigation behavior for the visible settings link.
+- Consider exposing settings actions outside Settings mode when ranking confidence is high.
+- Add non-enum setting types only when there is a concrete setting that needs them.
+- Optionally highlight matching current-value text in the group header value.
