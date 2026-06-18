@@ -479,6 +479,7 @@
 
 <style>
 	main {
+		box-sizing: border-box;
 		width: min(calc(var(--nc-content-width) + 2 * var(--nc-spacing)), 100%);
 		margin-inline: auto;
 		padding-inline: var(--nc-spacing);
@@ -573,9 +574,15 @@
 	.source-card {
 		display: grid;
 		gap: var(--size-2);
+		min-width: 0;
 		padding: var(--size-3);
 		border: var(--border-size-1) solid var(--gray-7);
 		border-radius: var(--radius-2);
+	}
+
+	.source-url,
+	.source-card dd {
+		overflow-wrap: anywhere;
 	}
 
 	.source-card h3 {
