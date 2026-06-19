@@ -129,9 +129,9 @@
 		},
 		{
 			id: 'search-provider',
-			title: 'Default search provider',
-			description: 'Provider used for regular web searches.',
-			aliases: ['search engine', 'web search', 'provider'],
+			title: 'Search engine',
+			description: 'Used for regular web searches.',
+			aliases: ['default search', 'web search', 'search provider'],
 			currentLabel: () => searchProviderLabels[settings.searchProvider],
 			options: searchProviders.map((value) => ({
 				id: value,
@@ -143,14 +143,14 @@
 		},
 		{
 			id: 'bang-provider',
-			title: 'Bang catalog provider',
-			description: 'Provider catalog used to populate available bangs.',
-			aliases: ['bang catalog', 'bangs catalog', 'shortcut catalog', 'catalog provider'],
+			title: 'Bang engine',
+			description: 'Used for fallback bangs.',
+			aliases: ['bang catalog', 'bangs catalog', 'shortcut catalog', 'bang provider'],
 			currentLabel: () => bangProviderLabels[settings.bangProvider],
 			options: bangProviders.map((value) => ({
 				id: value,
 				label: bangProviderLabels[value],
-				description: `Load bang shortcuts from ${bangProviderLabels[value]}.`,
+				description: `Use ${bangProviderLabels[value]} for full list and fallback bang execution.`,
 				aliases: [value, bangProviderLabels[value], 'bang catalog'],
 				run: () => setBangProvider(value)
 			}))
@@ -932,7 +932,7 @@
 							id: 'bangs.my',
 							pluginId: 'bangs',
 							title: 'My bangs',
-							description: 'Local editable bangs that shadow provider bangs by code.',
+							description: 'Your custom bangs. Used first.',
 							items: myItems,
 							collapsedItemLimit: getBangGroupCollapsedLimit(myItems),
 							matchedCount: myBangResults.total,
@@ -942,7 +942,7 @@
 							id: 'bangs.provider',
 							pluginId: 'bangs',
 							title: `${bangProviderLabels[settings.bangProvider]} bangs`,
-							description: 'Forward to your configured bang provider unless added to My bangs.',
+							description: 'Built-in bangs. Used as fallback.',
 							items: visibleProviderItems,
 							collapsedItemLimit: getBangGroupCollapsedLimit(visibleProviderItems),
 							matchedCount: providerBangResults.total,

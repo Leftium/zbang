@@ -54,7 +54,7 @@
 		</fieldset>
 
 		<fieldset class="setting provider-setting">
-			<legend>Default search provider</legend>
+			<legend>Search engine</legend>
 
 			<div class="providers">
 				{#each searchProviders as provider (provider.value)}
@@ -73,7 +73,7 @@
 		</fieldset>
 
 		<fieldset class="setting provider-setting">
-			<legend>Bang catalog provider</legend>
+			<legend>Bang engine</legend>
 
 			<div class="providers">
 				{#each BANG_CATALOGS as provider (provider.value)}
