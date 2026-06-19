@@ -1605,13 +1605,10 @@
 		>
 			<span class="item-text">
 				<span class="item-heading">
-					<strong id={`${group.id}-heading`}
-						>{@render highlightedText(
-							group.titleSegments,
-							group.title
-						)}{#if group.titleValue}:{/if}</strong
-					>
-					{#if group.titleValue}<span class="group-title-value">{group.titleValue}</span>{/if}
+					<span class="group-title-line" id={`${group.id}-heading`}>
+						<strong>{@render highlightedText(group.titleSegments, group.title)}</strong>{#if group.titleValue}:
+							<span class="group-title-value">{group.titleValue}</span>{/if}
+					</span>
 				</span>
 				{#if group.description}<small class="group-description"
 						>{@render highlightedText(group.descriptionSegments, group.description)}</small
@@ -1785,16 +1782,16 @@
 	}
 
 	.group-title-value {
-		flex: 0 1 auto;
-		min-width: 0;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 		font-weight: 400;
 	}
 
+	.launcher-group-header .item-heading,
+	.group-title-line {
+		display: block;
+	}
+
 	.launcher-group-header .item-heading strong {
-		flex: 0 1 auto;
+		display: inline;
 	}
 
 	.group-mobile-count {
