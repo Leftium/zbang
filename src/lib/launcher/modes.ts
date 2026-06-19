@@ -12,15 +12,15 @@ export const launcherModes = [
 	{
 		id: 'search',
 		label: 'Search',
-		description: 'Search the web with the configured provider or an alternate provider.',
+		description: 'Mobile-friendly web search with bang shortcuts.',
 		path: '/search',
 		pluginIds: ['bang-data', 'bang-compose', 'bangs', 'clipboard', 'search'],
 		keywords: ['web', 'query', 'provider']
 	},
 	{
 		id: 'bangs',
-		label: 'Bang',
-		description: 'Filter and explore available bang shortcuts.',
+		label: 'Bang Management',
+		description: 'Add and edit your custom bangs.',
 		path: '/bang',
 		pluginIds: ['bang-data', 'bangs'],
 		keywords: ['bang', 'filter', 'explore', 'shortcut']
@@ -28,7 +28,7 @@ export const launcherModes = [
 	{
 		id: 'compromise',
 		label: 'NLP',
-		description: 'Inspect NLP signals that can guide launcher ranking.',
+		description: 'See how the launcher understands your text.',
 		path: '/nlp',
 		pluginIds: ['compromise', 'clipboard'],
 		keywords: ['nlp', 'language', 'tokens', 'inspect']
@@ -36,7 +36,7 @@ export const launcherModes = [
 	{
 		id: 'settings',
 		label: 'Settings',
-		description: 'Review configured launcher preferences.',
+		description: 'Configure launcher preferences.',
 		path: '/settings',
 		pluginIds: ['settings'],
 		keywords: ['preferences', 'configuration', 'options']
