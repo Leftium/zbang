@@ -178,6 +178,7 @@
 	let myBangs = $state<Zbang[]>([]);
 	let lastUrlQuery = $state(initialUrlQuery);
 	let hadSettingsFilter = false;
+	let skipNextSettingsFilterReset = false;
 
 	$effect(() => {
 		const urlQuery = page.url.searchParams.get('q') ?? '';
@@ -275,11 +276,16 @@
 
 		if (hasValue) {
 			hadSettingsFilter = true;
+			skipNextSettingsFilterReset = false;
 			return;
 		}
 
-		if (hadSettingsFilter && Object.keys(expandedLauncherGroups).length) {
-			expandedLauncherGroups = {};
+		if (hadSettingsFilter) {
+			if (skipNextSettingsFilterReset) {
+				skipNextSettingsFilterReset = false;
+			} else if (Object.keys(expandedLauncherGroups).length) {
+				expandedLauncherGroups = {};
+			}
 		}
 
 		hadSettingsFilter = false;
@@ -579,7 +585,7 @@
 				return true;
 			}
 
-			removeTextBeforeCursor(2);
+			removeShortcutTextBeforeCursor(2);
 			executeShortcut(doubleKeypress);
 			resetShortcutState();
 			return true;
@@ -610,11 +616,23 @@
 		if (!shortcutKeys.has(doubleKeypress)) return false;
 
 		event.preventDefault();
-		removeTextBeforeCursor(1);
+		removeShortcutTextBeforeCursor(1);
 		executeShortcut(doubleKeypress);
 		resetShortcutState();
 
 		return true;
+	}
+
+	function removeShortcutTextBeforeCursor(length: number) {
+		if (mode.id === 'settings' && textareaElement) {
+			const { selectionStart, selectionEnd } = textareaElement;
+			const start = Math.max(0, selectionStart - length);
+			const nextValue = value.slice(0, start) + value.slice(selectionEnd);
+
+			skipNextSettingsFilterReset = hasValue && !nextValue.trim();
+		}
+
+		removeTextBeforeCursor(length);
 	}
 
 	function executeShortcut(shortcutKey: string) {
