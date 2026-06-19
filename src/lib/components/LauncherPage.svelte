@@ -941,7 +941,7 @@
 						{
 							id: 'bangs.provider',
 							pluginId: 'bangs',
-							title: 'Provider bangs',
+							title: `${bangProviderLabels[settings.bangProvider]} bangs`,
 							description: 'Forward to your configured bang provider unless added to My bangs.',
 							items: visibleProviderItems,
 							collapsedItemLimit: getBangGroupCollapsedLimit(visibleProviderItems),
