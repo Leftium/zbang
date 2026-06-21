@@ -208,6 +208,7 @@
 	const bangComposition = $derived(parseBangComposition(value, bangCodeMap, bangEntry));
 	const bangPickerActive = $derived(Boolean(bangEntry));
 	const bangFilterInput = $derived(bangEntry ? `!${bangEntry.fragment}` : value);
+	const hasBangFilter = $derived(bangEntry ? Boolean(bangEntry.fragment.trim()) : hasValue);
 	const myBangResults = $derived(filterBangs(bangFilterInput, preparedMyBangs));
 	const providerBangResults = $derived(filterBangs(bangFilterInput, preparedProviderBangs));
 	const launcherContext = $derived({
@@ -841,7 +842,14 @@
 	}
 
 	function getVisibleGroupItems(group: LauncherGroup) {
-		if (expandedLauncherGroups[group.id]) return group.allItems ?? group.items;
+		if (group.pluginId === 'bangs') {
+			if (hasBangFilter) return group.items;
+			if (!isLauncherGroupExpanded(group)) return [];
+
+			return group.items.slice(0, getGroupCollapsedLimit(group));
+		}
+
+		if (isLauncherGroupExpanded(group)) return group.allItems ?? group.items;
 
 		return group.items.slice(0, getGroupCollapsedLimit(group));
 	}
@@ -853,19 +861,60 @@
 	}
 
 	function activateLauncherGroup(groupId: string) {
-		expandedLauncherGroups = expandedLauncherGroups[groupId] ? {} : { [groupId]: true };
+		const group = visibleLauncherGroups.find(({ id }) => id === groupId);
+		const expanded = group ? isLauncherGroupExpanded(group) : Boolean(expandedLauncherGroups[groupId]);
+
+		if (group?.pluginId === 'bangs') {
+			if (hasBangFilter) return;
+
+			if (expanded) {
+				expandedLauncherGroups = {
+					...expandedLauncherGroups,
+					[groupId]: false,
+					...(bangPickerActive && groupId === 'bangs.my' ? { 'bangs.provider': true } : {})
+				};
+				return;
+			}
+
+			expandedLauncherGroups = {
+				[groupId === 'bangs.my' ? 'bangs.provider' : 'bangs.my']: false,
+				[groupId]: true
+			};
+			return;
+		}
+
+		expandedLauncherGroups = expanded ? {} : { [groupId]: true };
+	}
+
+	function isLauncherGroupExpanded(group: LauncherGroup) {
+		if (expandedLauncherGroups[group.id] !== undefined) return expandedLauncherGroups[group.id];
+
+		if ((mode.id !== 'bangs' && !bangPickerActive) || hasBangFilter) return false;
+
+		if (group.id === 'bangs.my') return myBangs.length > 0;
+		if (group.id === 'bangs.provider') return myBangs.length === 0;
+
+		return false;
 	}
 
 	function getGroupCountLabel(group: LauncherGroup) {
-		const parts = [`${(group.allItems ?? group.items).length} loaded`];
+		if (group.matchedCount !== undefined && group.totalCount !== undefined) {
+			return `${group.matchedCount}/${group.totalCount}`;
+		}
 
-		if (group.matchedCount !== undefined) parts.push(`${group.matchedCount} matched`);
-		if (group.totalCount !== undefined) parts.push(`${group.totalCount} total`);
+		if (group.matchedCount !== undefined) return `${group.matchedCount} matched`;
+		if (group.totalCount !== undefined) return `${group.totalCount} total`;
 
-		return parts.join(' | ');
+		return `${(group.allItems ?? group.items).length}`;
 	}
 
 	function getGroupToggleLabel(group: LauncherGroup, hiddenCount: number, expanded: boolean) {
+		if (group.pluginId === 'bangs') {
+			if (hasBangFilter) return '';
+
+			return expanded ? 'Close' : 'Open';
+		}
+
 		if (
 			group.allItems &&
 			group.matchedCount !== undefined &&
@@ -881,12 +930,14 @@
 	}
 
 	function getGroupMobileCountLabel(group: LauncherGroup) {
-		const parts: string[] = [];
+		if (group.matchedCount !== undefined && group.totalCount !== undefined) {
+			return `${group.matchedCount}/${group.totalCount}`;
+		}
 
-		if (group.matchedCount !== undefined) parts.push(`${group.matchedCount} matched`);
-		if (group.totalCount !== undefined) parts.push(`${group.totalCount} total`);
+		if (group.matchedCount !== undefined) return `${group.matchedCount} matched`;
+		if (group.totalCount !== undefined) return `${group.totalCount} total`;
 
-		return parts.join(' | ');
+		return '';
 	}
 
 	function createPlugins(): LauncherPlugin[] {
@@ -923,9 +974,10 @@
 				getGroups() {
 					if (!bangPickerActive && mode.id !== 'bangs') return [];
 
-					const myItems = createBangLauncherItems(myBangResults.items, 'my');
+					const myItems = hasBangFilter
+						? createBangLauncherItems(myBangResults.items, 'my')
+						: createBangLauncherItemsFromBangs(myBangs, 'my');
 					const providerItems = createBangLauncherItems(providerBangResults.items, 'provider');
-					const visibleProviderItems = mode.id !== 'bangs' && myItems.length ? [] : providerItems;
 
 					return [
 						{
@@ -943,8 +995,8 @@
 							pluginId: 'bangs',
 							title: `${bangProviderLabels[settings.bangProvider]} bangs`,
 							description: 'Built-in bangs. Used as fallback.',
-							items: visibleProviderItems,
-							collapsedItemLimit: getBangGroupCollapsedLimit(visibleProviderItems),
+							items: providerItems,
+							collapsedItemLimit: getBangGroupCollapsedLimit(providerItems),
 							matchedCount: providerBangResults.total,
 							totalCount: providerBangCount
 						}
@@ -1207,6 +1259,21 @@
 					? () => (source === 'my' ? removeMyBang(item) : addMyBang(item))
 					: () => insertBang(item.code[0])
 		}));
+	}
+
+	function createBangLauncherItemsFromBangs(items: Zbang[], source: 'my' | 'provider') {
+		return createBangLauncherItems(
+			items.map((item, index) => ({
+				item,
+				score: 100 - index,
+				highlights: {
+					name: [{ text: item.name, matched: false }],
+					code: item.code.map((code) => ({ segments: [{ text: code, matched: false }] })),
+					url: [{ text: item.urls.s, matched: false }]
+				}
+			})),
+			source
+		);
 	}
 
 	function getBangModeActionLabel(source: 'my' | 'provider') {
@@ -1587,7 +1654,7 @@
 	{@const visibleItems = getVisibleGroupItems(group)}
 	{@const renderedItems = getRenderedGroupItems(group)}
 	{@const hiddenCount = (group.allItems ?? group.items).length - visibleItems.length}
-	{@const expanded = Boolean(expandedLauncherGroups[group.id])}
+	{@const expanded = isLauncherGroupExpanded(group)}
 	{@const toggleLabel = getGroupToggleLabel(group, hiddenCount, expanded)}
 	{@const mobileCountLabel = getGroupMobileCountLabel(group)}
 	{@const shortcutLabel = getShortcutLabel(group.id)}
