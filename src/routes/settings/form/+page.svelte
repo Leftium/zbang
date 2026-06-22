@@ -13,7 +13,8 @@
 	const searchProviders: { value: SearchProvider; label: string }[] = [
 		{ value: 'kagi', label: 'Kagi' },
 		{ value: 'duckduckgo', label: 'DuckDuckGo' },
-		{ value: 'google', label: 'Google' }
+		{ value: 'google', label: 'Google' },
+		{ value: 'custom', label: 'Custom' }
 	];
 
 	const colorSchemes: { value: ColorScheme; label: string }[] = [

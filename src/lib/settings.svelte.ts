@@ -1,11 +1,16 @@
 import type { BangProviderId } from '$lib/bang-data';
 export type ColorScheme = '' | 'dark' | 'light';
-export type SearchProvider = 'kagi' | 'duckduckgo' | 'google';
+export type SearchProvider = 'kagi' | 'duckduckgo' | 'google' | 'custom';
+
+export const defaultCustomSearchLabel = 'Brave';
+export const defaultCustomSearchTemplate = 'https://search.brave.com/search?q=%s';
 
 export const settings = $state({
 	colorScheme: '' as ColorScheme,
 	bangProvider: 'kagi' as BangProviderId,
-	searchProvider: 'kagi' as SearchProvider
+	searchProvider: 'kagi' as SearchProvider,
+	customSearchLabel: defaultCustomSearchLabel,
+	customSearchTemplate: defaultCustomSearchTemplate
 });
 
 function applyColorScheme(colorScheme: ColorScheme) {
@@ -32,6 +37,15 @@ export function setSearchProvider(searchProvider: SearchProvider) {
 	localStorage.setItem('searchProvider', searchProvider);
 }
 
+export function setCustomSearchTarget(label: string, template: string) {
+	settings.customSearchLabel = label;
+	settings.customSearchTemplate = template;
+	settings.searchProvider = 'custom';
+	localStorage.setItem('customSearchLabel', label);
+	localStorage.setItem('customSearchTemplate', template);
+	localStorage.setItem('searchProvider', 'custom');
+}
+
 export function setBangProvider(bangProvider: BangProviderId) {
 	settings.bangProvider = bangProvider;
 	localStorage.setItem('bangProvider', bangProvider);
@@ -41,6 +55,8 @@ export function initSettings() {
 	const storedColorScheme = localStorage.getItem('theme');
 	const storedBangProvider = localStorage.getItem('bangProvider');
 	const storedSearchProvider = localStorage.getItem('searchProvider');
+	const storedCustomSearchLabel = localStorage.getItem('customSearchLabel');
+	const storedCustomSearchTemplate = localStorage.getItem('customSearchTemplate');
 
 	if (storedColorScheme === 'dark' || storedColorScheme === 'light') {
 		applyColorScheme(storedColorScheme);
@@ -49,9 +65,15 @@ export function initSettings() {
 	if (
 		storedSearchProvider === 'kagi' ||
 		storedSearchProvider === 'duckduckgo' ||
-		storedSearchProvider === 'google'
+		storedSearchProvider === 'google' ||
+		storedSearchProvider === 'custom'
 	) {
 		settings.searchProvider = storedSearchProvider;
+	}
+
+	if (storedCustomSearchLabel) settings.customSearchLabel = storedCustomSearchLabel;
+	if (storedCustomSearchTemplate?.includes('%s')) {
+		settings.customSearchTemplate = storedCustomSearchTemplate;
 	}
 
 	if (storedBangProvider === 'kagi' || storedBangProvider === 'duckduckgo') {

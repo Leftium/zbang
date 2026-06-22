@@ -38,8 +38,11 @@
 		LauncherPlugin
 	} from '$lib/launcher/types';
 	import {
+		defaultCustomSearchLabel,
+		defaultCustomSearchTemplate,
 		setBangProvider,
 		setColorScheme,
+		setCustomSearchTarget,
 		setSearchProvider,
 		settings,
 		type ColorScheme,
@@ -56,7 +59,10 @@
 	const searchProviderLabels: Record<SearchProvider, string> = {
 		kagi: 'Kagi',
 		duckduckgo: 'DuckDuckGo',
-		google: 'Google'
+		google: 'Google',
+		get custom() {
+			return settings.customSearchLabel;
+		}
 	};
 	const colorSchemeLabels: Record<ColorScheme, string> = {
 		'': 'Auto (System)',
@@ -170,8 +176,11 @@
 			currentLabel: () => searchProviderLabels[settings.searchProvider],
 			options: searchProviders.map((value) => ({
 				id: value,
-				label: searchProviderLabels[value],
-				description: `Use ${searchProviderLabels[value]} for default web searches.`,
+				label: value === 'custom' ? 'Custom' : searchProviderLabels[value],
+				description:
+					value === 'custom'
+						? `Use custom search target: ${defaultCustomSearchLabel}.`
+						: `Use ${searchProviderLabels[value]} for default web searches.`,
 				aliases: [value, searchProviderLabels[value], 'search engine'],
 				run: () => setSearchProvider(value)
 			}))
@@ -355,12 +364,16 @@
 
 	function getSearchUrl(provider: SearchProvider, query: string) {
 		const trimmedQuery = query.trim();
+		const customSearchTemplate = settings.customSearchTemplate.includes('%s')
+			? settings.customSearchTemplate
+			: defaultCustomSearchTemplate;
 
 		if (!trimmedQuery) {
 			return {
 				kagi: 'https://kagi.com/',
 				duckduckgo: 'https://duckduckgo.com/',
-				google: 'https://www.google.com/'
+				google: 'https://www.google.com/',
+				custom: customSearchTemplate.replace(/%s/g, '')
 			}[provider];
 		}
 
@@ -369,8 +382,16 @@
 		return {
 			kagi: `https://kagi.com/search?q=${encodedQuery}`,
 			duckduckgo: `https://duckduckgo.com/?q=${encodedQuery}`,
-			google: `https://www.google.com/search?q=${encodedQuery}`
+			google: `https://www.google.com/search?q=${encodedQuery}`,
+			custom: customSearchTemplate.replace(/%s/g, encodedQuery)
 		}[provider];
+	}
+
+	function setBangAsDefaultSearch(item: Zbang) {
+		const code = item.code[0] ? `!${item.code[0]}` : '';
+		const label = [item.name, code].filter(Boolean).join(' ');
+
+		setCustomSearchTarget(label, item.urls.s);
 	}
 
 	function getLauncherShareUrl() {
@@ -1319,7 +1340,12 @@
 						description: `Search for "${context.text}".`,
 						score: provider === settings.searchProvider ? 100 : 65,
 						safeForEnter: provider === settings.searchProvider,
-						run: () => search(provider)
+						run: () => search(provider),
+						secondaryAction: {
+							label: 'Set as default',
+							title: `Use ${searchProviderLabels[provider]} for default web searches`,
+							run: () => setSearchProvider(provider)
+						}
 					}));
 				}
 			},
@@ -1524,6 +1550,11 @@
 			score,
 			sortOrder: index,
 			safeForEnter: mode.id !== 'bangs',
+			secondaryAction: {
+				label: 'Set as default',
+				title: `Use ${item.name} for default web searches`,
+				run: () => setBangAsDefaultSearch(item)
+			},
 			run:
 				mode.id === 'bangs'
 					? () => (source === 'my' ? removeMyBang(item) : addMyBang(item))
