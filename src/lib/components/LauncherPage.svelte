@@ -70,8 +70,22 @@
 	const searchProviders = Object.keys(searchProviderLabels) as SearchProvider[];
 	const colorSchemes = Object.keys(colorSchemeLabels) as ColorScheme[];
 	const bangProviders = Object.keys(bangProviderLabels) as BangProviderId[];
-	const shortcutLabels = ['Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P'] as const;
-	const shortcutKeys = new Set(['F', 'L', 'N', 'M', '.', ' ', ...shortcutLabels]);
+	const itemShortcutLabels = ['Q', 'W', 'E', 'R', 'T', 'Y'] as const;
+	const itemMenuShortcutLabels = ['A', 'S', 'D', 'F', 'G', 'H'] as const;
+	const groupShortcutLabels = ['U', 'I', 'O'] as const;
+	const groupMenuShortcutLabels = ['J', 'K', 'L'] as const;
+	const parentShortcutLabel = 'P';
+	const utilityShortcutLabels = ['Z', 'X', 'C', 'V'] as const;
+	const shortcutKeys = new Set([
+		'.',
+		' ',
+		parentShortcutLabel,
+		...utilityShortcutLabels,
+		...itemShortcutLabels,
+		...itemMenuShortcutLabels,
+		...groupShortcutLabels,
+		...groupMenuShortcutLabels
+	]);
 	const shortcutDelay = 250;
 	const settingsMatchThreshold = 0.4;
 	const launcherGroupItemLimits: Record<string, number> = {
@@ -88,8 +102,29 @@
 		run: () => void;
 	};
 	type PrimaryLauncherTarget =
-		| { id: string; kind: 'item'; item: LauncherItem; run: () => void | Promise<void> }
+		| {
+				id: string;
+				kind: 'item';
+				item: LauncherItem;
+				groupId?: string;
+				run: () => void | Promise<void>;
+		  }
 		| { id: string; kind: 'group'; group: LauncherGroup; run: () => void };
+	type ShortcutLane =
+		| 'item-focus'
+		| 'item-menu'
+		| 'group-focus'
+		| 'group-menu'
+		| 'parent'
+		| 'primary'
+		| 'utility';
+	type PendingTripleShortcut = {
+		key: string;
+		ts: number;
+		lane: ShortcutLane;
+		target?: PrimaryLauncherTarget;
+	};
+	type ShortcutTargetSlot = PrimaryLauncherTarget | undefined;
 	type SettingGroupDefinition = {
 		id: string;
 		title: string;
@@ -165,13 +200,17 @@
 	let enterNewlineRestored = $state(false);
 	let enterNewlineFullscreen = $state(true);
 	let selectedPrimaryItemId = $state<string>();
+	let activeLauncherGroupId = $state<string>();
 	let inputHistory = $state<InputFrame[]>([]);
 	let keyHistory: KeyFrame[] = [];
-	let pendingShortcutLauncherTargets: PrimaryLauncherTarget[] = [];
+	let pendingShortcutItemTargets: PrimaryLauncherTarget[] = [];
+	let pendingShortcutGroupTargets: ShortcutTargetSlot[] = [];
 	let pendingShortcutPrimaryTarget: PrimaryLauncherTarget | undefined;
+	let pendingTripleShortcut: PendingTripleShortcut | undefined;
 	let myBangWrite = Promise.resolve();
 	let loadingBangProvider = $state<BangProviderId>();
 	let doubleKeypress = $state<string>();
+	let tripleKeypress = $state<string>();
 	let isPeriodShortcut = $state(false);
 	let isMobilePeriodShortcut = $state(false);
 	let expandedLauncherGroups = $state<Record<string, boolean>>({});
@@ -238,11 +277,22 @@
 	const visibleActionItems = $derived([...visibleLauncherItems, ...visibleGroupedLauncherItems]);
 	const textareaPlaceholder = $derived(getTextareaPlaceholder());
 	const selectablePrimaryTargets = $derived(getSelectablePrimaryTargets());
-	const shortcutLauncherTargets = $derived(
-		selectablePrimaryTargets.slice(0, shortcutLabels.length)
+	const activeLauncherGroup = $derived(getActiveLauncherGroup());
+	const shortcutItemTargets = $derived(
+		getShortcutItemTargets().slice(0, itemShortcutLabels.length)
 	);
+	const shortcutGroupTargets = $derived(getShortcutGroupTargets());
 	const shortcutTargetIds = $derived(
-		new Map(shortcutLauncherTargets.map((target, index) => [target.id, index]))
+		new Map([
+			...shortcutItemTargets.map(
+				(target, index) => [target.id, itemShortcutLabels[index]] as const
+			),
+			...shortcutGroupTargets
+				.map((target, index) =>
+					target ? ([target.id, groupShortcutLabels[index]] as const) : undefined
+				)
+				.filter((entry) => entry !== undefined)
+		])
 	);
 	const primaryLauncherTarget = $derived(
 		selectablePrimaryTargets.find((target) => target.id === selectedPrimaryItemId) ??
@@ -517,6 +567,13 @@
 		const interval = lastInput ? ts - lastInput.ts : Infinity;
 
 		doubleKeypress = undefined;
+		tripleKeypress = undefined;
+
+		if (inputType === 'insertText' && data && isPendingTripleShortcut(data, ts)) {
+			tripleKeypress = data;
+			return;
+		}
+
 		if (
 			inputType === 'insertText' &&
 			data &&
@@ -573,6 +630,13 @@
 	function handleShortcutInput() {
 		const periodShortcutLength = isPeriodShortcut ? 2 : isMobilePeriodShortcut ? 2 : 0;
 
+		if (tripleKeypress && shortcutKeys.has(tripleKeypress)) {
+			removeShortcutTextBeforeCursor(1);
+			executeShortcut(tripleKeypress, 'triple');
+			resetShortcutState();
+			return true;
+		}
+
 		if (periodShortcutLength) {
 			replaceTextBeforeCursorWithBang(periodShortcutLength);
 			resetShortcutState();
@@ -587,8 +651,8 @@
 			}
 
 			removeShortcutTextBeforeCursor(2);
-			executeShortcut(doubleKeypress);
-			resetShortcutState();
+			executeShortcut(doubleKeypress, 'double');
+			resetShortcutState({ keepPendingTriple: true });
 			return true;
 		}
 
@@ -597,8 +661,18 @@
 
 	function handleShortcutKeydown(event: KeyboardEvent) {
 		if (event.key === ' ') return false;
+		if (event.repeat) return false;
 
 		const ts = Date.now();
+
+		if (isPendingTripleShortcut(event.key, ts)) {
+			event.preventDefault();
+			executeShortcut(event.key, 'triple');
+			resetShortcutState();
+
+			return true;
+		}
+
 		const lastKey = keyHistory[0];
 		const interval = lastKey ? ts - lastKey.ts : Infinity;
 
@@ -618,8 +692,8 @@
 
 		event.preventDefault();
 		removeShortcutTextBeforeCursor(1);
-		executeShortcut(doubleKeypress);
-		resetShortcutState();
+		executeShortcut(doubleKeypress, 'double');
+		resetShortcutState({ keepPendingTriple: true });
 
 		return true;
 	}
@@ -636,46 +710,136 @@
 		removeTextBeforeCursor(length);
 	}
 
-	function executeShortcut(shortcutKey: string) {
-		if (shortcutKey === 'F') {
+	function executeShortcut(shortcutKey: string, pressCount: 'double' | 'triple') {
+		const key = shortcutKey.toUpperCase();
+
+		if (pressCount === 'triple') {
+			executeTripleShortcut(key);
+			return;
+		}
+
+		const utilityHandled = executeUtilityShortcut(key);
+		if (utilityHandled) {
+			armTripleShortcut(key, 'utility');
+			return;
+		}
+
+		if (key === '.' || key === 'V') {
+			void (pendingShortcutPrimaryTarget ?? primaryLauncherTarget)?.run();
+			armTripleShortcut(key, 'primary', pendingShortcutPrimaryTarget ?? primaryLauncherTarget);
+			return;
+		}
+
+		if (key === parentShortcutLabel) {
+			focusInput();
+			armTripleShortcut(key, 'parent');
+			return;
+		}
+
+		const itemFocusIndex = itemShortcutLabels.findIndex((label) => label === key);
+		if (itemFocusIndex !== -1) {
+			const target = getSnapshotItemTargets()[itemFocusIndex];
+			if (target) focusLauncherTarget(target);
+			armTripleShortcut(key, 'item-focus', target);
+			return;
+		}
+
+		const itemMenuIndex = itemMenuShortcutLabels.findIndex((label) => label === key);
+		if (itemMenuIndex !== -1) {
+			const target = getSnapshotItemTargets()[itemMenuIndex];
+			if (target) focusLauncherTarget(target);
+			armTripleShortcut(key, 'item-menu', target);
+			return;
+		}
+
+		const groupFocusIndex = groupShortcutLabels.findIndex((label) => label === key);
+		if (groupFocusIndex !== -1) {
+			const target = getSnapshotGroupTargets()[groupFocusIndex];
+			if (target) focusLauncherTarget(target);
+			armTripleShortcut(key, 'group-focus', target);
+			return;
+		}
+
+		const groupMenuIndex = groupMenuShortcutLabels.findIndex((label) => label === key);
+		if (groupMenuIndex !== -1) {
+			const target = getSnapshotGroupTargets()[groupMenuIndex];
+			if (target) focusLauncherTarget(target);
+			armTripleShortcut(key, 'group-menu', target);
+		}
+	}
+
+	function executeTripleShortcut(shortcutKey: string) {
+		if (!pendingTripleShortcut || pendingTripleShortcut.key !== shortcutKey) return;
+
+		const { lane, target } = pendingTripleShortcut;
+
+		if (target && (lane === 'item-focus' || lane === 'group-focus')) {
+			focusLauncherTarget(target);
+			void target.run();
+			return;
+		}
+
+		if (target && lane === 'item-menu' && target.kind === 'item') {
+			focusLauncherTarget(target);
+			void target.item.secondaryAction?.run();
+			return;
+		}
+
+		if (target && lane === 'group-menu') {
+			focusLauncherTarget(target);
+		}
+	}
+
+	function executeUtilityShortcut(shortcutKey: string) {
+		if (shortcutKey === 'Z') {
 			fullscreen = !fullscreen;
-			return;
+			return true;
 		}
 
-		if (shortcutKey === 'L') {
+		if (shortcutKey === 'X') {
 			wordwrap = !wordwrap;
-			return;
+			return true;
 		}
 
-		if (shortcutKey === 'N') {
+		if (shortcutKey === 'C') {
 			if (fullscreen) {
 				enterNewlineFullscreen = !enterNewlineFullscreen;
 			} else {
 				enterNewlineRestored = !enterNewlineRestored;
 			}
 
-			return;
+			return true;
 		}
 
-		if (shortcutKey === '.' || shortcutKey === 'M') {
-			void (pendingShortcutPrimaryTarget ?? primaryLauncherTarget)?.run();
-			return;
-		}
+		return false;
+	}
 
-		const index = shortcutLabels.findIndex((label) => label === shortcutKey);
-		const target = (
-			pendingShortcutLauncherTargets.length
-				? pendingShortcutLauncherTargets
-				: shortcutLauncherTargets
-		)[index];
+	function armTripleShortcut(key: string, lane: ShortcutLane, target?: PrimaryLauncherTarget) {
+		pendingTripleShortcut = { key, lane, target, ts: Date.now() };
+	}
 
-		if (target) void target.run();
+	function isPendingTripleShortcut(key: string | null | undefined, ts: number) {
+		return Boolean(
+			key &&
+			pendingTripleShortcut &&
+			pendingTripleShortcut.key.toLowerCase() === key.toLowerCase() &&
+			ts - pendingTripleShortcut.ts < shortcutDelay
+		);
+	}
+
+	function getSnapshotItemTargets() {
+		return pendingShortcutItemTargets.length ? pendingShortcutItemTargets : shortcutItemTargets;
+	}
+
+	function getSnapshotGroupTargets() {
+		return pendingShortcutGroupTargets.length ? pendingShortcutGroupTargets : shortcutGroupTargets;
 	}
 
 	function captureShortcutSnapshot(shortcutKey: string) {
 		if (!isShortcutInitiator(shortcutKey)) return;
 
-		pendingShortcutLauncherTargets = shortcutLauncherTargets;
+		pendingShortcutItemTargets = shortcutItemTargets;
+		pendingShortcutGroupTargets = shortcutGroupTargets;
 		pendingShortcutPrimaryTarget = primaryLauncherTarget;
 	}
 
@@ -686,12 +850,15 @@
 		return key === ' ' || key === '.' || key.toLocaleUpperCase() === key;
 	}
 
-	function resetShortcutState() {
+	function resetShortcutState({ keepPendingTriple = false } = {}) {
 		doubleKeypress = undefined;
+		tripleKeypress = undefined;
 		inputHistory = [];
 		keyHistory = [];
-		pendingShortcutLauncherTargets = [];
+		pendingShortcutItemTargets = [];
+		pendingShortcutGroupTargets = [];
 		pendingShortcutPrimaryTarget = undefined;
+		if (!keepPendingTriple) pendingTripleShortcut = undefined;
 		isPeriodShortcut = false;
 		isMobilePeriodShortcut = false;
 	}
@@ -715,10 +882,16 @@
 	}
 
 	function getShortcutLabel(targetId: string) {
-		const index = shortcutTargetIds.get(targetId);
-		const label = index === undefined ? undefined : shortcutLabels[index];
+		return shortcutTargetIds.get(targetId);
+	}
 
-		return label;
+	function getGroupNavigationShortcuts(group: LauncherGroup) {
+		if (activeLauncherGroup?.id !== group.id || visibleLauncherGroups.length < 2) return [];
+
+		return [
+			{ label: groupShortcutLabels[0], text: 'Prev group' },
+			{ label: groupShortcutLabels[2], text: 'Next group' }
+		];
 	}
 
 	function handleLauncherCursorChange(event: Event) {
@@ -751,7 +924,7 @@
 		if (!nextTarget) return false;
 
 		event.preventDefault();
-		selectedPrimaryItemId = nextTarget.id;
+		focusLauncherTarget(nextTarget);
 
 		return true;
 	}
@@ -793,25 +966,97 @@
 		void primaryLauncherTarget?.run();
 	}
 
+	function focusLauncherTarget(target: PrimaryLauncherTarget) {
+		selectedPrimaryItemId = target.id;
+
+		if (target.kind === 'group') {
+			activeLauncherGroupId = target.group.id;
+		} else if (target.groupId) {
+			activeLauncherGroupId = target.groupId;
+		}
+	}
+
+	function getActiveLauncherGroup() {
+		const selectedTarget = selectedPrimaryItemId
+			? selectablePrimaryTargets.find((target) => target.id === selectedPrimaryItemId)
+			: undefined;
+		const selectedGroupId =
+			selectedTarget?.kind === 'group' ? selectedTarget.group.id : selectedTarget?.groupId;
+
+		return (
+			visibleLauncherGroups.find((group) => group.id === activeLauncherGroupId) ??
+			visibleLauncherGroups.find((group) => group.id === selectedGroupId) ??
+			getDefaultActiveLauncherGroup() ??
+			visibleLauncherGroups[0]
+		);
+	}
+
+	function getDefaultActiveLauncherGroup() {
+		if (!bangPickerActive || myBangs.length > 0) return undefined;
+
+		return visibleLauncherGroups.find((group) => group.id === 'bangs.provider');
+	}
+
+	function getShortcutItemTargets() {
+		if (!visibleLauncherGroups.length)
+			return visibleLauncherItems.flatMap(createSelectableItemTarget);
+
+		return activeLauncherGroup
+			? getVisibleGroupItems(activeLauncherGroup).flatMap((item) =>
+					createSelectableItemTarget(item, activeLauncherGroup.id)
+				)
+			: [];
+	}
+
+	function getShortcutGroupTargets() {
+		if (!visibleLauncherGroups.length || !activeLauncherGroup) return [];
+
+		const currentIndex = visibleLauncherGroups.findIndex(
+			(group) => group.id === activeLauncherGroup.id
+		);
+		if (currentIndex === -1) return [];
+
+		const previousIndex =
+			(currentIndex - 1 + visibleLauncherGroups.length) % visibleLauncherGroups.length;
+		const nextIndex = (currentIndex + 1) % visibleLauncherGroups.length;
+		const groups =
+			visibleLauncherGroups.length === 1
+				? [undefined, visibleLauncherGroups[currentIndex], undefined]
+				: [
+						visibleLauncherGroups[previousIndex],
+						visibleLauncherGroups[currentIndex],
+						visibleLauncherGroups[nextIndex]
+					];
+
+		return groups.map((group) => (group ? createSelectableGroupTarget(group) : undefined));
+	}
+
 	function getSelectablePrimaryTargets(): PrimaryLauncherTarget[] {
 		return [
 			...visibleLauncherItems.flatMap(createSelectableItemTarget),
 			...visibleLauncherGroups.flatMap((group) => [
-				{
-					id: group.id,
-					kind: 'group' as const,
-					group,
-					run: () => activateLauncherGroup(group.id)
-				},
-				...getVisibleGroupItems(group).flatMap(createSelectableItemTarget)
+				createSelectableGroupTarget(group),
+				...getVisibleGroupItems(group).flatMap((item) => createSelectableItemTarget(item, group.id))
 			])
 		];
 	}
 
-	function createSelectableItemTarget(item: LauncherItem): PrimaryLauncherTarget[] {
+	function createSelectableGroupTarget(group: LauncherGroup): PrimaryLauncherTarget {
+		return {
+			id: group.id,
+			kind: 'group',
+			group,
+			run: () => activateLauncherGroup(group.id)
+		};
+	}
+
+	function createSelectableItemTarget(
+		item: LauncherItem,
+		groupId?: string
+	): PrimaryLauncherTarget[] {
 		if (item.kind !== 'action' || !item.run) return [];
 
-		return [{ id: item.id, kind: 'item', item, run: item.run }];
+		return [{ id: item.id, kind: 'item', item, groupId, run: item.run }];
 	}
 
 	function getGroupCollapsedLimit(group: LauncherGroup) {
@@ -821,7 +1066,7 @@
 	function shouldRenderGroup(group: LauncherGroup) {
 		const isEmptyMyBangsGroup =
 			group.id === 'bangs.my' && (mode.id === 'bangs' || bangPickerActive);
-		const isSuppressedProviderGroup =
+		const isBangPickerProviderGroup =
 			group.id === 'bangs.provider' && bangPickerActive && myBangResults.items.length > 0;
 		const isMatchedSettingsGroup =
 			group.pluginId === 'settings' &&
@@ -832,7 +1077,7 @@
 		return (
 			group.items.length > 0 ||
 			isEmptyMyBangsGroup ||
-			isSuppressedProviderGroup ||
+			isBangPickerProviderGroup ||
 			isMatchedSettingsGroup
 		);
 	}
@@ -862,37 +1107,35 @@
 
 	function activateLauncherGroup(groupId: string) {
 		const group = visibleLauncherGroups.find(({ id }) => id === groupId);
-		const expanded = group ? isLauncherGroupExpanded(group) : Boolean(expandedLauncherGroups[groupId]);
+
+		if (group) {
+			selectedPrimaryItemId = group.id;
+			activeLauncherGroupId = group.id;
+		}
 
 		if (group?.pluginId === 'bangs') {
+			if (mode.id === 'bangs') return;
 			if (hasBangFilter) return;
 
-			if (expanded) {
-				expandedLauncherGroups = {
-					...expandedLauncherGroups,
-					[groupId]: false,
-					...(bangPickerActive && groupId === 'bangs.my' ? { 'bangs.provider': true } : {})
-				};
-				return;
-			}
-
-			expandedLauncherGroups = {
-				[groupId === 'bangs.my' ? 'bangs.provider' : 'bangs.my']: false,
-				[groupId]: true
-			};
+			expandedLauncherGroups = { [groupId]: true };
 			return;
 		}
+
+		const expanded = group
+			? isLauncherGroupExpanded(group)
+			: Boolean(expandedLauncherGroups[groupId]);
 
 		expandedLauncherGroups = expanded ? {} : { [groupId]: true };
 	}
 
 	function isLauncherGroupExpanded(group: LauncherGroup) {
+		if (mode.id === 'bangs' && group.pluginId === 'bangs') return true;
 		if (expandedLauncherGroups[group.id] !== undefined) return expandedLauncherGroups[group.id];
 
 		if ((mode.id !== 'bangs' && !bangPickerActive) || hasBangFilter) return false;
 
 		if (group.id === 'bangs.my') return myBangs.length > 0;
-		if (group.id === 'bangs.provider') return myBangs.length === 0;
+		if (group.id === 'bangs.provider') return true;
 
 		return false;
 	}
@@ -909,11 +1152,7 @@
 	}
 
 	function getGroupToggleLabel(group: LauncherGroup, hiddenCount: number, expanded: boolean) {
-		if (group.pluginId === 'bangs') {
-			if (hasBangFilter) return '';
-
-			return expanded ? 'Close' : 'Open';
-		}
+		if (group.pluginId === 'bangs') return '';
 
 		if (
 			group.allItems &&
@@ -1658,6 +1897,7 @@
 	{@const toggleLabel = getGroupToggleLabel(group, hiddenCount, expanded)}
 	{@const mobileCountLabel = getGroupMobileCountLabel(group)}
 	{@const shortcutLabel = getShortcutLabel(group.id)}
+	{@const navigationShortcuts = getGroupNavigationShortcuts(group)}
 	<section
 		class:empty-group={renderedItems.length === 0}
 		class="launcher-group"
@@ -1673,7 +1913,8 @@
 			<span class="item-text">
 				<span class="item-heading">
 					<span class="group-title-line" id={`${group.id}-heading`}>
-						<strong>{@render highlightedText(group.titleSegments, group.title)}</strong>{#if group.titleValue}:
+						<strong>{@render highlightedText(group.titleSegments, group.title)}</strong
+						>{#if group.titleValue}:
 							<span class="group-title-value">{group.titleValue}</span>{/if}
 					</span>
 				</span>
@@ -1682,6 +1923,16 @@
 					>{/if}
 				{#if mobileCountLabel}
 					<small class="group-mobile-count">{mobileCountLabel}</small>
+				{/if}
+				{#if navigationShortcuts.length}
+					<span class="group-shortcut-nav" aria-label="Group navigation shortcuts">
+						{#each navigationShortcuts as shortcut (shortcut.label)}
+							<span class="group-shortcut-nav-item">
+								<span class="shortcut-label">{shortcut.label}</span>
+								<span>{shortcut.text}</span>
+							</span>
+						{/each}
+					</span>
 				{/if}
 			</span>
 			<span class="item-aside">
@@ -2043,6 +2294,23 @@
 		display: grid;
 		justify-items: end;
 		gap: 0.125rem;
+	}
+
+	.group-shortcut-nav {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		gap: var(--size-2);
+		margin-block-start: 0.25rem;
+		color: var(--nc-tx-2);
+		font-size: var(--font-size-0);
+	}
+
+	.group-shortcut-nav-item {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		white-space: nowrap;
 	}
 
 	.shortcut-label {
