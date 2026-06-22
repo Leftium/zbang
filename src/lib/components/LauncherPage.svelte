@@ -294,6 +294,17 @@
 				.filter((entry) => entry !== undefined)
 		])
 	);
+	const secondaryShortcutTargetIds = $derived(
+		new Map(
+			shortcutItemTargets
+				.map((target, index) =>
+					target.kind === 'item' && target.item.secondaryAction
+						? ([target.id, itemMenuShortcutLabels[index]] as const)
+						: undefined
+				)
+				.filter((entry) => entry !== undefined)
+		)
+	);
 	const primaryLauncherTarget = $derived(
 		selectablePrimaryTargets.find((target) => target.id === selectedPrimaryItemId) ??
 			selectablePrimaryTargets.find((target) => target.kind === 'item' && target.item.safeForEnter)
@@ -360,6 +371,13 @@
 			duckduckgo: `https://duckduckgo.com/?q=${encodedQuery}`,
 			google: `https://www.google.com/search?q=${encodedQuery}`
 		}[provider];
+	}
+
+	function getLauncherShareUrl() {
+		const url = new URL(resolve(mode.path), window.location.href);
+		url.searchParams.set('q', value.trim());
+
+		return url.toString();
 	}
 
 	function search(provider = settings.searchProvider) {
@@ -885,6 +903,10 @@
 		return shortcutTargetIds.get(targetId);
 	}
 
+	function getSecondaryShortcutLabel(targetId: string) {
+		return secondaryShortcutTargetIds.get(targetId);
+	}
+
 	function getGroupNavigationShortcuts(group: LauncherGroup) {
 		if (activeLauncherGroup?.id !== group.id || visibleLauncherGroups.length < 2) return [];
 
@@ -955,6 +977,10 @@
 
 	async function copyToClipboard() {
 		await navigator.clipboard.writeText(value);
+	}
+
+	async function copyShareUrlToClipboard() {
+		await navigator.clipboard.writeText(getLauncherShareUrl());
 	}
 
 	async function pasteFromClipboard() {
@@ -1256,7 +1282,12 @@
 								title: 'Copy to clipboard',
 								description: 'Copy the current launcher text.',
 								score: 70,
-								run: copyToClipboard
+								run: copyToClipboard,
+								secondaryAction: {
+									label: 'As URL',
+									title: 'Copy share URL',
+									run: copyShareUrlToClipboard
+								}
 							}
 						];
 					}
@@ -1823,6 +1854,7 @@
 {#snippet actionItem(item: LauncherItem, shortcutLabel: string | undefined)}
 	{@const itemMeta = formatItemMeta(item)}
 	{@const itemShortcutLabel = item.pluginId === 'bang-data' ? undefined : shortcutLabel}
+	{@const secondaryShortcutLabel = getSecondaryShortcutLabel(item.id)}
 	{@const hasShortcut = Boolean(itemShortcutLabel)}
 	{@const hasAside = hasShortcut || Boolean(itemMeta)}
 	<div
@@ -1855,7 +1887,7 @@
 						>{@render highlightedText(item.descriptionSegments, item.description)}</small
 					>{/if}
 			</span>
-			{#if hasAside}
+			{#if !item.secondaryAction && hasAside}
 				<span class="item-aside">
 					{#if itemShortcutLabel}<span class="shortcut-label">{itemShortcutLabel}</span>{/if}
 					{#if itemMeta}<span class="meta">{itemMeta}</span>{/if}
@@ -1869,8 +1901,18 @@
 				title={item.secondaryAction.title}
 				onclick={() => item.secondaryAction?.run()}
 			>
+				{#if secondaryShortcutLabel}<span class="shortcut-label secondary-action-shortcut"
+						>{secondaryShortcutLabel}</span
+					>{/if}
 				{item.secondaryAction.label}
 			</button>
+		{/if}
+
+		{#if item.secondaryAction && hasAside}
+			<span class="item-aside">
+				{#if itemShortcutLabel}<span class="shortcut-label">{itemShortcutLabel}</span>{/if}
+				{#if itemMeta}<span class="meta">{itemMeta}</span>{/if}
+			</span>
 		{/if}
 	</div>
 {/snippet}
@@ -2204,9 +2246,31 @@
 
 	.secondary-action {
 		flex: 0 0 auto;
+		align-self: flex-start;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
 		margin: 0;
-		padding: 0.25rem 0.5rem;
+		padding: 0.2rem 0.5rem;
+		color: var(--nc-tx-2);
+		background: color-mix(in srgb, var(--nc-surface-2) 72%, transparent);
+		border: 1px solid var(--nc-border);
+		border-radius: 999px;
 		font-size: var(--font-size-0);
+		font-weight: 700;
+		line-height: 1.2;
+		box-shadow: none;
+	}
+
+	.secondary-action-shortcut {
+		margin-inline: 0;
+	}
+
+	.secondary-action:hover,
+	.secondary-action:focus {
+		color: var(--nc-tx-1);
+		background: color-mix(in srgb, var(--nc-primary) 10%, var(--nc-surface-2));
+		box-shadow: none;
 	}
 
 	.action-item.primary {
