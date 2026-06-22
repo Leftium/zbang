@@ -16,6 +16,7 @@ This spec extends the launcher action and grouped-list direction described in `s
 - Support fast bang insertion without making the same shortcut sometimes focus and sometimes execute.
 - Support group-level navigation without hiding lists as the primary UX mechanism.
 - Let action menus grow into nested launcher groups instead of a separate UI system.
+- Prevent shortcut prefixes from briefly changing launcher results before the shortcut resolves.
 
 ## Non-Goals
 
@@ -23,6 +24,7 @@ This spec extends the launcher action and grouped-list direction described in `s
 - Add multi-level custom plugin menus in the first implementation.
 - Require collapse/open behavior as the default group interaction.
 - Depend on punctuation shortcuts that may be missing from mobile virtual keyboards.
+- Finalize the richest possible staged-text visual treatment in the first implementation.
 
 ## Target Model
 
@@ -191,6 +193,130 @@ This ordering is important. The shorter shortcut must be safe to run immediately
 
 Implementations should guard against accidental hardware key repeat so holding a key does not unintentionally trigger triple-key actions.
 
+## Shortcut Entry Buffer
+
+Repeated-letter shortcuts should not require a timing window. Instead, the launcher should distinguish committed query text from a visible shortcut entry buffer.
+
+Definitions:
+
+- Committed text is the real launcher input value. It drives filtering, mode switching, bang picker state, search URLs, actions, copy, and selection.
+- Staged text is visible input text that may still become either committed text or a shortcut.
+- The shortcut buffer is the active staged shortcut sequence, such as `Q` or `QQ`.
+- A candidate buffer is a one-key shortcut prefix, such as `Q`.
+- An armed buffer is a resolved shortcut that has already focused or opened the addressed target, such as `QQ`.
+
+The shortcut buffer should be visible while active, but it should not change the committed text unless the sequence resolves as literal typing.
+
+### Candidate Buffer
+
+When the user types a shortcut initiator key, such as `Q`, the launcher should stage that key instead of committing it immediately.
+
+Candidate behavior:
+
+- Show the staged key in the input.
+- Do not update launcher results from the staged key.
+- Do not switch modes because of the staged key.
+- Highlight or otherwise indicate matching shortcut labels when practical.
+- Keep the candidate buffer active until the next meaningful input resolves it.
+
+Examples:
+
+- `Q`: show staged `Q`; committed query remains unchanged.
+- `Q` then `A`: commit `QA` as normal text.
+- `Q` then `Backspace`: cancel staged `Q`; committed query remains unchanged.
+- `Q` then `Enter`: commit `Q`, then handle Enter normally.
+- `Q` then cursor movement, pointer interaction, blur, or explicit mode change: cancel or commit according to the least surprising behavior for that event. The implementation should avoid leaving an invisible active shortcut buffer.
+
+### Armed Buffer
+
+When the user repeats the same shortcut key, such as `QQ`, the launcher should resolve the shortcut immediately.
+
+Armed behavior:
+
+- Clear the candidate state.
+- Keep the visible shortcut buffer as `QQ` for feedback.
+- Focus, select, or open the target addressed by the double-key shortcut immediately.
+- Store the previous focus state before applying the shortcut so the shortcut can be cancelled.
+- Arm the resolved target so the next activation key applies to that same target.
+
+Examples:
+
+- `QQ`: focus item slot 1 and show an armed `QQ` buffer.
+- `AA`: focus item slot 1, open its action menu, and show an armed `AA` buffer.
+- `UU`: focus the previous group slot and show an armed `UU` buffer.
+- `PP`: run parent/out behavior and show feedback if there is a meaningful focused state to restore.
+
+The armed target should be captured when the double-key shortcut resolves. Triple-key activation should act on that captured target rather than recomputing the shortcut target from a list that may have changed because of focus, scrolling, grouping, or menu state.
+
+### Activation And Cancellation
+
+The third repeated key activates the armed target. Enter on an armed target should do the same thing as the third repeated key for focus lanes.
+
+Activation examples:
+
+- `QQQ`: focus item slot 1, then run its primary action.
+- `QQ` then `Enter`: run the primary action for the armed item slot 1 target.
+- `AAA`: focus item slot 1, then run its secondary fast action when present; otherwise open the action menu if actions exist.
+- `UUU`: focus the previous group slot, then run its primary action.
+
+Cancellation examples:
+
+- `QQ` then `Backspace`: clear the armed `QQ` buffer and restore the previous focus snapshot when possible.
+- `QQ` then unrelated text input: clear the armed buffer and process the new input normally.
+- `QQ` then another shortcut initiator: clear the armed buffer and begin or process the new shortcut sequence.
+- Pointer interaction, blur, query changes outside the shortcut buffer, or mode changes should clear the armed buffer.
+
+Once a double-key shortcut has resolved, it should not later become literal text. Literal repeated capitals should use Caps entry mode or another explicit literal-text escape.
+
+### Caps Entry Mode
+
+Caps entry mode is an escape hatch for literal capital text.
+
+When Caps entry mode is enabled:
+
+- Repeated capital letters should commit as literal text rather than shortcut buffers.
+- Shortcut labels may be visually muted or disabled to communicate that letter shortcuts are temporarily inactive.
+- A visible control should allow users to leave Caps entry mode, especially on mobile.
+- The launcher may keep one time-limited keyboard shortcut to leave Caps entry mode, but keyboard-only exit should not be the only escape path.
+
+Caps entry mode should not be required for ordinary mixed-case typing. A staged capital followed by a different text key should commit as normal text.
+
+### Bang Trigger Shortcut
+
+`SPACE SPACE` to `!` is a punctuation convenience, not the same kind of shortcut as repeated capital lanes.
+
+Search mode behavior:
+
+- `SPACE SPACE` should commit `!` immediately so the bang picker can open without waiting for another event.
+- The shortcut may be unlimited in search mode because multiple spaces are uncommon in search queries, but the committed `!` should be immediate once the sequence resolves.
+- If the user actually needs literal spaces, Backspace or normal editing should recover without changing the committed query beyond the visible edit.
+
+Broader behavior:
+
+- If `SPACE SPACE` is supported outside search mode, a short timing window is preferable because multiple spaces are more common in text-like modes.
+- Mobile operating-system double-space period behavior should not be fought aggressively. If the input reports `. ` from the keyboard, the launcher should not reinterpret it as `!` unless the behavior is clearly safe for that platform and mode.
+- Visible bang-picker controls remain the reliable mobile path.
+
+### Rendering Staged Text
+
+The input should communicate active staged or armed shortcut text without making that text part of the committed query.
+
+Initial rendering direction:
+
+- Render committed and staged text in a styled preview layer over or under the textarea.
+- Keep only committed text selectable and copyable.
+- Use metric-compatible staged styling first: color, opacity, background tint, underline, or outline that does not affect text layout.
+- Avoid full shortcut-label chip styling inline until caret position, wrapping, and selection behavior are proven reliable.
+
+Possible later rendering direction:
+
+- Add a third absolutely positioned overlay element at the caret for rich shortcut-badge styling.
+- Position that overlay using a textarea mirror and caret marker.
+- Let the rich staged shortcut badge cover underlying committed text without affecting textarea layout until the text is committed.
+- Prefer a real positioned element over `textarea::after`, because textarea pseudo-elements are unreliable and wrapper pseudo-elements are harder to position and debug.
+
+The visual design should make Backspace-as-cancel discoverable while the shortcut buffer is active.
+
 ## Group Behavior
 
 Groups should act like targets rather than passive section headers.
@@ -291,12 +417,23 @@ For a setting option item:
 
 - How should the UI label or preview each target's primary and secondary fast actions without cluttering the list?
 - Which modes, if any, should disable default wrapping for relative group navigation?
+- Which non-search modes, if any, should support `SPACE SPACE` to `!` with a timing window?
+- What is the clearest visible control and label for Caps entry mode?
+- Which cursor movement and blur cases should commit a candidate buffer versus cancel it?
+- How rich can staged shortcut styling become before textarea mirror alignment becomes too fragile?
 
 ## Acceptance Criteria
 
 - Items and groups can both be represented as launcher targets.
 - Item and group shortcuts have paired focus and menu lanes.
 - Triple-key shortcuts can run primary and secondary fast actions without delaying the safe double-key focus/menu operation.
+- Single-key shortcut prefixes are staged without changing committed query text or launcher results.
+- Double-key shortcuts focus, select, or open the addressed target immediately and keep an armed shortcut buffer visible.
+- Triple-key shortcuts and `Enter` on armed focus-lane shortcuts act on the captured armed target rather than recomputing from changed list state.
+- Backspace can cancel visible candidate or armed shortcut buffers; armed cancellation restores the previous focus snapshot when possible.
+- Caps entry mode allows literal repeated capital text and has a visible escape path.
+- Search-mode `SPACE SPACE` commits `!` immediately so the bang picker opens promptly.
+- Staged shortcut text is visually distinct, while only committed text is selectable and copyable.
 - Action menus can be represented as nested launcher groups.
 - Parent/out behavior has a dedicated shortcut and exits one nested context.
 - Mobile users can operate launcher groups, items, menus, and actions without arrow keys.
