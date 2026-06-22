@@ -276,12 +276,21 @@
 	const launcherGroups = $derived(
 		plugins.flatMap((plugin) => plugin.getGroups?.(launcherContext) ?? [])
 	);
+	const rootModeListItems = $derived(
+		launcherItems.filter((item) => item.pluginId === 'mode-list')
+	);
+	const rootSearchFallbackActive = $derived(
+		mode.id === 'everything' && hasValue && (bangPickerActive || rootModeListItems.length === 0)
+	);
+	const activePluginIds = $derived(
+		rootSearchFallbackActive ? getLauncherMode('search').pluginIds : mode.pluginIds
+	);
 	const visibleLauncherItems = $derived(
-		launcherItems.filter((item) => mode.pluginIds.includes(item.pluginId))
+		launcherItems.filter((item) => activePluginIds.includes(item.pluginId))
 	);
 	const visibleLauncherGroups = $derived(
 		launcherGroups.filter(
-			(group) => mode.pluginIds.includes(group.pluginId) && shouldRenderGroup(group)
+			(group) => activePluginIds.includes(group.pluginId) && shouldRenderGroup(group)
 		)
 	);
 	const visibleGroupedLauncherItems = $derived(
@@ -1378,7 +1387,7 @@
 		if (bangPickerActive || mode.id === 'bangs') {
 			return 'Filter term... (bangs will be filtered and sorted based on this term)';
 		}
-		if (mode.id === 'search') {
+		if (mode.id === 'search' || rootSearchFallbackActive) {
 			return 'Search query... (the query will be sent to your search provider)';
 		}
 		if (mode.id === 'compromise') {
