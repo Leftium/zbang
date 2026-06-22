@@ -11,6 +11,7 @@ export type BangFilterResult = {
 export type BangHighlightSegment = {
 	text: string;
 	matched: boolean;
+	kind?: 'bang-code';
 };
 
 export type BangHighlightedValue = {

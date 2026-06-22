@@ -27,6 +27,7 @@ export type LauncherGroup = {
 	pluginId: string;
 	title: string;
 	titleValue?: string;
+	titleValueSegments?: BangHighlightSegment[];
 	description?: string;
 	titleSegments?: BangHighlightSegment[];
 	descriptionSegments?: BangHighlightSegment[];

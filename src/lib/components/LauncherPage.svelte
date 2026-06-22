@@ -38,7 +38,6 @@
 		LauncherPlugin
 	} from '$lib/launcher/types';
 	import {
-		defaultCustomSearchLabel,
 		defaultCustomSearchTemplate,
 		setBangProvider,
 		setColorScheme,
@@ -103,8 +102,9 @@
 	type SettingOption = {
 		id: string;
 		label: string;
-		description: string;
+		description: string | (() => string);
 		aliases: readonly string[];
+		selected?: () => boolean;
 		run: () => void;
 	};
 	type PrimaryLauncherTarget =
@@ -139,7 +139,8 @@
 		currentLabel: () => string;
 		options: readonly SettingOption[];
 	};
-	type ScoredSettingOption = SettingOption & {
+	type ScoredSettingOption = Omit<SettingOption, 'description'> & {
+		description: string;
 		score: number;
 		titleResult: Fuzzysort.Result | null;
 		descriptionResult: Fuzzysort.Result | null;
@@ -165,6 +166,7 @@
 					? `Use the ${colorSchemeLabels[value].toLowerCase()} theme.`
 					: 'Follow the system theme.',
 				aliases: value ? [value, `${value} theme`] : ['auto', 'system', 'system theme'],
+				selected: () => settings.colorScheme === value,
 				run: () => setColorScheme(value)
 			}))
 		},
@@ -179,9 +181,10 @@
 				label: value === 'custom' ? 'Custom' : searchProviderLabels[value],
 				description:
 					value === 'custom'
-						? `Use custom search target: ${defaultCustomSearchLabel}.`
+						? () => `Use custom search target: ${searchProviderLabels.custom}.`
 						: `Use ${searchProviderLabels[value]} for default web searches.`,
 				aliases: [value, searchProviderLabels[value], 'search engine'],
+				selected: () => settings.searchProvider === value,
 				run: () => setSearchProvider(value)
 			}))
 		},
@@ -196,6 +199,7 @@
 				label: bangProviderLabels[value],
 				description: `Use ${bangProviderLabels[value]} for full list and fallback bang execution.`,
 				aliases: [value, bangProviderLabels[value], 'bang catalog'],
+				selected: () => settings.bangProvider === value,
 				run: () => setBangProvider(value)
 			}))
 		}
@@ -388,7 +392,7 @@
 	}
 
 	function setBangAsDefaultSearch(item: Zbang) {
-		const code = item.code[0] ? `!${item.code[0]}` : '';
+		const code = item.code[0] ? normalizeBangCode(item.code[0]) : '';
 		const label = [item.name, code].filter(Boolean).join(' ');
 
 		setCustomSearchTarget(label, item.urls.s);
@@ -1332,21 +1336,27 @@
 				getItems(context) {
 					if (!context.hasValue || bangEntry || context.bangComposition.hasTargets) return [];
 
-					return searchProviders.map((provider) => ({
-						id: `search.${provider}`,
-						pluginId: 'search',
-						kind: 'action',
-						title: `${searchProviderLabels[provider]} Search`,
-						description: `Search for "${context.text}".`,
-						score: provider === settings.searchProvider ? 100 : 65,
-						safeForEnter: provider === settings.searchProvider,
-						run: () => search(provider),
-						secondaryAction: {
-							label: 'Set as default',
-							title: `Use ${searchProviderLabels[provider]} for default web searches`,
-							run: () => setSearchProvider(provider)
-						}
-					}));
+					return searchProviders.map((provider) => {
+						const label = searchProviderLabels[provider];
+						const title = `${label} Search`;
+
+						return {
+							id: `search.${provider}`,
+							pluginId: 'search',
+							kind: 'action',
+							title,
+							titleSegments: provider === 'custom' ? getBangCodeLabelSegments(title) : undefined,
+							description: `Search for "${context.text}".`,
+							score: provider === settings.searchProvider ? 100 : 65,
+							safeForEnter: provider === settings.searchProvider,
+							run: () => search(provider),
+							secondaryAction: {
+								label: 'Set as default',
+								title: `Use ${searchProviderLabels[provider]} for default web searches`,
+								run: () => setSearchProvider(provider)
+							}
+						};
+					});
 				}
 			},
 			{
@@ -1391,38 +1401,33 @@
 					score: 100 - index,
 					titleResult: null,
 					descriptionResult: null,
-					options: group.options.map((option) => ({
-						...option,
-						score: 100 - index,
-						titleResult: null,
-						descriptionResult: null
-					})),
-					allOptions: group.options.map((option) => ({
-						...option,
-						score: 100 - index,
-						titleResult: null,
-						descriptionResult: null
-					}))
+					options: group.options.map((option) => createVisibleSettingOption(option, 100 - index)),
+					allOptions: group.options.map((option) => createVisibleSettingOption(option, 100 - index))
 				}));
 
 		return groups
 			.sort((a, b) => b.score - a.score)
-			.map((group) => ({
-				id: `settings.${group.id}`,
-				pluginId: 'settings',
-				title: group.title,
-				titleValue: group.currentLabel(),
-				description: group.description,
-				titleSegments: getFuzzyHighlightSegments(group.title, group.titleResult),
-				descriptionSegments: getSettingGroupDescriptionSegments(group),
-				items: group.options.map((option, index) => createSettingItem(group, option, index)),
-				allItems: context.hasValue
-					? group.allOptions.map((option, index) => createSettingItem(group, option, index))
-					: undefined,
-				collapsedItemLimit: context.hasValue ? group.options.length : 0,
-				matchedCount: context.hasValue ? group.options.length : undefined,
-				totalCount: group.allOptions.length
-			}));
+			.map((group) => {
+				const titleValue = group.currentLabel();
+
+				return {
+					id: `settings.${group.id}`,
+					pluginId: 'settings',
+					title: group.title,
+					titleValue,
+					titleValueSegments: getBangCodeLabelSegments(titleValue),
+					description: group.description,
+					titleSegments: getFuzzyHighlightSegments(group.title, group.titleResult),
+					descriptionSegments: getSettingGroupDescriptionSegments(group),
+					items: group.options.map((option, index) => createSettingItem(group, option, index)),
+					allItems: context.hasValue
+						? group.allOptions.map((option, index) => createSettingItem(group, option, index))
+						: undefined,
+					collapsedItemLimit: context.hasValue ? group.options.length : 0,
+					matchedCount: context.hasValue ? group.options.length : undefined,
+					totalCount: group.allOptions.length
+				};
+			});
 	}
 
 	function scoreSettingGroup(group: SettingGroupDefinition, query: string): ScoredSettingGroup {
@@ -1447,17 +1452,33 @@
 	}
 
 	function scoreSettingOption(option: SettingOption, query: string): ScoredSettingOption {
-		const optionText = getSettingSearchText(option.label, option.description, option.aliases);
+		const description = getSettingOptionDescription(option);
+		const optionText = getSettingSearchText(option.label, description, option.aliases);
 		const titleResult = getSettingFuzzyResult(query, option.label);
-		const descriptionResult = getSettingFuzzyResult(query, option.description);
+		const descriptionResult = getSettingFuzzyResult(query, description);
 		const optionResult = getSettingFuzzyResult(query, optionText);
 
 		return {
 			...option,
+			description,
 			score: normalizeFuzzyScore(optionResult),
 			titleResult,
 			descriptionResult
 		};
+	}
+
+	function createVisibleSettingOption(option: SettingOption, score: number): ScoredSettingOption {
+		return {
+			...option,
+			description: getSettingOptionDescription(option),
+			score,
+			titleResult: null,
+			descriptionResult: null
+		};
+	}
+
+	function getSettingOptionDescription(option: SettingOption) {
+		return typeof option.description === 'function' ? option.description() : option.description;
 	}
 
 	function getSettingSearchText(title: string, description: string, aliases: readonly string[]) {
@@ -1479,7 +1500,7 @@
 		option: ScoredSettingOption,
 		index: number
 	): LauncherItem {
-		const selected = option.label === group.currentLabel();
+		const selected = option.selected?.() ?? option.label === group.currentLabel();
 
 		return {
 			id: `settings.${group.id}.${option.id}`,
@@ -1497,7 +1518,33 @@
 	}
 
 	function getSettingDescriptionSegments(option: ScoredSettingOption) {
+		if (option.id === 'custom' && !option.descriptionResult) {
+			return getBangCodeLabelSegments(option.description) ?? getFuzzyHighlightSegments(option.description, null);
+		}
+
 		return getFuzzyHighlightSegments(option.description, option.descriptionResult);
+	}
+
+	function getBangCodeLabelSegments(label: string) {
+		const segments: BangHighlightSegment[] = [];
+		const codePattern = /![^\s.]+/g;
+		let lastIndex = 0;
+		let codeMatch: RegExpExecArray | null;
+
+		while ((codeMatch = codePattern.exec(label))) {
+			if (codeMatch.index > lastIndex) {
+				segments.push({ text: label.slice(lastIndex, codeMatch.index), matched: false });
+			}
+
+			segments.push({ text: codeMatch[0], matched: false, kind: 'bang-code' });
+			lastIndex = codeMatch.index + codeMatch[0].length;
+		}
+
+		if (!segments.length) return undefined;
+
+		if (lastIndex < label.length) segments.push({ text: label.slice(lastIndex), matched: false });
+
+		return segments;
 	}
 
 	function getSettingGroupDescriptionSegments(group: ScoredSettingGroup) {
@@ -1875,7 +1922,11 @@
 {#snippet highlightedText(segments: BangHighlightSegment[] | undefined, fallback: string)}
 	{#if segments}
 		{#each segments as segment, index (`${index}-${segment.text}-${segment.matched}`)}
-			<span class={segment.matched ? 'match-highlight' : undefined}>{segment.text}</span>
+			{#if segment.kind === 'bang-code'}
+				<code class:match-highlight={segment.matched} class="bang-code">{segment.text}</code>
+			{:else}
+				<span class={segment.matched ? 'match-highlight' : undefined}>{segment.text}</span>
+			{/if}
 		{/each}
 	{:else}
 		{fallback}
@@ -1988,7 +2039,9 @@
 					<span class="group-title-line" id={`${group.id}-heading`}>
 						<strong>{@render highlightedText(group.titleSegments, group.title)}</strong
 						>{#if group.titleValue}:
-							<span class="group-title-value">{group.titleValue}</span>{/if}
+							<span class="group-title-value"
+								>{@render highlightedText(group.titleValueSegments, group.titleValue)}</span
+							>{/if}
 					</span>
 				</span>
 				{#if group.description}<small class="group-description"
@@ -2455,6 +2508,15 @@
 		border-radius: 0.2em;
 		font-weight: 700;
 		padding-inline: 0.08em;
+	}
+
+	.bang-code {
+		padding: 0.05em 0.3em;
+		border-radius: 0.3em;
+		background: color-mix(in srgb, var(--nc-primary) 10%, var(--nc-surface-2));
+		color: var(--nc-tx-1);
+		font-family: var(--font-mono), monospace;
+		font-size: 0.9em;
 	}
 
 	.meta {
