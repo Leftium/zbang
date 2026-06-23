@@ -41,10 +41,19 @@ Updated in `6a4b6c0 copy: rename default search setup to Whiz`:
 - Renamed user-facing browser setup and OpenSearch copy to Whiz.
 - Documented making Whiz the default search engine as an optional setup step.
 
+Implemented after `51ecd3c docs: update omnibar spec for Whiz`:
+
+- Added an IndexedDB mirror for execution-critical settings.
+- Kept `localStorage` as the current app settings source of truth during the transition.
+- Updated `/go` to read mirrored execution settings with a `localStorage` fallback.
+- Added a service worker that intercepts only navigations to `/go?q=...`.
+- Added service-worker resolution for normal searches, custom bangs, and provider catalog bangs.
+- Falls through to the normal `/go` page when mirrored settings do not exist yet.
+- Kept minimal `console.warn` logging for unexpected service-worker resolution failures.
+- Preserved normal `/go` page fallback when the service worker is unavailable or cannot resolve.
+
 Not yet implemented:
 
-- Service-worker fast path for redirecting before the `/go` page renders.
-- IndexedDB mirror for execution-critical settings needed by a service worker.
 - Multi-target or multi-tab omnibar fanout behavior.
 - Server-side authenticated resolver backed by synced private config.
 
@@ -55,7 +64,7 @@ Not yet implemented:
 - Preserve the user's configured fallback search engine.
 - Keep custom bang configuration private and user-specific.
 - Target one automatic destination for the first implementation.
-- Keep the design compatible with a later service-worker fast path, without requiring it.
+- Keep the service-worker fast path optional, with the `/go` page as the compatibility fallback.
 - Keep the resolver logic shared with the launcher where practical.
 
 ## Non-Goals
@@ -88,7 +97,7 @@ If no query is present, `/go` shows a setup/help page rather than redirecting.
 
 If the query has no bang tokens, `/go` skips custom bang and provider catalog loading and immediately redirects to the configured fallback search URL. If reading custom bangs from IndexedDB fails, `/go` treats the custom bang list as empty and continues with provider catalog or fallback search resolution.
 
-The normal `/go` page is the required implementation. A service worker may be added later as an optimization, but the page route should not depend on service-worker installation or activation.
+The normal `/go` page remains the required implementation. The service worker is an optimization, and the page route does not depend on service-worker installation or activation.
 
 ## Single-Target Scope
 
@@ -121,9 +130,9 @@ Possible follow-up designs:
 
 ## Storage Requirements
 
-Current custom bangs are stored in IndexedDB, while execution-critical settings are stored in `localStorage`. The first `/go` page implementation can read both stores directly.
+Current custom bangs are stored in IndexedDB. App settings still use `localStorage` as the app-facing source of truth, while execution-critical settings are mirrored into IndexedDB for service-worker access.
 
-A service worker cannot read `localStorage`, so settings needed by `/go` should move or mirror into IndexedDB before adding a service-worker fast path.
+A service worker cannot read `localStorage`, so settings needed by `/go` are mirrored into IndexedDB. This is a transition step rather than a full settings migration, because the app settings UI and startup path still rely on synchronous `localStorage` reads and writes. If the mirror does not exist yet, the service worker falls through to the normal `/go` page so the page can use the existing `localStorage` settings fallback.
 
 Execution-critical persisted state:
 
@@ -133,11 +142,11 @@ Execution-critical persisted state:
 - `customSearchLabel`
 - `customSearchTemplate`
 
-The launcher may keep its Svelte state model, but persistence should flow through a shared storage module that can be used by both the app page and service worker.
+The launcher may keep its Svelte state model during this transition, but execution persistence should flow through a shared storage module that can be used by both the app page and service worker. A later full settings migration can move the app-facing source of truth to IndexedDB after async settings initialization is designed.
 
 ## Service-Worker Fast Path
 
-The first implementation should not require a service worker. A normal `/go` page is simpler, works before any service worker is installed, and can support local custom bangs by reading browser storage directly.
+The first implementation did not require a service worker. A normal `/go` page is simpler, works before any service worker is installed, and can support local custom bangs by reading browser storage directly.
 
 The tradeoff is that client-side `/go` costs at least a document request and app/page JavaScript execution before redirecting:
 
@@ -145,13 +154,13 @@ The tradeoff is that client-side `/go` costs at least a document request and app
 omnibar -> /go?q=... -> page JS -> IndexedDB/localStorage lookup -> location.replace(target)
 ```
 
-A later performance upgrade may add a service worker that intercepts navigations to `/go` and returns a redirect response after local resolution:
+The service-worker performance upgrade intercepts navigations to `/go?q=...` and returns a redirect response after local resolution:
 
 ```text
 omnibar -> /go?q=... -> service worker -> IndexedDB/cache lookup -> Response.redirect(target)
 ```
 
-This keeps private custom bangs local while avoiding a full app-page load for repeat visits after service-worker installation.
+This keeps private custom bangs local while avoiding a full app-page load for repeat visits after service-worker installation. The worker intentionally handles only the `q` parameter route shape.
 
 The page route must remain authoritative and must continue to work for browsers or sessions where the service worker is not installed, not active, disabled, or unable to resolve the query.
 
@@ -167,7 +176,7 @@ Because of those states, `/go` must work as a normal page even without the servi
 
 ### Service-Worker Updates
 
-If a service-worker fast path is added later, the first update policy should stay simple and browser-native:
+The service-worker fast path uses a simple browser-native update policy:
 
 - Do not force activation with `skipWaiting()` in the first version.
 - Do not auto-reload open Whiz pages when a new worker is waiting.
@@ -191,12 +200,12 @@ Name the browser search provider `Whiz`. Suggested shortcuts are `whiz` or `w`; 
 For browser discovery, serve an OpenSearch description XML file and advertise it from app HTML:
 
 ```html
-	<link
-		rel="search"
-		type="application/opensearchdescription+xml"
-		title="Whiz"
-		href="/opensearch.xml"
-	/>
+<link
+	rel="search"
+	type="application/opensearchdescription+xml"
+	title="Whiz"
+	href="/opensearch.xml"
+/>
 ```
 
 The OpenSearch document points searches at `/go`:
@@ -237,6 +246,6 @@ Custom bangs should be considered private and unique per user. Avoid placing ful
 ## Remaining Implementation Plan
 
 1. Test popup-permission behavior for multiple bang targets and document the result before committing to multi-tab support.
-2. If redirect latency is a real problem, move or mirror execution-critical settings into IndexedDB through a shared persistence module.
-3. Add a service worker fast path for `/go` only after the page route is correct and the IndexedDB settings mirror exists.
-4. Keep the `/go` page route authoritative after adding the service worker, so first visit, disabled service workers, stale workers, and resolver failures still work.
+2. Measure `/go?q=...` latency with and without an active service worker.
+3. Consider a full settings migration from `localStorage` to IndexedDB only after async settings initialization is designed.
+4. Keep the `/go` page route authoritative as the compatibility fallback for first visit, disabled service workers, stale workers, and resolver failures.

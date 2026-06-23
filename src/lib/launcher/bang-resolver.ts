@@ -1,5 +1,5 @@
 import type { Zbang } from '$lib/bang-data';
-import { defaultCustomSearchTemplate, type SearchProvider } from '$lib/settings.svelte';
+import { defaultCustomSearchTemplate, type SearchProvider } from '$lib/execution-settings';
 
 import { createBangCodeMap, parseBangComposition } from './bang-composition';
 import type { BangComposition } from './types';
@@ -77,6 +77,10 @@ export function getSearchUrl(
 		google: `https://www.google.com/search?q=${encodedQuery}`,
 		custom: customSearchTemplate.replace(/%s/g, encodedQuery)
 	}[provider];
+}
+
+export function hasBangToken(value: string) {
+	return (value.match(/\S+/g) ?? []).some((token) => /^![^\s!]+$/.test(token));
 }
 
 export function getBangSearchUrl(item: Zbang, query: string) {

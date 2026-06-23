@@ -2,11 +2,12 @@
 	import { page } from '$app/state';
 	import { onMount } from 'svelte';
 
-	import { readMyBangs } from '$lib/bang-data';
+	import { readExecutionSettings, readMyBangs } from '$lib/bang-data';
 	import DefaultSearchSetup from '$lib/components/DefaultSearchSetup.svelte';
 	import {
 		getBangExecutionItems,
 		getSearchUrl,
+		hasBangToken,
 		resolveBangExecution
 	} from '$lib/launcher/bang-resolver';
 	import { readStoredExecutionSettings } from '$lib/settings.svelte';
@@ -28,7 +29,8 @@
 
 	async function executeQuery() {
 		try {
-			const executionSettings = readStoredExecutionSettings();
+			const executionSettings =
+				(await readExecutionSettings().catch(() => undefined)) ?? readStoredExecutionSettings();
 
 			if (!hasBangToken(query)) {
 				window.location.replace(
@@ -53,10 +55,6 @@
 		} catch (error) {
 			errorMessage = error instanceof Error ? error.message : String(error);
 		}
-	}
-
-	function hasBangToken(value: string) {
-		return (value.match(/\S+/g) ?? []).some((token) => /^![^\s!]+$/.test(token));
 	}
 </script>
 
