@@ -1,13 +1,13 @@
-# Omnibar Bang Execution
+# Whiz Omnibar Bang Execution
 
 ## Purpose
 
-Allow zbang to be configured as a browser default search engine so searches from the browser omnibar can execute bangs as close as practical to the in-app client-side behavior.
+Allow Whiz to be configured as a browser default search engine so searches from the browser omnibar can execute bangs as close as practical to the in-app client-side behavior.
 
 The default search engine URL should target a dedicated execution route instead of the launcher route:
 
 ```text
-https://zbang.example.com/go?q=%s
+https://whiz.example.com/go?q=%s
 ```
 
 `/?q=...` should remain suitable for launcher prefill and share links. `/go?q=...` should execute.
@@ -17,13 +17,13 @@ https://zbang.example.com/go?q=%s
 - Server-side bang processing is not required for omnibar support.
 - Unduck supports default-search integration with a static client-side app: it reads `?q=...`, resolves a bundled bang catalog in browser JavaScript, then calls `window.location.replace(...)`.
 - Server-side redirects can be faster because the browser can receive an immediate HTTP redirect instead of loading app JavaScript, initializing state, reading browser storage, and then navigating.
-- Server-side redirects are not a good primary design for zbang while custom bangs remain private, local, and stored in browser-only storage.
+- Server-side redirects are not a good primary design for Whiz while custom bangs remain private, local, and stored in browser-only storage.
 - Cookies are a last-resort bridge for small resolver snapshots, not the preferred durable storage for private custom bangs.
 - Epicenter workspace/cloud sync may eventually enable authenticated server-side resolution, but it should not block the first omnibar implementation.
 
 ## Implementation Status
 
-Implemented in `4a5ad46 feat: support omnibar bang execution`:
+Implemented in `3d0fa1c feat: support omnibar bang execution`:
 
 - Added `/go?q=...` as the browser default-search execution route.
 - Added `/go` setup/help UI when no query is present.
@@ -36,6 +36,11 @@ Implemented in `4a5ad46 feat: support omnibar bang execution`:
 - Kept `/go` as a normal client page, with no service-worker dependency.
 - Minimized the visible `/go?q=...` intermediate page while the redirect is resolving.
 
+Updated in `6a4b6c0 copy: rename default search setup to Whiz`:
+
+- Renamed user-facing browser setup and OpenSearch copy to Whiz.
+- Documented making Whiz the default search engine as an optional setup step.
+
 Not yet implemented:
 
 - Service-worker fast path for redirecting before the `/go` page renders.
@@ -45,7 +50,7 @@ Not yet implemented:
 
 ## Goals
 
-- Support setting zbang as a browser default search engine.
+- Support setting Whiz as a browser default search engine.
 - Preserve local custom bangs as a required part of omnibar execution.
 - Preserve the user's configured fallback search engine.
 - Keep custom bang configuration private and user-specific.
@@ -89,7 +94,7 @@ The normal `/go` page is the required implementation. A service worker may be ad
 
 The first supported omnibar behavior should produce one final navigation.
 
-If a query contains multiple local bang targets, the implementation should pick one deterministic target rather than opening multiple tabs. The initial target selection should favor the same ordering already used by zbang's bang composition model:
+If a query contains multiple local bang targets, the implementation should pick one deterministic target rather than opening multiple tabs. The initial target selection should favor the same ordering already used by Whiz's bang composition model:
 
 1. User-owned bangs before provider bangs.
 2. The first matching bang token in the query.
@@ -99,7 +104,7 @@ The resolver may still return a structured result that includes all parsed targe
 
 ## Multiple-Bang Follow-Up
 
-After single-bang omnibar execution works, test whether multiple bang targets can be opened in new tabs when the zbang origin has previously been granted popup permission by the browser.
+After single-bang omnibar execution works, test whether multiple bang targets can be opened in new tabs when the Whiz origin has previously been granted popup permission by the browser.
 
 Expected constraints:
 
@@ -150,10 +155,10 @@ This keeps private custom bangs local while avoiding a full app-page load for re
 
 The page route must remain authoritative and must continue to work for browsers or sessions where the service worker is not installed, not active, disabled, or unable to resolve the query.
 
-Service-worker installation means the browser has loaded a zbang page, run zbang's registration code, downloaded the worker script, installed it, and activated it for the zbang origin. It may not be installed or active when:
+Service-worker installation means the browser has loaded a Whiz page, run Whiz's registration code, downloaded the worker script, installed it, and activated it for the Whiz origin. It may not be installed or active when:
 
-- The user has never opened zbang before setting it as the default search engine.
-- The user opened zbang but closed the page before registration completed.
+- The user has never opened Whiz before setting it as the default search engine.
+- The user opened Whiz but closed the page before registration completed.
 - The browser disabled service workers for private browsing, storage restrictions, enterprise policy, or user settings.
 - The service worker was updated and is waiting to activate.
 - The browser evicted site data or the user cleared browsing data.
@@ -165,8 +170,8 @@ Because of those states, `/go` must work as a normal page even without the servi
 If a service-worker fast path is added later, the first update policy should stay simple and browser-native:
 
 - Do not force activation with `skipWaiting()` in the first version.
-- Do not auto-reload open zbang pages when a new worker is waiting.
-- Let updated workers activate after all currently controlled zbang tabs/windows are closed.
+- Do not auto-reload open Whiz pages when a new worker is waiting.
+- Let updated workers activate after all currently controlled Whiz tabs/windows are closed.
 - Keep the `/go` page route correct without relying on the latest worker version.
 
 This avoids update coordination complexity while the worker is only an optional latency optimization. A manual or prompted update flow can be added later if stale service workers become a real problem.
@@ -178,32 +183,34 @@ The app supports both manual custom-search setup and browser search-provider dis
 Manual setup documents this search URL:
 
 ```text
-https://zbang.example.com/go?q=%s
+https://whiz.example.com/go?q=%s
 ```
+
+Name the browser search provider `Whiz`. Suggested shortcuts are `whiz` or `w`; users may also make Whiz their default search engine to search without typing a shortcut.
 
 For browser discovery, serve an OpenSearch description XML file and advertise it from app HTML:
 
 ```html
-<link
-	rel="search"
-	type="application/opensearchdescription+xml"
-	title="zbang"
-	href="/opensearch.xml"
-/>
+	<link
+		rel="search"
+		type="application/opensearchdescription+xml"
+		title="Whiz"
+		href="/opensearch.xml"
+	/>
 ```
 
 The OpenSearch document points searches at `/go`:
 
 ```xml
 <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
-	<ShortName>zbang</ShortName>
-	<Description>Execute zbang searches and bangs</Description>
+	<ShortName>Whiz</ShortName>
+	<Description>Execute Whiz searches and bangs</Description>
 	<InputEncoding>UTF-8</InputEncoding>
-	<Url type="text/html" template="https://zbang.example.com/go?q={searchTerms}" />
+	<Url type="text/html" template="https://whiz.example.com/go?q={searchTerms}" />
 	<Url
 		type="application/opensearchdescription+xml"
 		rel="self"
-		template="https://zbang.example.com/opensearch.xml"
+		template="https://whiz.example.com/opensearch.xml"
 	/>
 </OpenSearchDescription>
 ```
@@ -212,7 +219,7 @@ Browser support and UI vary. Some browsers expose discovered OpenSearch provider
 
 ## Server-Side Role
 
-Server-side `/go` handling may provide a minimal public fallback, but it should not be treated as equivalent to client-side zbang resolution unless private user config is available through an authenticated sync layer.
+Server-side `/go` handling may provide a minimal public fallback, but it should not be treated as equivalent to client-side Whiz resolution unless private user config is available through an authenticated sync layer.
 
 Server-side resolution is appropriate later if Epicenter or another sync layer provides:
 
