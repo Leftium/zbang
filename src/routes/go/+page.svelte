@@ -61,7 +61,7 @@
 </script>
 
 <svelte:head>
-	<title>{query ? 'Executing search' : 'Default search setup'} | zbang</title>
+	<title>{query ? 'Executing search' : 'Default search setup'} | Whiz</title>
 </svelte:head>
 
 {#if query}

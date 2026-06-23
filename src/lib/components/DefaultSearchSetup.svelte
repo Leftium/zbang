@@ -11,9 +11,9 @@
 <section class="default-search-setup" aria-labelledby="default-search-heading">
 	<div>
 		<p class="eyebrow">Default search</p>
-		<h2 id="default-search-heading">Use zbang from the browser omnibar</h2>
+		<h2 id="default-search-heading">Use Whiz from the browser omnibar</h2>
 		<p>
-			Add zbang as a custom search engine, then use the browser address bar for searches and bangs.
+			Add Whiz as a custom search engine, then use the browser address bar for searches and bangs.
 			Local custom bangs stay in this browser.
 		</p>
 	</div>
@@ -25,8 +25,10 @@
 
 	<ol>
 		<li>Open your browser search engine settings.</li>
-		<li>Add a new site search named <strong>zbang</strong>.</li>
+		<li>Add a new site search named <strong>Whiz</strong>.</li>
+		<li>Use a shortcut like <strong>whiz</strong> or <strong>w</strong>.</li>
 		<li>Use the search URL above. OpenSearch discovery is also advertised on this site.</li>
+		<li>Optional: make Whiz your default search engine to search without typing the shortcut.</li>
 	</ol>
 </section>
 
