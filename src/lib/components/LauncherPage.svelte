@@ -4,7 +4,6 @@
 	import { page } from '$app/state';
 	import fuzzysort from 'fuzzysort';
 	import { onMount } from 'svelte';
-	import { SvelteURL } from 'svelte/reactivity';
 
 	import {
 		readMyBangs,
@@ -23,6 +22,7 @@
 	import ExpandingTextarea from '$lib/components/ExpandingTextarea.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { createBangCodeMap, parseBangComposition } from '$lib/launcher/bang-composition';
+	import { getBangOpenUrl, getBangSearchUrl, getSearchUrl } from '$lib/launcher/bang-resolver';
 	import { getCompromiseSignals, unique } from '$lib/launcher/compromise-signals';
 	import { getLauncherMode, launcherModes } from '$lib/launcher/modes';
 	import { getKeywordScoreBoost, rankItems, scoreInsight } from '$lib/launcher/ranking';
@@ -38,7 +38,6 @@
 		LauncherPlugin
 	} from '$lib/launcher/types';
 	import {
-		defaultCustomSearchTemplate,
 		setBangProvider,
 		setColorScheme,
 		setCustomSearchTarget,
@@ -276,9 +275,7 @@
 	const launcherGroups = $derived(
 		plugins.flatMap((plugin) => plugin.getGroups?.(launcherContext) ?? [])
 	);
-	const rootModeListItems = $derived(
-		launcherItems.filter((item) => item.pluginId === 'mode-list')
-	);
+	const rootModeListItems = $derived(launcherItems.filter((item) => item.pluginId === 'mode-list'));
 	const rootSearchFallbackActive = $derived(
 		mode.id === 'everything' && hasValue && (bangPickerActive || rootModeListItems.length === 0)
 	);
@@ -293,10 +290,6 @@
 			(group) => activePluginIds.includes(group.pluginId) && shouldRenderGroup(group)
 		)
 	);
-	const visibleGroupedLauncherItems = $derived(
-		visibleLauncherGroups.flatMap((group) => getVisibleGroupItems(group))
-	);
-	const visibleActionItems = $derived([...visibleLauncherItems, ...visibleGroupedLauncherItems]);
 	const textareaPlaceholder = $derived(getTextareaPlaceholder());
 	const selectablePrimaryTargets = $derived(getSelectablePrimaryTargets());
 	const activeLauncherGroup = $derived(getActiveLauncherGroup());
@@ -375,31 +368,6 @@
 		hadSettingsFilter = false;
 	});
 
-	function getSearchUrl(provider: SearchProvider, query: string) {
-		const trimmedQuery = query.trim();
-		const customSearchTemplate = settings.customSearchTemplate.includes('%s')
-			? settings.customSearchTemplate
-			: defaultCustomSearchTemplate;
-
-		if (!trimmedQuery) {
-			return {
-				kagi: 'https://kagi.com/',
-				duckduckgo: 'https://duckduckgo.com/',
-				google: 'https://www.google.com/',
-				custom: customSearchTemplate.replace(/%s/g, '')
-			}[provider];
-		}
-
-		const encodedQuery = encodeURIComponent(trimmedQuery);
-
-		return {
-			kagi: `https://kagi.com/search?q=${encodedQuery}`,
-			duckduckgo: `https://duckduckgo.com/?q=${encodedQuery}`,
-			google: `https://www.google.com/search?q=${encodedQuery}`,
-			custom: customSearchTemplate.replace(/%s/g, encodedQuery)
-		}[provider];
-	}
-
 	function setBangAsDefaultSearch(item: Zbang) {
 		const code = item.code[0] ? normalizeBangCode(item.code[0]) : '';
 		const label = [item.name, code].filter(Boolean).join(' ');
@@ -415,7 +383,11 @@
 	}
 
 	function search(provider = settings.searchProvider) {
-		window.open(getSearchUrl(provider, value), '_blank', 'noopener,noreferrer');
+		window.open(
+			getSearchUrl(provider, value, settings.customSearchTemplate),
+			'_blank',
+			'noopener,noreferrer'
+		);
 	}
 
 	function executeBangSearch(composition = bangComposition) {
@@ -431,42 +403,10 @@
 			const forwardedQuery = [...forwardedTokens, payloadText].filter(Boolean).join(' ');
 
 			window.open(
-				getSearchUrl(settings.searchProvider, forwardedQuery),
+				getSearchUrl(settings.searchProvider, forwardedQuery, settings.customSearchTemplate),
 				'_blank',
 				'noopener,noreferrer'
 			);
-		}
-	}
-
-	function getBangSearchUrl(item: Zbang, query: string) {
-		return item.urls.s.replace(/%s/g, encodeURIComponent(query.trim()));
-	}
-
-	function getBangOpenUrl(item: Zbang) {
-		const placeholder = '__zbang_query__';
-		const template = item.urls.s.replace(/%s/g, placeholder);
-
-		try {
-			const url = new SvelteURL(template);
-			const params = [...url.searchParams.entries()];
-			const hasQueryPlaceholder = params.some(([, value]) => value.includes(placeholder));
-
-			for (const [key, value] of params) {
-				if (value.includes(placeholder)) url.searchParams.delete(key);
-			}
-
-			if (url.hash.includes(placeholder)) url.hash = '';
-
-			if (url.pathname.includes(placeholder)) {
-				url.pathname = url.pathname
-					.split('/')
-					.filter((segment) => segment && !segment.includes(placeholder))
-					.join('/');
-			}
-
-			return hasQueryPlaceholder ? `${url.origin}/` : url.toString();
-		} catch {
-			return item.urls.s.replace(/%s/g, '');
 		}
 	}
 
@@ -1059,7 +999,7 @@
 
 	function getShortcutItemTargets() {
 		if (!visibleLauncherGroups.length)
-			return visibleLauncherItems.flatMap(createSelectableItemTarget);
+			return visibleLauncherItems.flatMap((item) => createSelectableItemTarget(item));
 
 		return activeLauncherGroup
 			? getVisibleGroupItems(activeLauncherGroup).flatMap((item) =>
@@ -1093,7 +1033,7 @@
 
 	function getSelectablePrimaryTargets(): PrimaryLauncherTarget[] {
 		return [
-			...visibleLauncherItems.flatMap(createSelectableItemTarget),
+			...visibleLauncherItems.flatMap((item) => createSelectableItemTarget(item)),
 			...visibleLauncherGroups.flatMap((group) => [
 				createSelectableGroupTarget(group),
 				...getVisibleGroupItems(group).flatMap((item) => createSelectableItemTarget(item, group.id))
@@ -1528,7 +1468,10 @@
 
 	function getSettingDescriptionSegments(option: ScoredSettingOption) {
 		if (option.id === 'custom' && !option.descriptionResult) {
-			return getBangCodeLabelSegments(option.description) ?? getFuzzyHighlightSegments(option.description, null);
+			return (
+				getBangCodeLabelSegments(option.description) ??
+				getFuzzyHighlightSegments(option.description, null)
+			);
 		}
 
 		return getFuzzyHighlightSegments(option.description, option.descriptionResult);

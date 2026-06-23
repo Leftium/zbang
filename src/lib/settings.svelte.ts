@@ -2,6 +2,13 @@ import type { BangProviderId } from '$lib/bang-data';
 export type ColorScheme = '' | 'dark' | 'light';
 export type SearchProvider = 'kagi' | 'duckduckgo' | 'google' | 'custom';
 
+export type ExecutionSettings = {
+	bangProvider: BangProviderId;
+	searchProvider: SearchProvider;
+	customSearchLabel: string;
+	customSearchTemplate: string;
+};
+
 export const defaultCustomSearchLabel = 'Brave';
 export const defaultCustomSearchTemplate = 'https://search.brave.com/search?q=%s';
 
@@ -62,12 +69,7 @@ export function initSettings() {
 		applyColorScheme(storedColorScheme);
 	}
 
-	if (
-		storedSearchProvider === 'kagi' ||
-		storedSearchProvider === 'duckduckgo' ||
-		storedSearchProvider === 'google' ||
-		storedSearchProvider === 'custom'
-	) {
+	if (isSearchProvider(storedSearchProvider)) {
 		settings.searchProvider = storedSearchProvider;
 	}
 
@@ -76,7 +78,48 @@ export function initSettings() {
 		settings.customSearchTemplate = storedCustomSearchTemplate;
 	}
 
-	if (storedBangProvider === 'kagi' || storedBangProvider === 'duckduckgo') {
+	if (isBangProvider(storedBangProvider)) {
 		settings.bangProvider = storedBangProvider;
 	}
+}
+
+export function readStoredExecutionSettings(): ExecutionSettings {
+	const fallback = {
+		bangProvider: settings.bangProvider,
+		searchProvider: settings.searchProvider,
+		customSearchLabel: settings.customSearchLabel,
+		customSearchTemplate: settings.customSearchTemplate
+	};
+
+	if (typeof localStorage === 'undefined') {
+		return fallback;
+	}
+
+	try {
+		const storedBangProvider = localStorage.getItem('bangProvider');
+		const storedSearchProvider = localStorage.getItem('searchProvider');
+		const storedCustomSearchLabel = localStorage.getItem('customSearchLabel');
+		const storedCustomSearchTemplate = localStorage.getItem('customSearchTemplate');
+
+		return {
+			bangProvider: isBangProvider(storedBangProvider) ? storedBangProvider : fallback.bangProvider,
+			searchProvider: isSearchProvider(storedSearchProvider)
+				? storedSearchProvider
+				: fallback.searchProvider,
+			customSearchLabel: storedCustomSearchLabel || fallback.customSearchLabel,
+			customSearchTemplate: storedCustomSearchTemplate?.includes('%s')
+				? storedCustomSearchTemplate
+				: fallback.customSearchTemplate
+		};
+	} catch {
+		return fallback;
+	}
+}
+
+function isBangProvider(value: string | null): value is BangProviderId {
+	return value === 'kagi' || value === 'duckduckgo';
+}
+
+function isSearchProvider(value: string | null): value is SearchProvider {
+	return value === 'kagi' || value === 'duckduckgo' || value === 'google' || value === 'custom';
 }

@@ -21,6 +21,28 @@ https://zbang.example.com/go?q=%s
 - Cookies are a last-resort bridge for small resolver snapshots, not the preferred durable storage for private custom bangs.
 - Epicenter workspace/cloud sync may eventually enable authenticated server-side resolution, but it should not block the first omnibar implementation.
 
+## Implementation Status
+
+Implemented in `4a5ad46 feat: support omnibar bang execution`:
+
+- Added `/go?q=...` as the browser default-search execution route.
+- Added `/go` setup/help UI when no query is present.
+- Added the same default-search setup UI to `/settings`.
+- Added OpenSearch discovery via `/opensearch.xml` and `<link rel="search" ...>` in `app.html`.
+- Extracted shared search and bang URL resolution helpers for launcher and `/go` usage.
+- Preserved local custom bang precedence over provider catalog bangs.
+- Preserved configured fallback search provider and custom search template handling.
+- Kept `/` and `/?q=...` launcher prefill/share behavior unchanged.
+- Kept `/go` as a normal client page, with no service-worker dependency.
+- Minimized the visible `/go?q=...` intermediate page while the redirect is resolving.
+
+Not yet implemented:
+
+- Service-worker fast path for redirecting before the `/go` page renders.
+- IndexedDB mirror for execution-critical settings needed by a service worker.
+- Multi-target or multi-tab omnibar fanout behavior.
+- Server-side authenticated resolver backed by synced private config.
+
 ## Goals
 
 - Support setting zbang as a browser default search engine.
@@ -42,13 +64,13 @@ https://zbang.example.com/go?q=%s
 
 ## Execution Model
 
-The first implementation should add a `/go` route that accepts `q`:
+The first implementation adds a `/go` route that accepts `q`:
 
 ```text
 /go?q=search%20terms%20!bang
 ```
 
-The route should resolve the query and navigate with `location.replace(targetUrl)`.
+The route resolves the query and navigates with `location.replace(targetUrl)`.
 
 Resolution should use:
 
@@ -57,7 +79,9 @@ Resolution should use:
 - The configured search provider for normal search and unknown forwarded bangs.
 - The configured custom search template when the selected search provider is custom.
 
-If no query is present, `/go` should show a small setup/help page rather than redirecting.
+If no query is present, `/go` shows a setup/help page rather than redirecting.
+
+If the query has no bang tokens, `/go` skips custom bang and provider catalog loading and immediately redirects to the configured fallback search URL. If reading custom bangs from IndexedDB fails, `/go` treats the custom bang list as empty and continues with provider catalog or fallback search resolution.
 
 The normal `/go` page is the required implementation. A service worker may be added later as an optimization, but the page route should not depend on service-worker installation or activation.
 
@@ -149,9 +173,9 @@ This avoids update coordination complexity while the worker is only an optional 
 
 ## Default Search Engine Setup
 
-The app should support both manual custom-search setup and browser search-provider discovery.
+The app supports both manual custom-search setup and browser search-provider discovery.
 
-Manual setup should document this search URL:
+Manual setup documents this search URL:
 
 ```text
 https://zbang.example.com/go?q=%s
@@ -160,10 +184,15 @@ https://zbang.example.com/go?q=%s
 For browser discovery, serve an OpenSearch description XML file and advertise it from app HTML:
 
 ```html
-<link rel="search" type="application/opensearchdescription+xml" title="zbang" href="/opensearch.xml" />
+<link
+	rel="search"
+	type="application/opensearchdescription+xml"
+	title="zbang"
+	href="/opensearch.xml"
+/>
 ```
 
-The OpenSearch document should point searches at `/go`:
+The OpenSearch document points searches at `/go`:
 
 ```xml
 <OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
@@ -179,7 +208,7 @@ The OpenSearch document should point searches at `/go`:
 </OpenSearchDescription>
 ```
 
-Browser support and UI vary. Some browsers expose discovered OpenSearch providers directly; others require the user to add a custom search engine manually in settings. The setup page should provide copyable instructions for the manual path even when OpenSearch discovery is available.
+Browser support and UI vary. Some browsers expose discovered OpenSearch providers directly; others require the user to add a custom search engine manually in settings. The setup page provides copyable instructions for the manual path even when OpenSearch discovery is available.
 
 ## Server-Side Role
 
@@ -198,11 +227,9 @@ Until then, server-side redirects can only safely resolve public/default behavio
 
 Custom bangs should be considered private and unique per user. Avoid placing full custom bang records in URLs, public server logs, or non-HttpOnly cookies. If cookies are ever used as a bridge, prefer a small resolver-only snapshot and document the size, privacy, and header-overhead tradeoffs.
 
-## Implementation Plan
+## Remaining Implementation Plan
 
-1. Extract shared pure resolver logic for bang composition and search fallback URL generation.
-2. Add `/go?q=...` page fallback that reads current browser storage and calls `location.replace(...)`.
-3. Add setup copy explaining the default search engine URL and OpenSearch discovery.
-4. Test popup-permission behavior for multiple bang targets and document the result before committing to multi-tab support.
-5. If redirect latency is a real problem, move or mirror execution-critical settings into IndexedDB through a shared persistence module.
-6. Add a service worker fast path for `/go` only after the page route is correct and the IndexedDB settings mirror exists.
+1. Test popup-permission behavior for multiple bang targets and document the result before committing to multi-tab support.
+2. If redirect latency is a real problem, move or mirror execution-critical settings into IndexedDB through a shared persistence module.
+3. Add a service worker fast path for `/go` only after the page route is correct and the IndexedDB settings mirror exists.
+4. Keep the `/go` page route authoritative after adding the service worker, so first visit, disabled service workers, stale workers, and resolver failures still work.
