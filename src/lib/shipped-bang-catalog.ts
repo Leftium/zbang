@@ -1,7 +1,5 @@
 import { Err, Ok, type Result } from 'wellcrafted/result';
 
-import duckDuckGoCatalogUrl from '$catalogs/zbang.catalog.duckduckgo.json?url';
-import kagiCatalogUrl from '$catalogs/zbang.catalog.kagi.json?url';
 import { validateZbangCatalog, type BangProviderId, type ZbangCatalog } from '$lib/bang-catalog';
 
 type CatalogLoadError =
@@ -11,8 +9,8 @@ type CatalogLoadError =
 	| { kind: 'validation'; message: string };
 
 const catalogUrls: Record<BangProviderId, string> = {
-	duckduckgo: duckDuckGoCatalogUrl,
-	kagi: kagiCatalogUrl
+	duckduckgo: new URL('../../catalogs/zbang.catalog.duckduckgo.json', import.meta.url).href,
+	kagi: new URL('../../catalogs/zbang.catalog.kagi.json', import.meta.url).href
 };
 
 export async function loadShippedBangCatalog(

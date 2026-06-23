@@ -1,22 +1,8 @@
 import adapter from '@sveltejs/adapter-auto';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { fileURLToPath } from 'node:url';
-import { defineConfig, searchForWorkspaceRoot } from 'vite';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
-	server: {
-		fs: {
-			allow: [
-				searchForWorkspaceRoot(process.cwd()),
-				fileURLToPath(new URL('./catalogs', import.meta.url))
-			]
-		}
-	},
-	resolve: {
-		alias: {
-			$catalogs: fileURLToPath(new URL('./catalogs', import.meta.url))
-		}
-	},
 	plugins: [
 		sveltekit({
 			compilerOptions: {

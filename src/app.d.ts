@@ -10,9 +10,4 @@ declare global {
 	}
 }
 
-declare module '$catalogs/*.json?url' {
-	const url: string;
-	export default url;
-}
-
 export {};
