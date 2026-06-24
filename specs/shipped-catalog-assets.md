@@ -28,16 +28,18 @@ catalogs/zbang.catalog.duckduckgo.json
 
 Add a short README in `catalogs/` explaining that catalog JSON files are generated artifacts and should not be edited by hand.
 
-Use a Vite/SvelteKit alias for app imports. Prefer `$catalogs` because it names the specific generated data the app consumes:
+Resolve catalog asset URLs with relative `new URL(..., import.meta.url)` imports from the shared shipped-catalog loader:
 
 ```ts
-import kagiCatalogUrl from '$catalogs/zbang.catalog.kagi.json?url';
-import duckDuckGoCatalogUrl from '$catalogs/zbang.catalog.duckduckgo.json?url';
+const CATALOG_URLS = {
+	duckduckgo: new URL('../../catalogs/zbang.catalog.duckduckgo.json', import.meta.url).href,
+	kagi: new URL('../../catalogs/zbang.catalog.kagi.json', import.meta.url).href
+};
 ```
 
-`$generated` would also be reasonable if future generated assets beyond catalogs are expected soon. For this refactor, `$catalogs` is more explicit and keeps call sites readable.
+Do not use `$catalogs` or another SvelteKit/Vite alias for these catalog imports. The shipped-catalog loader is also imported by the service worker, and aliases that work in app code can fail or become ambiguous in service-worker bundling. Relative `new URL(..., import.meta.url)` keeps the catalogs statically discoverable by Vite so production builds emit content-hashed immutable JSON assets, while staying compatible with the service worker.
 
-A nested path like `generated/catalogs/` can be introduced later if the project grows several generated artifact categories. Starting with `catalogs/` keeps the directory and alias aligned, and tools/editors already make the generated nature clear through the README and generator workflow.
+A nested path like `generated/catalogs/` can be introduced later if the project grows several generated artifact categories. Starting with `catalogs/` keeps the generated artifacts easy to find, and tools/editors already make the generated nature clear through the README and generator workflow.
 
 ## Runtime Model
 
@@ -157,7 +159,8 @@ Completed:
 - Added source-controlled generated catalogs in `catalogs/`.
 - Added `catalogs/README.md`.
 - Made generated catalog output deterministic for unchanged source hashes.
-- Added the `$catalogs` alias and Vite dev-server allow-listing for top-level catalog assets.
+- Used service-worker-compatible relative `new URL(..., import.meta.url)` catalog asset imports.
+- Added Vite dev-server allow-listing for top-level catalog assets.
 - Switched launcher loading to `?url` fetched shipped catalogs.
 - Added runtime shipped-catalog validation and graceful failure handling.
 - Removed launcher stale-catalog reminders.
@@ -231,7 +234,7 @@ Local build observations after the shipped-catalog refactor:
 1. Extract catalog generation into browser-independent functions while preserving existing runtime behavior. Done.
 2. Add the manual CLI generator. Done.
 3. Generate full catalog files into `catalogs/`. Done.
-4. Add the `$catalogs` alias. Done.
+4. Add service-worker-compatible relative catalog asset imports. Done.
 5. Switch launcher loading to `?url` fetched catalogs on mount. Done.
 6. Add runtime catalog validation and graceful failure handling. Done.
 7. Remove runtime source refresh, stale reminders, and settings refresh UI. Done.
