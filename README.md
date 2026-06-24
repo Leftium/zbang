@@ -1,4 +1,4 @@
-# zbang
+# Whiz
 
 More powerful, more user-friendly bang search.
 

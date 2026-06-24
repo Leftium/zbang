@@ -1,8 +1,8 @@
-import type { Zbang } from '$lib/bang-data';
+import type { ZbangRecord } from '$lib/bang-data';
 import type { BangComposition, BangCompositionTarget, BangEntry } from './types';
 
-export function createBangCodeMap(items: Zbang[]) {
-	const codeMap = new Map<string, Zbang>();
+export function createBangCodeMap(items: ZbangRecord[]) {
+	const codeMap = new Map<string, ZbangRecord>();
 
 	for (const item of items) {
 		for (const code of item.code) {
@@ -15,7 +15,7 @@ export function createBangCodeMap(items: Zbang[]) {
 
 export function parseBangComposition(
 	input: string,
-	codeMap: Map<string, Zbang>,
+	codeMap: Map<string, ZbangRecord>,
 	activeEntry: BangEntry | undefined
 ): BangComposition {
 	const localTargets: BangCompositionTarget[] = [];

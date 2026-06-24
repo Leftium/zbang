@@ -10,7 +10,7 @@
 		writeMyBangs,
 		type BangProviderId,
 		type RankedZbangCatalog,
-		type Zbang
+		type ZbangRecord
 	} from '$lib/bang-data';
 	import {
 		applyBang,
@@ -227,7 +227,7 @@
 	let isPeriodShortcut = $state(false);
 	let isMobilePeriodShortcut = $state(false);
 	let expandedLauncherGroups = $state<Record<string, boolean>>({});
-	let myBangs = $state<Zbang[]>([]);
+	let myBangs = $state<ZbangRecord[]>([]);
 	let bangFanoutTargets = $state<string[]>([]);
 	let bangFanoutError = $state('');
 	let bangFanoutActionLabel = $state('Open');
@@ -373,7 +373,7 @@
 		hadSettingsFilter = false;
 	});
 
-	function setBangAsDefaultSearch(item: Zbang) {
+	function setBangAsDefaultSearch(item: ZbangRecord) {
 		const code = item.code[0] ? normalizeBangCode(item.code[0]) : '';
 		const label = [item.name, code].filter(Boolean).join(' ');
 
@@ -543,7 +543,7 @@
 		value = applyBang(value, code);
 	}
 
-	async function addMyBang(item: Zbang) {
+	async function addMyBang(item: ZbangRecord) {
 		if (hasBangCodeOverlap(item, myBangCodes)) return;
 
 		const nextMyBangs = [...myBangs, cloneBang(item)];
@@ -551,7 +551,7 @@
 		await persistMyBangs(nextMyBangs);
 	}
 
-	async function removeMyBang(item: Zbang) {
+	async function removeMyBang(item: ZbangRecord) {
 		const index = myBangs.findIndex((myBang) => isSameBang(myBang, item));
 
 		if (index === -1) return;
@@ -561,13 +561,13 @@
 		await persistMyBangs(nextMyBangs);
 	}
 
-	async function persistMyBangs(items: Zbang[]) {
+	async function persistMyBangs(items: ZbangRecord[]) {
 		const persistedItems = items.map(cloneBang);
 		myBangWrite = myBangWrite.catch(() => undefined).then(() => writeMyBangs(persistedItems));
 		await myBangWrite;
 	}
 
-	function cloneBang(item: Zbang): Zbang {
+	function cloneBang(item: ZbangRecord): ZbangRecord {
 		return {
 			rank: item.rank,
 			popularity: item.popularity,
@@ -578,7 +578,7 @@
 		};
 	}
 
-	function isSameBang(a: Zbang, b: Zbang) {
+	function isSameBang(a: ZbangRecord, b: ZbangRecord) {
 		return (
 			a.rank === b.rank &&
 			a.name === b.name &&
@@ -592,7 +592,7 @@
 		return a.length === b.length && a.every((value, index) => value === b[index]);
 	}
 
-	function hasBangCodeOverlap(item: Zbang, codes: Set<string>) {
+	function hasBangCodeOverlap(item: ZbangRecord, codes: Set<string>) {
 		return item.code.some((code) => codes.has(normalizeBangCode(code)));
 	}
 
@@ -1643,7 +1643,7 @@
 		}));
 	}
 
-	function createBangLauncherItemsFromBangs(items: Zbang[], source: 'my' | 'provider') {
+	function createBangLauncherItemsFromBangs(items: ZbangRecord[], source: 'my' | 'provider') {
 		return createBangLauncherItems(
 			items.map((item, index) => ({
 				item,
@@ -1662,7 +1662,7 @@
 		return source === 'my' ? 'Remove from My bangs' : 'Add to My bangs';
 	}
 
-	function getBangItemDescription(item: Zbang, source: 'my' | 'provider') {
+	function getBangItemDescription(item: ZbangRecord, source: 'my' | 'provider') {
 		const description = `${item.code.join(' ')} | ${formatBangUrl(item.urls.s)}`;
 
 		return mode.id === 'bangs' ? `${getBangModeActionLabel(source)} | ${description}` : description;

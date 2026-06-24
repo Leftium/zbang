@@ -19,6 +19,9 @@
 
 ## Generated Catalogs
 
+The filenames intentionally keep the `zbang` prefix because these files are zbang-format catalogs consumed by Whiz, not
+provider-native Kagi or DuckDuckGo bang files.
+
 Final provider catalogs should be generated into a source-controlled top-level catalog directory:
 
 ```text

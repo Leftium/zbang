@@ -1,4 +1,4 @@
-import type { Zbang } from '$lib/bang-data';
+import type { ZbangRecord } from '$lib/bang-data';
 import { defaultCustomSearchTemplate, type SearchProvider } from '$lib/execution-settings';
 
 import { createBangCodeMap, parseBangComposition } from './bang-composition';
@@ -17,7 +17,7 @@ export type BangExecutionResult = {
 
 export function resolveBangExecution(
 	query: string,
-	items: Zbang[],
+	items: ZbangRecord[],
 	settings: BangExecutionSettings
 ): BangExecutionResult {
 	const composition = parseBangComposition(query, createBangCodeMap(items), undefined);
@@ -60,7 +60,7 @@ export function getBangExecutionTargetUrls(
 	return targetUrls;
 }
 
-export function getBangExecutionItems(myBangs: Zbang[], providerBangs: Zbang[]) {
+export function getBangExecutionItems(myBangs: ZbangRecord[], providerBangs: ZbangRecord[]) {
 	const myBangCodes = new Set(myBangs.flatMap((item) => item.code.map(normalizeBangCode)));
 	const filteredProviderBangs = providerBangs.filter(
 		(item) => !item.code.some((code) => myBangCodes.has(normalizeBangCode(code)))
@@ -102,11 +102,11 @@ export function hasBangToken(value: string) {
 	return (value.match(/\S+/g) ?? []).some((token) => /^![^\s!]+$/.test(token));
 }
 
-export function getBangSearchUrl(item: Zbang, query: string) {
+export function getBangSearchUrl(item: ZbangRecord, query: string) {
 	return item.urls.s.replace(/%s/g, encodeURIComponent(query.trim()));
 }
 
-export function getBangOpenUrl(item: Zbang) {
+export function getBangOpenUrl(item: ZbangRecord) {
 	const placeholder = '__zbang_query__';
 	const template = item.urls.s.replace(/%s/g, placeholder);
 

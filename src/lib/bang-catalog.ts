@@ -15,7 +15,7 @@ export type PersistedBangSource = {
 	text: string;
 };
 
-export type CatalogZbang = {
+export type CatalogZbangRecord = {
 	popularity: number;
 	name: string;
 	code: string[];
@@ -25,7 +25,7 @@ export type CatalogZbang = {
 	};
 };
 
-export type Zbang = CatalogZbang & {
+export type ZbangRecord = CatalogZbangRecord & {
 	rank: number;
 };
 
@@ -34,11 +34,11 @@ export type ZbangCatalog = {
 	generatorVersion: number;
 	dedupedCount?: number;
 	sources: Array<Pick<PersistedBangSource, 'url' | 'hash'>>;
-	items: CatalogZbang[];
+	items: CatalogZbangRecord[];
 };
 
 export type RankedZbangCatalog = Omit<ZbangCatalog, 'items'> & {
-	items: Zbang[];
+	items: ZbangRecord[];
 };
 
 type SourceBangRecord = {
@@ -52,7 +52,7 @@ type SourceBangRecord = {
 	u?: string;
 };
 
-type NormalizedBang = CatalogZbang & {
+type NormalizedBang = CatalogZbangRecord & {
 	codeRanks: Record<string, number>;
 	domains: string[];
 };
@@ -158,13 +158,13 @@ export function validateZbangCatalog(catalog: unknown, provider: BangProviderId)
 	}
 
 	for (const [index, item] of value.items.entries()) {
-		validateZbangItem(item, index, errors);
+		validateZbangRecord(item, index, errors);
 	}
 
 	return errors;
 }
 
-function validateZbangItem(item: unknown, index: number, errors: string[]) {
+function validateZbangRecord(item: unknown, index: number, errors: string[]) {
 	const label = `items[${index}]`;
 
 	if (!item || typeof item !== 'object' || Array.isArray(item)) {
@@ -172,7 +172,7 @@ function validateZbangItem(item: unknown, index: number, errors: string[]) {
 		return;
 	}
 
-	const value = item as Partial<CatalogZbang>;
+	const value = item as Partial<CatalogZbangRecord>;
 
 	if (typeof value.popularity !== 'number' || value.popularity < 0) {
 		errors.push(`${label}.popularity must be a non-negative number`);
@@ -195,7 +195,7 @@ function isStringArray(value: unknown): value is string[] {
 	return Array.isArray(value) && value.every((item) => typeof item === 'string');
 }
 
-export function rankZbangItems(items: CatalogZbang[]): Zbang[] {
+export function rankZbangRecords(items: CatalogZbangRecord[]): ZbangRecord[] {
 	let rank = 0;
 	let previousPopularity: number | undefined;
 
@@ -209,7 +209,7 @@ export function rankZbangItems(items: CatalogZbang[]): Zbang[] {
 	});
 }
 
-function createCatalogItems(items: NormalizedBang[]): CatalogZbang[] {
+function createCatalogItems(items: NormalizedBang[]): CatalogZbangRecord[] {
 	return sortCatalogItems(
 		items.map((item) => ({
 			popularity: item.popularity,
@@ -352,7 +352,7 @@ function mergeCodeRanks(a: Record<string, number>, b: Record<string, number>) {
 	return ranks;
 }
 
-function sortCatalogItems(items: CatalogZbang[]): CatalogZbang[] {
+function sortCatalogItems(items: CatalogZbangRecord[]): CatalogZbangRecord[] {
 	return [...items].sort((a, b) => {
 		const rankDifference = b.popularity - a.popularity;
 		return rankDifference || a.name.localeCompare(b.name) || a.code[0].localeCompare(b.code[0]);

@@ -1,7 +1,7 @@
 import { Err, Ok, type Result } from 'wellcrafted/result';
 
 import {
-	rankZbangItems,
+	rankZbangRecords,
 	validateZbangCatalog,
 	type BangProviderId,
 	type RankedZbangCatalog,
@@ -53,7 +53,7 @@ export async function loadShippedBangCatalog(
 
 	return Ok({
 		...validatedCatalog,
-		items: rankZbangItems(validatedCatalog.items)
+		items: rankZbangRecords(validatedCatalog.items)
 	});
 }
 

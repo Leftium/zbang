@@ -1,4 +1,4 @@
-import type { Zbang } from '$lib/bang-data';
+import type { ZbangRecord } from '$lib/bang-data';
 import type { BangHighlightSegment } from '$lib/bang-filter';
 
 export type LauncherItem = {
@@ -64,7 +64,7 @@ export type LauncherMode = {
 
 export type BangEntry = { triggerIndex: number; fragment: string };
 
-export type BangCompositionTarget = { token: string; item: Zbang };
+export type BangCompositionTarget = { token: string; item: ZbangRecord };
 
 export type BangComposition = {
 	localTargets: BangCompositionTarget[];

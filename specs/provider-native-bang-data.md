@@ -6,6 +6,13 @@ Status: historical. `specs/shipped-catalog-assets.md` supersedes the runtime ref
 
 Support separate bang and search providers without shipping the full bang database in the initial JavaScript bundle.
 
+Terminology:
+
+- Whiz: the app/runtime/UI.
+- Provider bang: a Kagi or DuckDuckGo-native bang record with provider-specific semantics.
+- zbang catalog: Whiz's extended catalog format for normalized provider records. It is not backward-compatible with provider-native files.
+- zbang record: one item in a zbang catalog.
+
 Users should be able to choose:
 
 - Bang provider: which catalog/semantics define `!foo`
@@ -80,7 +87,7 @@ Superseded by `specs/shipped-catalog-assets.md`: the app now ships full provider
 
 Kagi source data remains the source of truth for Kagi bang semantics.
 
-Normalize Kagi records to the existing zbang-like shape:
+Normalize Kagi records to the existing zbang record shape:
 
 ```json
 {
@@ -103,7 +110,7 @@ Normalize Kagi records to the existing zbang-like shape:
 
 The provider is catalog-level metadata and should not be repeated on every item.
 
-Prefer preserving the existing zbang-shaped item fields and avoid adding source-specific per-item fields unless they are needed by runtime behavior.
+Prefer preserving the existing zbang record fields and avoid adding source-specific per-item fields unless they are needed by runtime behavior.
 
 Kagi relative URLs should become concrete Kagi URLs:
 
@@ -188,7 +195,7 @@ It does not include URL templates, so Brave bangs cannot be locally resolved, de
 If Brave bang provider support is added later, it should be clearly modeled as delegated execution:
 
 ```text
-!gh zbang -> https://search.brave.com/search?q=!gh%20zbang
+!gh whiz -> https://search.brave.com/search?q=!gh%20whiz
 ```
 
 ## Search Provider Adaptation
@@ -258,9 +265,9 @@ Example:
 ```text
 Bang provider: DuckDuckGo
 Search provider: Brave
-Query: !gh zbang
+Query: !gh whiz
 DDG template: https://github.com/search?q=%s
-Final URL: https://github.com/search?q=zbang
+Final URL: https://github.com/search?q=whiz
 ```
 
 The search provider is not involved because GitHub is a direct target URL.
@@ -302,10 +309,10 @@ type ZbangCatalog = {
 		fetchedAt: string;
 		hash?: string;
 	}>;
-	items: CatalogZbang[];
+	items: CatalogZbangRecord[];
 };
 
-type CatalogZbang = {
+type CatalogZbangRecord = {
 	popularity: number;
 	name: string;
 	code: string[];
@@ -315,7 +322,7 @@ type CatalogZbang = {
 	};
 };
 
-type Zbang = CatalogZbang & {
+type ZbangRecord = CatalogZbangRecord & {
 	rank: number;
 };
 ```

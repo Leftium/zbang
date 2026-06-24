@@ -526,7 +526,7 @@ This model supports the observation that search bangs are similar to fancy bookm
 
 ### My Bangs And Provider Fallback
 
-Search bangs should use an opt-in trust model. The provider catalog is useful for discovery, but zbang should only
+Search bangs should use an opt-in trust model. The provider catalog is useful for discovery, but Whiz should only
 execute bangs locally after the user saves them to My bangs. This avoids treating the entire long tail of provider bangs
 as trusted local actions while still preserving native provider behavior.
 
@@ -534,11 +534,11 @@ Useful states:
 
 - Provider bang: present in the selected provider catalog. Provider bangs are forwarded to the configured bang provider
   unless saved to My bangs.
-- My bang: approved by the user for local zbang execution. My bangs can be copied from the provider catalog, edited
+- My bang: approved by the user for local Whiz execution. My bangs can be copied from the provider catalog, edited
   locally, or created without a matching provider-catalog record.
 - Queued: selected for the current query or reusable workflow.
 
-When the textarea contains multiple bangs, zbang can split the query into local targets and provider fallback instead of
+When the textarea contains multiple bangs, Whiz can split the query into local targets and provider fallback instead of
 requiring an all-or-nothing decision.
 
 Example:
@@ -559,7 +559,7 @@ Kagi or DuckDuckGo -> !foo cats
 
 This preserves two important properties:
 
-- zbang only locally executes bangs saved to My bangs.
+- Whiz only locally executes bangs saved to My bangs.
 - Provider-only or unknown bangs still work through the configured provider.
 - My bangs with the same code as Provider bangs take precedence because local execution may intentionally differ from
   provider behavior.
@@ -601,16 +601,16 @@ This makes My bangs a progressive enhancement rather than a compatibility wall. 
 available, while My bangs gain better ranking, local fan-out, reusable queues, and clearer composition UI.
 
 Grouped bang results should use `My bangs` and `Provider bangs` as the user-facing labels. My bangs are local definitions
-that run in zbang. Provider bangs represent the selected provider catalog and normally forward to that provider. In the
+that run in Whiz. Provider bangs represent the selected provider catalog and normally forward to that provider. In the
 focused `/bangs` route, both groups should support configurable collapsed limits so management stays compact. In search
 mode bang completion, Provider bangs can show the filter's full result set because the picker is already scoped. Once My
 bangs exists, matching My bangs should appear first; Provider bangs can collapse to zero visible rows when My bangs has
 matches, while retaining a header with counts and an explicit expansion path.
 
-My bangs should reuse the current zbang-shaped item model rather than introducing a separate shadow or alias model:
+My bangs should reuse the current zbang record model rather than introducing a separate shadow or alias model:
 
 ```ts
-type Zbang = {
+type ZbangRecord = {
 	rank: number;
 	name: string;
 	code: string[];
@@ -623,7 +623,7 @@ type Zbang = {
 
 The edit UI can still be compact. Show one whitespace-delimited trigger input, parse it into `code: string[]`, and show
 one URL template input backed by `urls.s`. Additional codes are normal editable triggers for the same bang, not hidden
-metadata. This keeps the UI simple while preserving the existing zbang schema and the ability for one bang to own several
+metadata. This keeps the UI simple while preserving the existing zbang record schema and the ability for one bang to own several
 provider triggers.
 
 Moving a bang from Provider bangs to My bangs means copying the provider item locally and then suppressing provider rows
@@ -653,7 +653,7 @@ Useful notes-mode behavior:
 - Exact title match ranks open/edit first.
 - No strong match ranks create note first.
 - Multiline input ranks create, append, or update actions higher than broad search.
-- Tags such as `@today` or `@project(zbang)` can filter notes or become note metadata.
+- Tags such as `@today` or `@project(whiz)` can filter notes or become note metadata.
 - URL input can rank save URL as note or bookmark actions higher.
 
 The same notes plugin can participate differently in all-mode and notes-mode.

@@ -268,19 +268,19 @@ Search bangs are primarily text delivery actions.
 
 Bang execution should be opt-in at the launcher level. A bang from a provider catalog is available for discovery, but it
 is not locally executable until the user saves it to My bangs. This keeps the long tail of stale or low-quality provider
-bangs out of zbang's trusted execution path while preserving provider compatibility.
+bangs out of Whiz's trusted execution path while preserving provider compatibility.
 
 Bang states:
 
 - Provider bang: present in the configured provider catalog and discoverable in bang search or completion. Provider
   bangs are forwarded to the configured bang provider unless saved to My bangs.
-- My bang: explicitly saved by the user and eligible for local zbang execution. My bangs may be copied from a provider
+- My bang: explicitly saved by the user and eligible for local Whiz execution. My bangs may be copied from a provider
   catalog, edited locally, or created without any provider-catalog equivalent.
 - Queued: selected for the current launcher query or saved workflow.
 
 My bangs may be executed locally as fan-out delivery targets. Provider-only or unknown bang tokens should be forwarded
 unchanged to the configured bang provider as a fallback search. This lets users keep using native provider bangs without
-requiring zbang to validate or curate the full catalog. Local execution may intentionally differ from provider execution,
+requiring Whiz to validate or curate the full catalog. Local execution may intentionally differ from provider execution,
 so a My bang with the same code as a Provider bang should take precedence for local execution.
 
 Example:
@@ -301,7 +301,7 @@ the UI should show a visible execution preview near the textarea using chips or 
 
 The preview should distinguish:
 
-- My bang chips that zbang will execute locally.
+- My bang chips that Whiz will execute locally.
 - Provider bang chips that will be forwarded to the configured provider and may offer actions to save them to My bangs.
 - Unknown bang chips that will be forwarded to the configured provider.
 - The payload text that local bangs and provider fallback searches will receive.
@@ -324,10 +324,11 @@ focused `/bangs` management route, groups should support configurable collapsed 
 share a compact area. Once My bangs exists, Provider bangs may collapse to zero visible rows when My bangs has matches,
 while still showing a header with match counts and an expand affordance.
 
-My bangs should preserve the existing zbang item shape instead of introducing a parallel model:
+My bangs should preserve the existing zbang record shape instead of introducing a parallel model. Here, `zbang` names
+Whiz's extended, non-provider-native bang catalog format rather than the app itself:
 
 ```ts
-type Zbang = {
+type ZbangRecord = {
 	rank: number;
 	name: string;
 	code: string[];

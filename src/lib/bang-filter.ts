@@ -1,9 +1,9 @@
 import fuzzysort from 'fuzzysort';
 
-import type { Zbang } from '$lib/bang-data';
+import type { ZbangRecord } from '$lib/bang-data';
 
 export type BangFilterResult = {
-	item: Zbang;
+	item: ZbangRecord;
 	score: number;
 	highlights: BangFilterHighlights;
 };
@@ -29,7 +29,7 @@ export type BangFilterResults = {
 	total: number;
 };
 
-export type PreparedZbang = Omit<Zbang, 'name' | 'code' | 'tags' | 'urls'> & {
+export type PreparedZbangRecord = Omit<ZbangRecord, 'name' | 'code' | 'tags' | 'urls'> & {
 	name: Fuzzysort.Prepared;
 	code: Fuzzysort.Prepared[];
 	tags: Fuzzysort.Prepared[];
@@ -52,7 +52,7 @@ const FUZZYSORT_BASE_KEYS = [
 	'code.9'
 ];
 
-export function prepareBangs(items: Zbang[]): PreparedZbang[] {
+export function prepareBangs(items: ZbangRecord[]): PreparedZbangRecord[] {
 	return items.map((item) => ({
 		...item,
 		name: fuzzysort.prepare(item.name),
@@ -62,7 +62,7 @@ export function prepareBangs(items: Zbang[]): PreparedZbang[] {
 	}));
 }
 
-export function filterBangs(input: string, preparedItems: PreparedZbang[]): BangFilterResults {
+export function filterBangs(input: string, preparedItems: PreparedZbangRecord[]): BangFilterResults {
 	const line = normalizeBangSuffixes(getLastLine(input));
 	const query = getBangQuery(line);
 	const usedBangs = getUsedBangs(line);
@@ -79,7 +79,7 @@ export function filterBangs(input: string, preparedItems: PreparedZbang[]): Bang
 	const items = [...results]
 		.sort(sortBangResults)
 		.flatMap((result) => {
-			const item = unprepareZbang(result.obj);
+			const item = unprepareZbangRecord(result.obj);
 
 			return item.code.some((code) => usedBangs.includes(code))
 				? []
@@ -169,8 +169,8 @@ function getFuzzysortKeys(line: string) {
 }
 
 function sortBangResults(
-	a: Fuzzysort.KeysResult<PreparedZbang>,
-	b: Fuzzysort.KeysResult<PreparedZbang>
+	a: Fuzzysort.KeysResult<PreparedZbangRecord>,
+	b: Fuzzysort.KeysResult<PreparedZbangRecord>
 ) {
 	return (
 		Number(b.score > 0.95) - Number(a.score > 0.95) ||
@@ -180,12 +180,12 @@ function sortBangResults(
 	);
 }
 
-function getBangResultScore(result: Fuzzysort.KeysResult<PreparedZbang>) {
+function getBangResultScore(result: Fuzzysort.KeysResult<PreparedZbangRecord>) {
 	return Math.round(result.score * 100);
 }
 
 function getBangHighlights(
-	result: Fuzzysort.KeysResult<PreparedZbang>,
+	result: Fuzzysort.KeysResult<PreparedZbangRecord>,
 	keys: string[],
 	urlQuery: string
 ): BangFilterHighlights {
@@ -248,7 +248,7 @@ function getSubstringHighlightSegments(target: string, query: string) {
 	].filter(({ text }) => text);
 }
 
-function unprepareZbang(item: PreparedZbang): Zbang {
+function unprepareZbangRecord(item: PreparedZbangRecord): ZbangRecord {
 	return {
 		rank: item.rank,
 		popularity: item.popularity,
