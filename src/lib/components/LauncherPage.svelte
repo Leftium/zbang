@@ -22,7 +22,7 @@
 	import ExpandingTextarea from '$lib/components/ExpandingTextarea.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { createBangCodeMap, parseBangComposition } from '$lib/launcher/bang-composition';
-	import { getBangOpenUrl, getBangSearchUrl, getSearchUrl } from '$lib/launcher/bang-resolver';
+	import { getBangExecutionTargetUrls, getSearchUrl } from '$lib/launcher/bang-resolver';
 	import { getCompromiseSignals, unique } from '$lib/launcher/compromise-signals';
 	import { getLauncherMode, launcherModes } from '$lib/launcher/modes';
 	import { getKeywordScoreBoost, rankItems, scoreInsight } from '$lib/launcher/ranking';
@@ -92,6 +92,7 @@
 	]);
 	const shortcutDelay = 250;
 	const settingsMatchThreshold = 0.4;
+	const bangFanoutAckTimeoutMs = 2500;
 	const launcherGroupItemLimits: Record<string, number> = {
 		'bangs.my': 8,
 		'bangs.provider': 8
@@ -227,6 +228,9 @@
 	let isMobilePeriodShortcut = $state(false);
 	let expandedLauncherGroups = $state<Record<string, boolean>>({});
 	let myBangs = $state<Zbang[]>([]);
+	let bangFanoutTargets = $state<string[]>([]);
+	let bangFanoutError = $state('');
+	let bangFanoutActionLabel = $state('Open');
 	let lastUrlQuery = $state(initialUrlQuery);
 	let hadSettingsFilter = false;
 	let skipNextSettingsFilterReset = false;
@@ -239,6 +243,7 @@
 		lastUrlQuery = urlQuery;
 		value = urlQuery;
 		bangEntry = undefined;
+		clearBangFanoutMessage();
 	});
 
 	const mode = $derived(getLauncherMode(modeId));
@@ -390,24 +395,98 @@
 		);
 	}
 
-	function executeBangSearch(composition = bangComposition) {
-		const { localTargets, forwardedTokens, payloadText } = composition;
+	async function executeBangSearch(composition = bangComposition) {
+		clearBangFanoutMessage();
 
-		for (const { item } of localTargets) {
-			const url = payloadText ? getBangSearchUrl(item, payloadText) : getBangOpenUrl(item);
+		const targetUrls = getBangExecutionTargetUrls(composition, settings);
+		const actionLabel = composition.payloadText ? 'Search' : 'Open';
 
-			window.open(url, '_blank', 'noopener,noreferrer');
+		if (!targetUrls.length) return;
+
+		bangFanoutActionLabel = actionLabel;
+
+		const failedTargets = await openBangTargetsWithRelay(targetUrls);
+
+		if (failedTargets.length) {
+			bangFanoutTargets = failedTargets;
+			bangFanoutError = 'Could not open these bang targets. Check popup permissions for Whiz.';
+			return;
 		}
 
-		if (forwardedTokens.length) {
-			const forwardedQuery = [...forwardedTokens, payloadText].filter(Boolean).join(' ');
+		clearBangFanoutMessage();
+	}
 
-			window.open(
-				getSearchUrl(settings.searchProvider, forwardedQuery, settings.customSearchTemplate),
-				'_blank',
-				'noopener,noreferrer'
-			);
+	function openBangTargetsWithRelay(targetUrls: string[]) {
+		if (!('BroadcastChannel' in window)) {
+			bangFanoutError = 'Could not confirm bang targets opened in this browser.';
+			return Promise.resolve(targetUrls);
 		}
+
+		const channelName = `launcher-bang-fanout-${crypto.randomUUID()}`;
+		const acknowledged = Array.from({ length: targetUrls.length }, () => false);
+		let acknowledgedCount = 0;
+		const channel = new BroadcastChannel(channelName);
+
+		return new Promise<string[]>((resolve) => {
+			const getFailedTargets = () => targetUrls.filter((_, index) => !acknowledged[index]);
+
+			const finish = () => {
+				clearTimeout(timeout);
+				channel.close();
+				resolve(getFailedTargets());
+			};
+
+			const timeout = window.setTimeout(finish, bangFanoutAckTimeoutMs);
+
+			channel.onmessage = (event: MessageEvent<{ index?: number }>) => {
+				const index = event.data.index;
+
+				if (typeof index !== 'number' || index < 1 || index > targetUrls.length) {
+					return;
+				}
+
+				if (acknowledged[index - 1]) return;
+
+				acknowledged[index - 1] = true;
+				acknowledgedCount += 1;
+
+				if (acknowledgedCount === targetUrls.length) {
+					finish();
+				}
+			};
+
+			for (const [offset, targetUrl] of targetUrls.entries()) {
+				const relayUrl = new URL('/go/open', window.location.href);
+
+				relayUrl.searchParams.set('target', targetUrl);
+				relayUrl.searchParams.set('channel', channelName);
+				relayUrl.searchParams.set('index', String(offset + 1));
+
+				window.open(relayUrl.toString(), '_blank', 'noopener,noreferrer');
+			}
+		});
+	}
+
+	function clearBangFanoutMessage() {
+		bangFanoutTargets = [];
+		bangFanoutError = '';
+		bangFanoutActionLabel = 'Open';
+	}
+
+	function getBangFanoutTargetLabel(targetUrl: string) {
+		try {
+			return new URL(targetUrl).hostname.replace(/^www\./, '');
+		} catch {
+			return targetUrl;
+		}
+	}
+
+	function getBangFanoutLinkAttributes(targetUrl: string) {
+		return {
+			href: targetUrl,
+			target: '_blank',
+			rel: 'noopener noreferrer'
+		};
 	}
 
 	function getBangSearchTitle(composition: BangComposition) {
@@ -613,6 +692,8 @@
 
 	function handleLauncherInput(event: Event) {
 		const textarea = event.currentTarget as HTMLTextAreaElement;
+
+		clearBangFanoutMessage();
 
 		if (handleShortcutInput()) return;
 
@@ -2082,6 +2163,29 @@
 		</div>
 	{/if}
 
+	{#if bangFanoutError}
+		<section class="bang-fanout-message" aria-live="polite">
+			<div>
+				<strong>Popups may be blocked</strong>
+				<p>
+					{bangFanoutError} Use the popup-blocked icon in the address bar to allow popups, then
+					retry the bang search.
+				</p>
+			</div>
+			{#if bangFanoutTargets.length}
+				<ol>
+					{#each bangFanoutTargets as targetUrl, index (`${index}-${targetUrl}`)}
+						<li>
+							<a {...getBangFanoutLinkAttributes(targetUrl)} class="bang-fanout-target">
+								{bangFanoutActionLabel} {getBangFanoutTargetLabel(targetUrl)}
+							</a>
+						</li>
+					{/each}
+				</ol>
+			{/if}
+		</section>
+	{/if}
+
 	<section class="launcher-list" aria-label="Launcher actions and insights">
 		{#each secondaryLauncherItems as item (item.id)}
 			{#if item.kind === 'action'}
@@ -2227,6 +2331,59 @@
 		max-width: 100%;
 		color: var(--nc-tx-2);
 		background: var(--nc-surface-1);
+	}
+
+	.bang-fanout-message {
+		display: grid;
+		gap: var(--size-2);
+		margin-block-start: var(--size-2);
+		padding: var(--size-2) var(--size-3);
+		color: var(--nc-tx-1);
+		background: color-mix(in srgb, var(--yellow-2) 72%, var(--nc-surface-1));
+		border: 1px solid var(--yellow-6);
+		border-radius: var(--nc-radius);
+	}
+
+	.bang-fanout-message strong,
+	.bang-fanout-message p,
+	.bang-fanout-message ol {
+		margin: 0;
+	}
+
+	.bang-fanout-message p {
+		color: var(--nc-tx-2);
+		font-size: var(--font-size-0);
+	}
+
+	.bang-fanout-message ol {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--size-1);
+		padding: 0;
+		list-style: none;
+	}
+
+	.bang-fanout-target {
+		display: inline-flex;
+		align-items: center;
+		margin: 0;
+		padding: 0.2rem 0.5rem;
+		color: var(--nc-tx-1);
+		background: var(--nc-surface-1);
+		border: 1px solid var(--nc-border);
+		border-radius: 999px;
+		font-size: var(--font-size-0);
+		font-weight: 700;
+		line-height: 1.2;
+		text-decoration: none;
+		box-shadow: none;
+	}
+
+	.bang-fanout-target:hover,
+	.bang-fanout-target:focus {
+		background: color-mix(in srgb, var(--nc-primary) 10%, var(--nc-surface-1));
+		text-decoration: underline;
+		box-shadow: none;
 	}
 
 	.launcher-item {
