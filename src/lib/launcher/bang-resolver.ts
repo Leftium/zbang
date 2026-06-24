@@ -11,6 +11,7 @@ export type BangExecutionSettings = {
 
 export type BangExecutionResult = {
 	targetUrl: string;
+	targetUrls: string[];
 	composition: BangComposition;
 };
 
@@ -20,25 +21,43 @@ export function resolveBangExecution(
 	settings: BangExecutionSettings
 ): BangExecutionResult {
 	const composition = parseBangComposition(query, createBangCodeMap(items), undefined);
-	const firstTarget = composition.localTargets[0];
+	const targetUrls = getBangExecutionTargetUrls(composition, settings);
+	const firstTargetUrl = targetUrls[0];
 
-	if (firstTarget) {
+	if (firstTargetUrl) {
 		return {
 			composition,
-			targetUrl: composition.payloadText
-				? getBangSearchUrl(firstTarget.item, composition.payloadText)
-				: getBangOpenUrl(firstTarget.item)
+			targetUrl: firstTargetUrl,
+			targetUrls
 		};
 	}
 
-	const fallbackQuery = composition.hasTargets
-		? [...composition.forwardedTokens, composition.payloadText].filter(Boolean).join(' ')
-		: query;
-
 	return {
 		composition,
-		targetUrl: getSearchUrl(settings.searchProvider, fallbackQuery, settings.customSearchTemplate)
+		targetUrl: getSearchUrl(settings.searchProvider, query, settings.customSearchTemplate),
+		targetUrls: [getSearchUrl(settings.searchProvider, query, settings.customSearchTemplate)]
 	};
+}
+
+export function getBangExecutionTargetUrls(
+	composition: BangComposition,
+	settings: BangExecutionSettings
+) {
+	const targetUrls = composition.localTargets.map(({ item }) =>
+		composition.payloadText ? getBangSearchUrl(item, composition.payloadText) : getBangOpenUrl(item)
+	);
+
+	if (composition.forwardedTokens.length) {
+		const forwardedQuery = [...composition.forwardedTokens, composition.payloadText]
+			.filter(Boolean)
+			.join(' ');
+
+		targetUrls.push(
+			getSearchUrl(settings.searchProvider, forwardedQuery, settings.customSearchTemplate)
+		);
+	}
+
+	return targetUrls;
 }
 
 export function getBangExecutionItems(myBangs: Zbang[], providerBangs: Zbang[]) {

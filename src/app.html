@@ -7,7 +7,36 @@
 			content="width=device-width, initial-scale=1, interactive-widget=resizes-content"
 		/>
 		<meta name="text-scale" content="scale" />
-		<meta name="theme-color" content="#ffffff" />
+		<meta name="color-scheme" content="light dark" />
+		<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+		<meta name="theme-color" content="#0f1117" media="(prefers-color-scheme: dark)" />
+		<script>
+			try {
+				const theme = localStorage.getItem('theme');
+				if (theme === 'dark' || theme === 'light') {
+					document.documentElement.dataset.theme = theme;
+					document.documentElement.style.colorScheme = theme;
+				}
+			} catch {}
+		</script>
+		<style>
+			html,
+			body {
+				background: #ffffff;
+			}
+
+			html[data-theme='dark'],
+			html[data-theme='dark'] body {
+				background: #0f1117;
+			}
+
+			@media (prefers-color-scheme: dark) {
+				html:not([data-theme='light']),
+				html:not([data-theme='light']) body {
+					background: #0f1117;
+				}
+			}
+		</style>
 		<link rel="icon" href="/favicon.ico" sizes="32x32" />
 		<link rel="icon" href="/icon.svg" type="image/svg+xml" />
 		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />

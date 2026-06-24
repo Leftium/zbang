@@ -115,6 +115,13 @@ The resolver may still return a structured result that includes all parsed targe
 
 After single-bang omnibar execution works, test whether multiple bang targets can be opened in new tabs when the Whiz origin has previously been granted popup permission by the browser.
 
+Local test findings:
+
+- Multiple omnibar-triggered tabs can open when popup permission is allowed.
+- `window.open(url, '_blank', 'noopener,noreferrer')` can open a tab while returning `null`, so the return value is not reliable success detection.
+- `window.open(url, '_blank')` returned usable handles and detected popup blocking in local testing, but briefly exposes `window.opener` to arbitrary bang targets until caller code clears it and should not be the preferred deployable design.
+- A safer follow-up is to open same-origin relay pages with `noopener,noreferrer`; each relay page acknowledges that it opened, then redirects itself to the external target.
+
 Expected constraints:
 
 - A direct navigation or service-worker redirect can only produce one final page.

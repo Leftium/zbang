@@ -15,6 +15,8 @@
 
 	const query = page.url.searchParams.get('q')?.trim() ?? '';
 	let errorMessage = $state('');
+	let fanoutTargets = $state<string[]>([]);
+	const fanoutAckTimeoutMs = 2500;
 
 	onMount(() => {
 		if (!query) return;
@@ -51,9 +53,88 @@
 			const items = getBangExecutionItems(myBangs, providerBangs);
 			const result = resolveBangExecution(query, items, executionSettings);
 
+			if (result.targetUrls.length <= 1) {
+				window.location.replace(result.targetUrl);
+				return;
+			}
+
+			fanoutTargets = result.targetUrls;
+			document.body.classList.remove('go-executing');
+
+			if (!(await openSecondaryTargetsUntilFirstAck(result.targetUrls))) {
+				return;
+			}
+
 			window.location.replace(result.targetUrl);
 		} catch (error) {
 			errorMessage = error instanceof Error ? error.message : String(error);
+		}
+	}
+
+	function openSecondaryTargetsUntilFirstAck(targetUrls: string[]) {
+		if (!('BroadcastChannel' in window)) {
+			errorMessage = 'Could not confirm secondary bang targets opened in this browser.';
+			return Promise.resolve(false);
+		}
+
+		const channelName = `go-fanout-${crypto.randomUUID()}`;
+		const expectedCount = targetUrls.length - 1;
+		const channel = new BroadcastChannel(channelName);
+
+		return new Promise<boolean>((resolve) => {
+			const finish = (success: boolean) => {
+				clearTimeout(timeout);
+				channel.close();
+
+				if (!success) {
+					errorMessage = 'Could not open secondary bang targets. Check popup permissions for Whiz.';
+				}
+
+				resolve(success);
+			};
+
+			const timeout = window.setTimeout(() => finish(false), fanoutAckTimeoutMs);
+
+			channel.onmessage = (event: MessageEvent<{ index?: number }>) => {
+				const index = event.data.index;
+
+				if (
+					typeof index !== 'number' ||
+					index < 1 ||
+					index > expectedCount
+				) {
+					return;
+				}
+
+				finish(true);
+			};
+
+			for (const [offset, targetUrl] of targetUrls.slice(1).entries()) {
+				const relayUrl = new URL('/go/open', window.location.href);
+
+				relayUrl.searchParams.set('target', targetUrl);
+				relayUrl.searchParams.set('channel', channelName);
+				relayUrl.searchParams.set('index', String(offset + 1));
+
+				window.open(relayUrl.toString(), '_blank', 'noopener,noreferrer');
+			}
+		});
+	}
+
+	function openFanoutTarget(targetUrl: string, index: number) {
+		if (index === 0) {
+			window.location.href = targetUrl;
+			return;
+		}
+
+		window.open(targetUrl, '_blank', 'noopener,noreferrer');
+	}
+
+	function getTargetLabel(targetUrl: string) {
+		try {
+			return new URL(targetUrl).hostname.replace(/^www\./, '');
+		} catch {
+			return targetUrl;
 		}
 	}
 </script>
@@ -62,7 +143,28 @@
 	<title>{query ? 'Executing search' : 'Default search setup'} | Whiz</title>
 </svelte:head>
 
-{#if query}
+{#if fanoutTargets.length}
+	<main class="fanout-page" aria-live="polite">
+		<p class="eyebrow">Opening multiple bangs</p>
+		<h1>Whiz is opening your bang targets</h1>
+		<p>
+			If this page stays open, your browser probably blocked popup tabs. Use the popup-blocked
+			icon in the address bar to allow popups for Whiz, then retry the omnibar search.
+		</p>
+		{#if errorMessage}
+			<p class="error">{errorMessage}</p>
+		{/if}
+		<ol>
+			{#each fanoutTargets as targetUrl, index (`${index}-${targetUrl}`)}
+				<li>
+					<button type="button" class="target-button" onclick={() => openFanoutTarget(targetUrl, index)}>
+						{index === 0 ? 'Current tab' : `New tab ${index}`}: {getTargetLabel(targetUrl)}
+					</button>
+				</li>
+			{/each}
+		</ol>
+	</main>
+{:else if query}
 	<main class="go-status" aria-live="polite">
 		<p>Executing search...</p>
 		<p class="query">{query}</p>
@@ -125,5 +227,44 @@
 	.error {
 		color: var(--red-7);
 		opacity: 1;
+	}
+
+	.fanout-page {
+		display: grid;
+		gap: 1rem;
+		width: min(42rem, 100%);
+		margin-inline: auto;
+		padding: 2rem 1rem;
+	}
+
+	.fanout-page h1,
+	.fanout-page p,
+	.fanout-page ol {
+		margin: 0;
+	}
+
+	.eyebrow {
+		color: var(--nc-tx-2);
+		font-size: var(--font-size-0);
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.fanout-page ol {
+		display: grid;
+		gap: 0.5rem;
+		padding-left: 1.5rem;
+	}
+
+	.target-button {
+		padding: 0;
+		border: 0;
+		color: var(--nc-lk-1);
+		background: transparent;
+		font: inherit;
+		text-align: left;
+		text-decoration: underline;
+		cursor: pointer;
 	}
 </style>
