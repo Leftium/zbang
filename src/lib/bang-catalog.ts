@@ -15,8 +15,8 @@ export type PersistedBangSource = {
 	text: string;
 };
 
-export type Zbang = {
-	rank: number;
+export type CatalogZbang = {
+	popularity: number;
 	name: string;
 	code: string[];
 	tags: string[];
@@ -25,11 +25,19 @@ export type Zbang = {
 	};
 };
 
+export type Zbang = CatalogZbang & {
+	rank: number;
+};
+
 export type ZbangCatalog = {
 	provider: BangProviderId;
 	generatorVersion: number;
 	dedupedCount?: number;
 	sources: Array<Pick<PersistedBangSource, 'url' | 'hash'>>;
+	items: CatalogZbang[];
+};
+
+export type RankedZbangCatalog = Omit<ZbangCatalog, 'items'> & {
 	items: Zbang[];
 };
 
@@ -44,8 +52,7 @@ type SourceBangRecord = {
 	u?: string;
 };
 
-type NormalizedBang = Omit<Zbang, 'rank'> & {
-	popularity: number;
+type NormalizedBang = CatalogZbang & {
 	codeRanks: Record<string, number>;
 	domains: string[];
 };
@@ -84,7 +91,7 @@ export function generateDuckDuckGoCatalog(source: PersistedBangSource): ZbangCat
 	const records = parseSourceRecords(source);
 	const normalized = records.flatMap((record) => normalizeSourceRecord(record, 'duckduckgo'));
 	const deduped = dedupeNormalizedBangs(normalized);
-	const items = rankCatalogItems(deduped.items);
+	const items = createCatalogItems(deduped.items);
 
 	return {
 		provider: 'duckduckgo',
@@ -110,7 +117,7 @@ export function generateKagiCatalog(
 		)
 	];
 	const deduped = dedupeNormalizedBangs(normalized);
-	const items = rankCatalogItems(deduped.items);
+	const items = createCatalogItems(deduped.items);
 
 	return {
 		provider: 'kagi',
@@ -165,10 +172,10 @@ function validateZbangItem(item: unknown, index: number, errors: string[]) {
 		return;
 	}
 
-	const value = item as Partial<Zbang>;
+	const value = item as Partial<CatalogZbang>;
 
-	if (typeof value.rank !== 'number' || value.rank <= 0) {
-		errors.push(`${label}.rank must be a positive number`);
+	if (typeof value.popularity !== 'number' || value.popularity < 0) {
+		errors.push(`${label}.popularity must be a non-negative number`);
 	}
 	if (typeof value.name !== 'string' || !value.name) {
 		errors.push(`${label}.name must be a non-empty string`);
@@ -186,6 +193,32 @@ function validateZbangItem(item: unknown, index: number, errors: string[]) {
 
 function isStringArray(value: unknown): value is string[] {
 	return Array.isArray(value) && value.every((item) => typeof item === 'string');
+}
+
+export function rankZbangItems(items: CatalogZbang[]): Zbang[] {
+	let rank = 0;
+	let previousPopularity: number | undefined;
+
+	return sortCatalogItems(items).map((item, index) => {
+		if (item.popularity !== previousPopularity) {
+			rank = index + 1;
+			previousPopularity = item.popularity;
+		}
+
+		return { ...item, rank };
+	});
+}
+
+function createCatalogItems(items: NormalizedBang[]): CatalogZbang[] {
+	return sortCatalogItems(
+		items.map((item) => ({
+			popularity: item.popularity,
+			name: item.name,
+			code: sortBangCodes(item.code, item.codeRanks),
+			tags: item.tags,
+			urls: item.urls
+		}))
+	);
 }
 
 function normalizeKagiRecord(
@@ -257,7 +290,7 @@ function normalizeSourceRecord(
 		return [];
 	}
 
-	const popularity = typeof record.r === 'number' && record.r > 0 ? record.r : 1;
+	const popularity = typeof record.r === 'number' && record.r >= 0 ? record.r : 1;
 
 	return [
 		{
@@ -319,19 +352,11 @@ function mergeCodeRanks(a: Record<string, number>, b: Record<string, number>) {
 	return ranks;
 }
 
-function rankCatalogItems(items: NormalizedBang[]): Zbang[] {
-	return items
-		.sort((a, b) => {
-			const rankDifference = b.popularity - a.popularity;
-			return rankDifference || a.name.localeCompare(b.name) || a.code[0].localeCompare(b.code[0]);
-		})
-		.map((item, index) => ({
-			rank: index + 1,
-			name: item.name,
-			code: sortBangCodes(item.code, item.codeRanks),
-			tags: item.tags,
-			urls: item.urls
-		}));
+function sortCatalogItems(items: CatalogZbang[]): CatalogZbang[] {
+	return [...items].sort((a, b) => {
+		const rankDifference = b.popularity - a.popularity;
+		return rankDifference || a.name.localeCompare(b.name) || a.code[0].localeCompare(b.code[0]);
+	});
 }
 
 function sortBangCodes(codes: string[], codeRanks: Record<string, number>) {
@@ -382,7 +407,7 @@ function getDuckDuckGoRankLookup(source: PersistedBangSource) {
 
 		if (code && url && domain) {
 			lookup.set(code, {
-				popularity: typeof record.r === 'number' ? record.r : 1,
+				popularity: typeof record.r === 'number' && record.r >= 0 ? record.r : 1,
 				domain
 			});
 		}

@@ -1,7 +1,13 @@
 import type { Zbang } from './bang-catalog';
 import type { ExecutionSettings } from './execution-settings';
 
-export { type BangProviderId, type Zbang, type ZbangCatalog } from './bang-catalog';
+export {
+	type BangProviderId,
+	type CatalogZbang,
+	type RankedZbangCatalog,
+	type Zbang,
+	type ZbangCatalog
+} from './bang-catalog';
 
 const DB_NAME = 'zbang';
 const DB_VERSION = 5;
@@ -14,8 +20,10 @@ const EXECUTION_SETTINGS_KEY = 'current';
 
 type MyBangCollection = {
 	id: typeof MY_BANG_COLLECTION_KEY;
-	items: Zbang[];
+	items: StoredZbang[];
 };
+
+type StoredZbang = Omit<Zbang, 'popularity'> & Partial<Pick<Zbang, 'popularity'>>;
 
 type ExecutionSettingsRecord = ExecutionSettings & {
 	id: typeof EXECUTION_SETTINGS_KEY;
@@ -30,10 +38,17 @@ export async function readMyBangs(): Promise<Zbang[]> {
 			MY_BANG_STORE,
 			MY_BANG_COLLECTION_KEY
 		);
-		return collection?.items ?? [];
+		return collection?.items.map(normalizeStoredBang) ?? [];
 	} finally {
 		db.close();
 	}
+}
+
+function normalizeStoredBang(item: StoredZbang): Zbang {
+	return {
+		...item,
+		popularity: item.popularity ?? 1
+	};
 }
 
 export async function writeMyBangs(items: Zbang[]): Promise<void> {

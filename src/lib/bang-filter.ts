@@ -251,6 +251,7 @@ function getSubstringHighlightSegments(target: string, query: string) {
 function unprepareZbang(item: PreparedZbang): Zbang {
 	return {
 		rank: item.rank,
+		popularity: item.popularity,
 		name: item.name.target,
 		code: item.code.map((code) => code.target),
 		tags: item.tags.map((tag) => tag.target),

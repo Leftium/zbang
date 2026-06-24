@@ -9,8 +9,8 @@
 		readMyBangs,
 		writeMyBangs,
 		type BangProviderId,
-		type Zbang,
-		type ZbangCatalog
+		type RankedZbangCatalog,
+		type Zbang
 	} from '$lib/bang-data';
 	import {
 		applyBang,
@@ -204,7 +204,7 @@
 			}))
 		}
 	];
-	let bangCatalog = $state<ZbangCatalog>();
+	let bangCatalog = $state<RankedZbangCatalog>();
 	let loadedBangProvider = $state<BangProviderId>();
 	let textareaElement = $state<HTMLTextAreaElement>();
 	let bangEntry = $state<BangEntry>();
@@ -570,6 +570,7 @@
 	function cloneBang(item: Zbang): Zbang {
 		return {
 			rank: item.rank,
+			popularity: item.popularity,
 			name: item.name,
 			code: [...item.code],
 			tags: [...item.tags],

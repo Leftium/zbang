@@ -1,6 +1,12 @@
 import { Err, Ok, type Result } from 'wellcrafted/result';
 
-import { validateZbangCatalog, type BangProviderId, type ZbangCatalog } from '$lib/bang-catalog';
+import {
+	rankZbangItems,
+	validateZbangCatalog,
+	type BangProviderId,
+	type RankedZbangCatalog,
+	type ZbangCatalog
+} from '$lib/bang-catalog';
 
 type CatalogLoadError =
 	| { kind: 'network'; message: string }
@@ -15,7 +21,7 @@ const catalogUrls: Record<BangProviderId, string> = {
 
 export async function loadShippedBangCatalog(
 	provider: BangProviderId
-): Promise<Result<ZbangCatalog, CatalogLoadError>> {
+): Promise<Result<RankedZbangCatalog, CatalogLoadError>> {
 	const url = catalogUrls[provider];
 	let response: Response;
 
@@ -43,7 +49,12 @@ export async function loadShippedBangCatalog(
 		return Err({ kind: 'validation', message: errors.join('; ') });
 	}
 
-	return Ok(catalog as ZbangCatalog);
+	const validatedCatalog = catalog as ZbangCatalog;
+
+	return Ok({
+		...validatedCatalog,
+		items: rankZbangItems(validatedCatalog.items)
+	});
 }
 
 function getErrorMessage(error: unknown) {
