@@ -1,8 +1,15 @@
 import adapter from '@sveltejs/adapter-auto';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { resolve } from 'node:path';
+import { defineConfig, searchForWorkspaceRoot } from 'vite';
 
 export default defineConfig({
+	server: {
+		fs: {
+			allow: [searchForWorkspaceRoot(process.cwd()), resolve('catalogs')]
+		}
+	},
+
 	plugins: [
 		sveltekit({
 			compilerOptions: {
