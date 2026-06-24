@@ -44,7 +44,7 @@ At runtime, the client can:
 
 1. Download source bang files from the same URLs used by the current `bang-tools download` command.
 2. Normalize provider-specific catalogs.
-3. Add rank data.
+3. Add popularity data.
 4. Persist generated data locally.
 5. Refresh data without rebuilding or redeploying the app.
 
@@ -89,7 +89,7 @@ Normalize Kagi records to the existing zbang-like shape:
 	"generatorVersion": 1,
 	"items": [
 		{
-			"rank": 1,
+			"popularity": 1693724,
 			"name": "Google",
 			"code": ["!g", "!google"],
 			"tags": [],
@@ -115,13 +115,13 @@ Kagi relative URLs should become concrete Kagi URLs:
 
 Do not emit `http://bang-provider/...` in final generated data.
 
-Kagi records may still inherit DDG rank when any Kagi trigger or alias has a compatible DDG match.
+Kagi records may still inherit DDG popularity when any Kagi trigger or alias has a compatible DDG match.
 
-Kagi rank inheritance should use normalized DDG data, but it should not import DDG semantics into Kagi records.
+Kagi popularity inheritance should use normalized DDG data, but it should not import DDG semantics into Kagi records.
 
-Rank lookup should consider all Kagi triggers for a record, including the primary trigger and aliases. For each matching DDG trigger, use the best compatible DDG rank available from normalized DDG data.
+Popularity lookup should consider all Kagi triggers for a record, including the primary trigger and aliases. For each matching DDG trigger, use the best compatible DDG popularity available from normalized DDG data.
 
-Prefer the highest compatible DDG rank. Do not prioritize primary-trigger matches over alias matches unless a future source provides explicit alias quality metadata. Kagi continues inheriting DDG rank in provider-native mode.
+Prefer the highest compatible DDG popularity. Do not prioritize primary-trigger matches over alias matches unless a future source provides explicit alias quality metadata. Kagi continues inheriting DDG popularity in provider-native mode.
 
 Only inherit a candidate rank when the URL/domain comparison indicates the Kagi and DDG records likely represent the same target or compatible generic search behavior.
 
@@ -130,13 +130,13 @@ Current Kagi-side deduplication already picks the highest DDG-derived rank among
 Provider-local deduplication should be URL-identity based for both Kagi and DDG:
 
 - Group records when their URL templates normalize to the same value.
-- Use the highest rank from the group.
+- Use the highest popularity from the group.
 - Merge trigger codes from the group.
 - Keep the best canonical display name from the group.
 - Keep the union of category/search tags from the group.
 - Do not merge records based only on similar names, similar categories, or shared domains.
 
-This is close to the current Kagi dedupe behavior: the grouping rule is conservative, while the aliases/rank/tags are combined only after URL identity has established that the records share a target.
+This is close to the current Kagi dedupe behavior: the grouping rule is conservative, while the aliases/popularity/tags are combined only after URL identity has established that the records share a target.
 
 URL fragments are part of URL identity. Some providers encode behavior in fragments, such as Google Translate language pairs in `#source/target/query`, so stripping fragments would incorrectly merge distinct bang targets.
 
@@ -155,7 +155,7 @@ Normalize DDG records independently:
 	"generatorVersion": 1,
 	"items": [
 		{
-			"rank": 1,
+			"popularity": 1693724,
 			"name": "Google",
 			"code": ["!g"],
 			"tags": ["Online Services/Search"],
@@ -167,7 +167,7 @@ Normalize DDG records independently:
 }
 ```
 
-DDG records use DDG rank directly to assign emitted `rank` values.
+DDG records use DDG `r` directly to assign emitted `popularity` values. Runtime ranking derives tied ordinal `rank` from catalog `popularity`.
 
 DDG records should not be enhanced with Kagi names, aliases, or URL semantics in provider-native mode.
 
@@ -302,17 +302,21 @@ type ZbangCatalog = {
 		fetchedAt: string;
 		hash?: string;
 	}>;
-	items: Zbang[];
+	items: CatalogZbang[];
 };
 
-type Zbang = {
-	rank: number;
+type CatalogZbang = {
+	popularity: number;
 	name: string;
 	code: string[];
 	tags: string[];
 	urls: {
 		s: string;
 	};
+};
+
+type Zbang = CatalogZbang & {
+	rank: number;
 };
 ```
 

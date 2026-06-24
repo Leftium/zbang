@@ -123,7 +123,7 @@ Validate at minimum:
 - `generatorVersion` is a number
 - `sources` is an array
 - `items` is an array
-- each item has a positive numeric `rank`
+- each item has a non-negative numeric `popularity`
 - each item has a non-empty string `name`
 - each item has a non-empty string-array `code`
 - each item has a string-array `tags`

@@ -1,6 +1,6 @@
 {
 	"provider": "kagi",
-	"generatorVersion": 2,
+	"generatorVersion": 3,
 	"dedupedCount": 61,
 	"sources": [
 		{
