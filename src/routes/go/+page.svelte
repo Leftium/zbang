@@ -61,7 +61,7 @@
 			fanoutTargets = result.targetUrls;
 			document.body.classList.remove('go-executing');
 
-			if (!(await openSecondaryTargetsUntilFirstAck(result.targetUrls))) {
+			if (!(await openSecondaryTargets(result.targetUrls))) {
 				return;
 			}
 
@@ -71,7 +71,7 @@
 		}
 	}
 
-	function openSecondaryTargetsUntilFirstAck(targetUrls: string[]) {
+	function openSecondaryTargets(targetUrls: string[]) {
 		if (!('BroadcastChannel' in window)) {
 			errorMessage = 'Could not confirm secondary bang targets opened in this browser.';
 			return Promise.resolve(false);
@@ -79,6 +79,8 @@
 
 		const channelName = `go-fanout-${crypto.randomUUID()}`;
 		const expectedCount = targetUrls.length - 1;
+		const acknowledged = Array.from({ length: expectedCount }, () => false);
+		let acknowledgedCount = 0;
 		const channel = new BroadcastChannel(channelName);
 
 		return new Promise<boolean>((resolve) => {
@@ -93,7 +95,10 @@
 				resolve(success);
 			};
 
-			const timeout = window.setTimeout(() => finish(false), fanoutAckTimeoutMs);
+			const timeout = window.setTimeout(
+				() => finish(acknowledgedCount === expectedCount),
+				fanoutAckTimeoutMs
+			);
 
 			channel.onmessage = (event: MessageEvent<{ index?: number }>) => {
 				const index = event.data.index;
@@ -106,7 +111,14 @@
 					return;
 				}
 
-				finish(true);
+				if (acknowledged[index - 1]) return;
+
+				acknowledged[index - 1] = true;
+				acknowledgedCount += 1;
+
+				if (acknowledgedCount === expectedCount) {
+					finish(true);
+				}
 			};
 
 			for (const [offset, targetUrl] of targetUrls.slice(1).entries()) {
