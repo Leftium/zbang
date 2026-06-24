@@ -173,8 +173,6 @@ function sortBangResults(
 	b: Fuzzysort.KeysResult<PreparedZbangRecord>
 ) {
 	return (
-		Number(b.score > 0.95) - Number(a.score > 0.95) ||
-		Number(b.score > 0.6) - Number(a.score > 0.6) ||
 		a.obj.rank - b.obj.rank ||
 		b.score - a.score
 	);
