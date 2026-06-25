@@ -1,8 +1,6 @@
 /// <reference lib="webworker" />
 
 import { readExecutionSettings, readMyBangs } from './lib/bang-data';
-import { getBangSuggestions } from './lib/bang-suggestions';
-import { defaultExecutionSettings } from './lib/execution-settings';
 import {
 	getBangExecutionItems,
 	getSearchUrl,
@@ -13,21 +11,14 @@ import { loadShippedBangCatalog } from './lib/shipped-bang-catalog';
 
 declare const self: ServiceWorkerGlobalScope;
 
-const SUGGESTION_LIMIT = 8;
-
 self.addEventListener('fetch', (event) => {
 	const request = event.request;
+
+	if (request.mode !== 'navigate') return;
+
 	const url = new URL(request.url);
 
 	if (url.origin !== self.location.origin) return;
-	if (request.method !== 'GET') return;
-
-	if (url.pathname === '/suggest') {
-		event.respondWith(handleSuggestRequest(request, url));
-		return;
-	}
-
-	if (request.mode !== 'navigate') return;
 
 	if (url.pathname === '/go/open') {
 		event.respondWith(handleGoOpenRequest(url));
@@ -69,47 +60,6 @@ function handleGoOpenRequest(url: URL) {
 			status: 400,
 			headers: { 'content-type': 'text/html; charset=utf-8' }
 		});
-	}
-}
-
-async function handleSuggestRequest(request: Request, url: URL): Promise<Response> {
-	try {
-		const query = url.searchParams.get('q')?.trim() ?? '';
-		const executionSettings = (await readExecutionSettings()) ?? defaultExecutionSettings;
-		const [myBangs, catalogResult] = await Promise.all([
-			readMyBangs().catch(() => []),
-			loadShippedBangCatalog(executionSettings.bangProvider)
-		]);
-		const providerBangs = catalogResult.error ? [] : catalogResult.data.items;
-		const filteredProviderBangs = getBangExecutionItems(myBangs, providerBangs).slice(
-			myBangs.length
-		);
-		const mySuggestions = getBangSuggestions(query, myBangs, SUGGESTION_LIMIT);
-		const providerSuggestions = getBangSuggestions(
-			query,
-			filteredProviderBangs,
-			SUGGESTION_LIMIT - mySuggestions.length
-		);
-		const suggestions = [...mySuggestions, ...providerSuggestions];
-
-		return new Response(
-			JSON.stringify([
-				query,
-				suggestions.map(({ completion }) => completion),
-				suggestions.map(({ description }) => description),
-				suggestions.map(
-					({ completion }) => `${self.location.origin}/go?q=${encodeURIComponent(completion)}`
-				)
-			]),
-			{
-				headers: {
-					'content-type': 'application/x-suggestions+json; charset=utf-8'
-				}
-			}
-		);
-	} catch (error) {
-		console.warn('Service worker failed to resolve /suggest request', error);
-		return fetch(request);
 	}
 }
 

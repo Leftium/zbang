@@ -16,7 +16,6 @@ export const GET: RequestHandler = ({ url }) => {
 	<Description>Execute Whiz searches and bangs</Description>
 	<InputEncoding>UTF-8</InputEncoding>
 	<Url type="text/html" template="${origin}/go?q={searchTerms}" />
-	<Url type="application/x-suggestions+json" rel="suggestions" method="GET" template="${origin}/suggest?q={searchTerms}" />
 	<Url type="application/opensearchdescription+xml" rel="self" template="${origin}/opensearch.xml" />
 </OpenSearchDescription>
 `;
