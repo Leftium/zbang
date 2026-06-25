@@ -14,7 +14,7 @@ export const defaultCustomSearchTemplate = 'https://search.brave.com/search?q=%s
 
 export const defaultExecutionSettings: ExecutionSettings = {
 	bangProvider: 'kagi',
-	searchProvider: 'kagi',
+	searchProvider: 'google',
 	customSearchLabel: defaultCustomSearchLabel,
 	customSearchTemplate: defaultCustomSearchTemplate
 };
