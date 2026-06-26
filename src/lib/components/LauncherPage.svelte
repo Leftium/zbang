@@ -1532,6 +1532,10 @@
 		return stagedMenu?.target ?? focusedTarget ?? createSelectableItemTarget(item)[0];
 	}
 
+	function usesCompactActionMenu(item: LauncherItem) {
+		return item.pluginId === 'search' || item.pluginId === 'clipboard' || item.pluginId === 'bangs';
+	}
+
 	function getGroupNavigationShortcuts(group: LauncherGroup) {
 		if (activeLauncherGroup?.id !== group.id || visibleLauncherGroups.length < 2) return [];
 
@@ -2623,7 +2627,7 @@
 	{@const isFocused = item.id === primaryLauncherItem?.id}
 	{@const focusedTarget = isFocused && primaryLauncherTarget?.kind === 'item' ? primaryLauncherTarget : undefined}
 	{@const stagedMenu = stagedActionMenu?.target.id === item.id ? stagedActionMenu : undefined}
-	{@const useCompactActionMenu = item.pluginId === 'search' || item.pluginId === 'clipboard'}
+	{@const useCompactActionMenu = usesCompactActionMenu(item)}
 	{@const hasShortcut = Boolean(itemShortcutLabel)}
 	{@const rowShortcutExpanded = Boolean(focusedTarget || stagedMenu)}
 	{#if useCompactActionMenu}
@@ -3485,15 +3489,24 @@
 		display: flex;
 		align-items: baseline;
 		gap: 0.4rem;
+		min-width: 0;
 	}
 
 	.compact-action-primary .item-heading {
-		flex: 0 1 auto;
+		flex: 0 0 auto;
+	}
+
+	.compact-action-primary .item-heading strong {
+		overflow: visible;
+		text-overflow: clip;
 	}
 
 	.compact-action-description {
 		flex: 1 1 auto;
 		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.compact-action-hidden {
