@@ -4,6 +4,8 @@
 	import { page } from '$app/state';
 	import fuzzysort from 'fuzzysort';
 	import { onMount } from 'svelte';
+	import { cubicOut } from 'svelte/easing';
+	import { fly, slide } from 'svelte/transition';
 
 	import {
 		readMyBangs,
@@ -78,6 +80,10 @@
 	const itemMenuShortcutLabels = ['A', 'S', 'D', 'F', 'G', 'H'] as const;
 	const groupShortcutLabels = ['U', 'I', 'O'] as const;
 	const groupMenuShortcutLabels = ['J', 'K', 'L'] as const;
+	const menuSlideDuration = 720;
+	const shortcutBadgeFlyDuration = 640;
+	const pseudoMenuBadgeDelay = 320;
+	const pseudoMenuBadgeDuration = 280;
 	const parentShortcutLabel = 'P';
 	const utilityShortcutLabels = ['Z', 'X', 'C', 'V'] as const;
 	const shortcutKeys = new Set([
@@ -151,10 +157,12 @@
 		focusSnapshot: FocusSnapshot;
 		selectionStart: number;
 		selectionEnd: number;
+		menuActionIndex?: number;
 		ts: number;
 	};
 	type InputPreviewSegment = { kind: 'committed' | 'shortcut-staged'; text: string };
 	type StatusHint = { key: string; label: string };
+	type StagedActionMenu = { target: PrimaryLauncherTarget; actions: LauncherAction[]; rootKey: string };
 	type SettingGroupDefinition = {
 		id: string;
 		title: string;
@@ -258,6 +266,7 @@
 	let bangFanoutError = $state('');
 	let bangFanoutActionLabel = $state('Open');
 	let lastUrlQuery = $state(initialUrlQuery);
+	let reducedMotion = $state(false);
 	let hadSettingsFilter = false;
 	let skipNextSettingsFilterReset = false;
 
@@ -325,6 +334,7 @@
 	const inputDisplayValue = $derived(getInputDisplayValue());
 	const inputPreviewSegments = $derived(getInputPreviewSegments());
 	const stagedShortcutStatusHint = $derived(getStagedShortcutStatusHint());
+	const stagedActionMenu = $derived(getStagedActionMenu());
 	const selectablePrimaryTargets = $derived(getSelectablePrimaryTargets());
 	const activeLauncherGroup = $derived(getActiveLauncherGroup());
 	const shortcutItemTargets = $derived(
@@ -370,6 +380,16 @@
 
 	onMount(() => {
 		void loadMyBangs();
+
+		const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+		const updateReducedMotion = () => {
+			reducedMotion = motionQuery.matches;
+		};
+
+		updateReducedMotion();
+		motionQuery.addEventListener('change', updateReducedMotion);
+
+		return () => motionQuery.removeEventListener('change', updateReducedMotion);
 	});
 
 	$effect(() => {
@@ -684,6 +704,7 @@
 
 	function getStagedShortcutStatusHint(): StatusHint | undefined {
 		if (!stagedShortcut) return undefined;
+		if (stagedShortcut.binding.kind === 'target') return undefined;
 
 		const label = getStagedShortcutConfirmationLabel(stagedShortcut.binding);
 		if (!label) return undefined;
@@ -691,17 +712,56 @@
 		return { key: 'ENTER', label };
 	}
 
+	function getStagedActionMenu(): StagedActionMenu | undefined {
+		if (!stagedShortcut?.binding || stagedShortcut.binding.kind !== 'target') return undefined;
+		if (!isActionMenuLane(stagedShortcut.binding.lane)) return undefined;
+
+		return {
+			target: stagedShortcut.binding.target,
+			actions: stagedShortcut.binding.target.actions,
+			rootKey: stagedShortcut.binding.key
+		};
+	}
+
+	function openTargetActionMenu(target: PrimaryLauncherTarget, rootKey: string, ts = Date.now()) {
+		if (!textareaElement) return false;
+
+		const { selectionStart, selectionEnd } = textareaElement;
+		const focusSnapshot = captureFocusSnapshot();
+
+		captureShortcutSnapshot(rootKey);
+
+		stagedShortcut = {
+			buffer: rootKey,
+			binding: {
+				key: rootKey,
+				kind: 'target',
+				lane: getTargetMenuLane(target),
+				target
+			},
+			focusSnapshot,
+			selectionStart,
+			selectionEnd,
+			menuActionIndex: getDefaultActionMenuIndex(target),
+			ts
+		};
+
+		focusLauncherTarget(target);
+
+		requestAnimationFrame(() => {
+			const cursor = selectionStart + rootKey.length;
+			textareaElement?.setSelectionRange(cursor, cursor);
+		});
+
+		return true;
+	}
+
 	function getStagedShortcutConfirmationLabel(binding: ShortcutBinding) {
 		if (binding.kind === 'target') {
-			if (binding.lane === 'group-menu') return undefined;
-
-			const action =
-				binding.lane === 'item-menu'
-					? getSecondaryAction(binding.target)
-					: getPrimaryAction(binding.target);
+			const action = getArmedTargetAction(binding);
 
 			if (action) return action.title ?? action.label;
-			if (binding.lane === 'item-menu') return undefined;
+			if (isActionMenuLane(binding.lane)) return undefined;
 
 			return binding.target.title;
 		}
@@ -726,6 +786,65 @@
 		return undefined;
 	}
 
+	function getArmedTargetAction(binding: Extract<ShortcutBinding, { kind: 'target' }>) {
+		if (isActionMenuLane(binding.lane)) {
+			const defaultIndex = getDefaultActionMenuIndex(binding.target);
+			return binding.target.actions[stagedShortcut?.menuActionIndex ?? defaultIndex];
+		}
+
+		return getPrimaryAction(binding.target);
+	}
+
+	function getDefaultActionMenuIndex(target: PrimaryLauncherTarget) {
+		return getSecondaryAction(target) ? 1 : 0;
+	}
+
+	function getActionMenuShortcutLabels(rootKey: string, actionCount: number) {
+		const reservedKey = rootKey.toLocaleLowerCase();
+		return itemShortcutLabels
+			.filter((label) => label.toLocaleLowerCase() !== reservedKey)
+			.slice(0, actionCount);
+	}
+
+	function getActionMenuShortcutLabel(menu: StagedActionMenu, actionIndex: number) {
+		return getActionMenuShortcutLabels(menu.rootKey, menu.actions.length)[actionIndex];
+	}
+
+	function getMenuSlide() {
+		return {
+			duration: reducedMotion ? 0 : menuSlideDuration,
+			easing: cubicOut
+		};
+	}
+
+	function getBadgeFlyOut() {
+		return {
+			y: reducedMotion ? 0 : 32,
+			duration: reducedMotion ? 0 : shortcutBadgeFlyDuration,
+			easing: cubicOut
+		};
+	}
+
+	function getPseudoMenuBadgeStyle() {
+		return `--pseudo-menu-badge-delay: ${pseudoMenuBadgeDelay}ms; --pseudo-menu-badge-duration: ${pseudoMenuBadgeDuration}ms;`;
+	}
+
+	function isItemShortcutLabelDisabled(label: string | undefined) {
+		return Boolean(stagedActionMenu && label && (itemShortcutLabels as readonly string[]).includes(label));
+	}
+
+	function isActionMenuLane(lane: ShortcutLane) {
+		return lane === 'item-menu' || lane === 'group-menu';
+	}
+
+	function getTargetFocusLane(target: PrimaryLauncherTarget): ShortcutLane {
+		return target.kind === 'group' ? 'group-focus' : 'item-focus';
+	}
+
+	function getTargetMenuLane(target: PrimaryLauncherTarget): ShortcutLane {
+		return target.kind === 'group' ? 'group-menu' : 'item-menu';
+	}
+
 	function isUppercaseShortcutInitiator(key: string | null | undefined) {
 		if (!key || key.length !== 1) return false;
 
@@ -740,6 +859,9 @@
 		const shortcutKey = key.toLocaleUpperCase();
 		const binding = validShortcutBindings.get(shortcutKey);
 		if (!binding) return false;
+		if (binding.kind === 'target' && binding.target.id === primaryLauncherTarget?.id) {
+			return openTargetActionMenu(binding.target, shortcutKey, ts);
+		}
 
 		const { selectionStart, selectionEnd } = textareaElement;
 		const focusSnapshot = captureFocusSnapshot();
@@ -797,6 +919,33 @@
 		return true;
 	}
 
+	function downgradeStagedShortcut() {
+		if (!stagedShortcut || stagedShortcut.binding.kind !== 'target') return false;
+		if (!isActionMenuLane(stagedShortcut.binding.lane)) return false;
+
+		const target = stagedShortcut.binding.target;
+		stagedShortcut = {
+			...stagedShortcut,
+			buffer: stagedShortcut.buffer.slice(0, 1),
+			menuActionIndex: undefined,
+			binding: {
+				...stagedShortcut.binding,
+				lane: getTargetFocusLane(target)
+			}
+		};
+
+		focusLauncherTarget(target);
+
+		requestAnimationFrame(() => {
+			const cursor = stagedShortcut
+				? stagedShortcut.selectionStart + stagedShortcut.buffer.length
+				: undefined;
+			if (cursor !== undefined) textareaElement?.setSelectionRange(cursor, cursor);
+		});
+
+		return true;
+	}
+
 	function confirmStagedShortcut() {
 		if (!stagedShortcut) return false;
 
@@ -806,18 +955,48 @@
 		return true;
 	}
 
+	function moveStagedActionMenuSelection(direction: 1 | -1) {
+		if (!stagedShortcut || stagedShortcut.binding.kind !== 'target') return false;
+		if (!isActionMenuLane(stagedShortcut.binding.lane)) return false;
+
+		const actionCount = stagedShortcut.binding.target.actions.length;
+		if (actionCount < 1) return false;
+
+		const currentIndex = stagedShortcut.menuActionIndex ?? getDefaultActionMenuIndex(stagedShortcut.binding.target);
+		stagedShortcut = {
+			...stagedShortcut,
+			menuActionIndex: (currentIndex + direction + actionCount) % actionCount
+		};
+
+		return true;
+	}
+
+	function executeStagedActionMenuShortcut(key: string) {
+		if (!stagedShortcut || stagedShortcut.binding.kind !== 'target') return false;
+		if (!isActionMenuLane(stagedShortcut.binding.lane)) return false;
+
+		const labels = getActionMenuShortcutLabels(
+			stagedShortcut.binding.key,
+			stagedShortcut.binding.target.actions.length
+		);
+		const actionIndex = labels.findIndex(
+			(label) => label.toLocaleLowerCase() === key.toLocaleLowerCase()
+		);
+		const action = stagedShortcut.binding.target.actions[actionIndex];
+		if (!action) return false;
+
+		focusLauncherTarget(stagedShortcut.binding.target);
+		void action.run();
+		resetShortcutState();
+
+		return true;
+	}
+
 	function executeStagedShortcutConfirmation(binding: ShortcutBinding) {
 		if (binding.kind === 'target') {
 			focusLauncherTarget(binding.target);
 
-			if (binding.lane === 'item-menu') {
-				void getSecondaryAction(binding.target)?.run();
-				return;
-			}
-
-			if (binding.lane === 'group-menu') return;
-
-			void getPrimaryAction(binding.target)?.run();
+			void getArmedTargetAction(binding)?.run();
 			return;
 		}
 
@@ -838,11 +1017,40 @@
 
 	function fastConfirmStagedShortcut(key: string, ts: number) {
 		if (!stagedShortcut) return false;
+		if (isActionMenuLane(stagedShortcut.binding.lane)) return false;
 		if (ts - stagedShortcut.ts >= shortcutDelay) return false;
-		if (key.toLocaleLowerCase() !== stagedShortcut.binding.key.toLocaleLowerCase()) return false;
+		if (key !== stagedShortcut.binding.key) return false;
 
 		executeStagedShortcutConfirmation(stagedShortcut.binding);
 		resetShortcutState();
+
+		return true;
+	}
+
+	function upgradeStagedShortcut(key: string) {
+		if (!stagedShortcut || stagedShortcut.binding.kind !== 'target') return false;
+		if (stagedShortcut.binding.lane !== getTargetFocusLane(stagedShortcut.binding.target)) return false;
+		if (key.toLocaleLowerCase() !== stagedShortcut.binding.key.toLocaleLowerCase()) return false;
+
+		const target = stagedShortcut.binding.target;
+		stagedShortcut = {
+			...stagedShortcut,
+			buffer: stagedShortcut.buffer + key,
+			menuActionIndex: getDefaultActionMenuIndex(target),
+			binding: {
+				...stagedShortcut.binding,
+				lane: getTargetMenuLane(target)
+			}
+		};
+
+		focusLauncherTarget(target);
+
+		requestAnimationFrame(() => {
+			const cursor = stagedShortcut
+				? stagedShortcut.selectionStart + stagedShortcut.buffer.length
+				: undefined;
+			if (cursor !== undefined) textareaElement?.setSelectionRange(cursor, cursor);
+		});
 
 		return true;
 	}
@@ -859,11 +1067,18 @@
 
 		if (event.key === 'Backspace') {
 			event.preventDefault();
+			if (downgradeStagedShortcut()) return true;
 			return cancelStagedShortcut();
 		}
 
 		if (event.key === 'Escape') {
 			event.preventDefault();
+			return cancelStagedShortcut();
+		}
+
+		if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+			event.preventDefault();
+			if (moveStagedActionMenuSelection(event.key === 'ArrowDown' ? 1 : -1)) return true;
 			return cancelStagedShortcut();
 		}
 
@@ -874,6 +1089,8 @@
 
 		event.preventDefault();
 
+		if (!event.repeat && upgradeStagedShortcut(event.key)) return true;
+		if (executeStagedActionMenuShortcut(event.key)) return true;
 		if (fastConfirmStagedShortcut(event.key, ts)) return true;
 
 		return commitStagedShortcutLiteral(event.key);
@@ -890,6 +1107,7 @@
 
 		if (stagedShortcut && inputType === 'deleteContentBackward') {
 			event.preventDefault();
+			if (downgradeStagedShortcut()) return true;
 			return cancelStagedShortcut();
 		}
 
@@ -897,6 +1115,8 @@
 
 		if (stagedShortcut) {
 			event.preventDefault();
+			if (upgradeStagedShortcut(data)) return true;
+			if (executeStagedActionMenuShortcut(data)) return true;
 			if (fastConfirmStagedShortcut(data, ts)) return true;
 			return commitStagedShortcutLiteral(data);
 		}
@@ -1417,6 +1637,33 @@
 
 	function runPrimaryAction() {
 		void getPrimaryAction(primaryLauncherTarget)?.run();
+	}
+
+	function runStagedActionMenuAction(action: LauncherAction) {
+		if (stagedActionMenu) focusLauncherTarget(stagedActionMenu.target);
+
+		void action.run();
+		resetShortcutState();
+	}
+
+	function runTargetPrimaryAction(target: PrimaryLauncherTarget) {
+		focusLauncherTarget(target);
+		void getPrimaryAction(target)?.run();
+	}
+
+	function openTargetActionMenuFromAffordance(target: PrimaryLauncherTarget, rootKey: string | undefined) {
+		if (!rootKey) return;
+
+		openTargetActionMenu(target, rootKey);
+	}
+
+	function getStagedActionMenuArmedAction(menu: StagedActionMenu) {
+		return getArmedTargetAction({
+			key: menu.rootKey,
+			kind: 'target',
+			lane: getTargetMenuLane(menu.target),
+			target: menu.target
+		});
 	}
 
 	function focusLauncherTarget(target: PrimaryLauncherTarget) {
@@ -2381,9 +2628,14 @@
 	{@const itemMeta = formatItemMeta(item)}
 	{@const itemShortcutLabel = item.pluginId === 'bang-data' ? undefined : shortcutLabel}
 	{@const secondaryShortcutLabel = getSecondaryShortcutLabel(item.id)}
+	{@const isFocused = item.id === primaryLauncherItem?.id}
+	{@const focusedTarget = isFocused && primaryLauncherTarget?.kind === 'item' ? primaryLauncherTarget : undefined}
+	{@const stagedMenu = stagedActionMenu?.target.id === item.id ? stagedActionMenu : undefined}
 	{@const hasShortcut = Boolean(itemShortcutLabel)}
-	{@const hasAside = hasShortcut || Boolean(itemMeta)}
+	{@const rowShortcutExpanded = Boolean(focusedTarget || stagedMenu)}
 	<div
+		class:has-staged-menu={Boolean(stagedMenu)}
+		class:has-target-actions={Boolean(focusedTarget) && !stagedMenu}
 		class:notification-item={item.pluginId === 'bang-data'}
 		class:primary={item.id === primaryLauncherItem?.id}
 		class="launcher-item action-item"
@@ -2394,6 +2646,14 @@
 			disabled={!item.run}
 			onclick={() => item.run?.()}
 		>
+			<span class="shortcut-rail">
+				{#if itemShortcutLabel && !rowShortcutExpanded}<span
+						class:disabled={isItemShortcutLabelDisabled(itemShortcutLabel)}
+						class="shortcut-label"
+						out:fly={getBadgeFlyOut()}
+						>{itemShortcutLabel}</span
+					>{/if}
+			</span>
 			<span class="item-text">
 				<span class="item-heading">
 					{#if item.pluginId === 'settings'}
@@ -2409,19 +2669,18 @@
 					{/if}
 					<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
 				</span>
-				{#if item.description}<small
+				{#if isFocused && item.description}<small
 						>{@render highlightedText(item.descriptionSegments, item.description)}</small
 					>{/if}
 			</span>
-			{#if !item.secondaryAction && hasAside}
+			{#if !item.secondaryAction && isFocused && itemMeta}
 				<span class="item-aside">
-					{#if itemShortcutLabel}<span class="shortcut-label">{itemShortcutLabel}</span>{/if}
-					{#if itemMeta}<span class="meta">{itemMeta}</span>{/if}
+					<span class="meta">{itemMeta}</span>
 				</span>
 			{/if}
 		</button>
 
-		{#if item.secondaryAction}
+		{#if item.secondaryAction && !focusedTarget}
 			<button
 				class="secondary-action"
 				title={item.secondaryAction.title}
@@ -2434,11 +2693,14 @@
 			</button>
 		{/if}
 
-		{#if item.secondaryAction && hasAside}
+		{#if item.secondaryAction && !focusedTarget && isFocused && itemMeta}
 			<span class="item-aside">
-				{#if itemShortcutLabel}<span class="shortcut-label">{itemShortcutLabel}</span>{/if}
-				{#if itemMeta}<span class="meta">{itemMeta}</span>{/if}
+				<span class="meta">{itemMeta}</span>
 			</span>
+		{/if}
+
+		{#if focusedTarget || stagedMenu}
+			{@render targetActionMenu(stagedMenu?.target ?? focusedTarget, itemShortcutLabel, stagedMenu)}
 		{/if}
 	</div>
 {/snippet}
@@ -2466,18 +2728,29 @@
 	{@const mobileCountLabel = getGroupMobileCountLabel(group)}
 	{@const shortcutLabel = getShortcutLabel(group.id)}
 	{@const navigationShortcuts = getGroupNavigationShortcuts(group)}
+	{@const isFocusedGroup = primaryLauncherTarget?.kind === 'group' && primaryLauncherTarget.id === group.id}
+	{@const focusedTarget = isFocusedGroup ? primaryLauncherTarget : undefined}
+	{@const stagedMenu = stagedActionMenu?.target.id === group.id ? stagedActionMenu : undefined}
+	{@const rowShortcutExpanded = Boolean(focusedTarget || stagedMenu)}
 	<section
+		class:has-target-actions={Boolean(focusedTarget) && !stagedMenu}
 		class:empty-group={renderedItems.length === 0}
 		class="launcher-group"
 		aria-labelledby={`${group.id}-heading`}
 	>
 		<button
-			class:primary={primaryLauncherTarget?.kind === 'group' &&
-				primaryLauncherTarget.id === group.id}
+			class:primary={isFocusedGroup}
 			class:has-shortcut={Boolean(shortcutLabel)}
 			class="launcher-group-header"
 			onclick={() => activateLauncherGroup(group.id)}
 		>
+			<span class="shortcut-rail">
+				{#if shortcutLabel && !rowShortcutExpanded}<span
+						class="shortcut-label"
+						out:fly={getBadgeFlyOut()}
+						>{shortcutLabel}</span
+					>{/if}
+			</span>
 			<span class="item-text">
 				<span class="item-heading">
 					<span class="group-title-line" id={`${group.id}-heading`}>
@@ -2488,10 +2761,10 @@
 							>{/if}
 					</span>
 				</span>
-				{#if group.description}<small class="group-description"
+				{#if isFocusedGroup && group.description}<small class="group-description"
 						>{@render highlightedText(group.descriptionSegments, group.description)}</small
 					>{/if}
-				{#if mobileCountLabel}
+				{#if isFocusedGroup && mobileCountLabel}
 					<small class="group-mobile-count">{mobileCountLabel}</small>
 				{/if}
 				{#if navigationShortcuts.length}
@@ -2505,14 +2778,19 @@
 					</span>
 				{/if}
 			</span>
-			<span class="item-aside">
-				{#if shortcutLabel}<span class="shortcut-label">{shortcutLabel}</span>{/if}
-				<span class="meta">{getGroupCountLabel(group)}</span>
-				{#if toggleLabel}
-					<span class="group-toggle-label">{toggleLabel}</span>
-				{/if}
-			</span>
+			{#if isFocusedGroup}
+				<span class="item-aside">
+					<span class="meta">{getGroupCountLabel(group)}</span>
+					{#if toggleLabel}
+						<span class="group-toggle-label">{toggleLabel}</span>
+					{/if}
+				</span>
+			{/if}
 		</button>
+
+		{#if focusedTarget || stagedMenu}
+			{@render targetActionMenu(stagedMenu?.target ?? focusedTarget, shortcutLabel, stagedMenu)}
+		{/if}
 
 		<div class="launcher-group-items">
 			{#each renderedItems as item (item.id)}
@@ -2525,6 +2803,91 @@
 			{/each}
 		</div>
 	</section>
+{/snippet}
+
+{#snippet targetActionMenu(
+	target: PrimaryLauncherTarget | undefined,
+	rootShortcutLabel: string | undefined,
+	menu: StagedActionMenu | undefined
+)}
+	{#if target}
+		{@const primaryAction = getPrimaryAction(target)}
+		{@const menuPrimaryAction = menu?.actions[0]}
+		{@const displayedPrimaryAction = menuPrimaryAction ?? primaryAction}
+		{@const armedAction = menu ? getStagedActionMenuArmedAction(menu) : undefined}
+		<div
+			class="target-action-menu"
+			class:full={Boolean(menu)}
+			role={menu ? 'menu' : undefined}
+			aria-label={`Actions for ${target.title}`}
+		>
+			{#if displayedPrimaryAction}
+				{@const primaryShortcutLabel = menu ? getActionMenuShortcutLabel(menu, 0) : undefined}
+				<button
+					class:armed={menu && displayedPrimaryAction.id === armedAction?.id}
+					class="target-action-menu-item primary-action"
+					role={menu ? 'menuitem' : undefined}
+					onpointerdown={(event) => event.preventDefault()}
+					onclick={() =>
+						menu
+							? runStagedActionMenuAction(displayedPrimaryAction)
+							: runTargetPrimaryAction(target)}
+				>
+					<span class="staged-action-menu-shortcut">
+						{#if primaryShortcutLabel}<span class="shortcut-label">{primaryShortcutLabel}</span>{/if}
+					</span>
+					<span class="staged-action-menu-label"
+						>{displayedPrimaryAction.title ?? displayedPrimaryAction.label}</span
+					>
+					{#if !menu || displayedPrimaryAction.id === armedAction?.id}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
+				</button>
+			{/if}
+
+			<div class="target-action-menu-detail">
+				{#if menu}
+					<div
+						class="target-action-menu-replacement"
+						in:slide={getMenuSlide()}
+						out:slide={getMenuSlide()}
+					>
+						{#each menu.actions.slice(1) as action, offset (action.id)}
+							{@const index = offset + 1}
+							{@const shortcutLabel = getActionMenuShortcutLabel(menu, index)}
+							<button
+								class:armed={action.id === armedAction?.id}
+								class="target-action-menu-item staged-action-menu-item"
+								role="menuitem"
+								onpointerdown={(event) => event.preventDefault()}
+								onclick={() => runStagedActionMenuAction(action)}
+							>
+								<span class="staged-action-menu-shortcut">
+									{#if shortcutLabel}<span class="shortcut-label">{shortcutLabel}</span>{/if}
+								</span>
+								<span class="staged-action-menu-label">{action.title ?? action.label}</span>
+								{#if action.id === armedAction?.id}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
+							</button>
+						{/each}
+					</div>
+				{:else if rootShortcutLabel}
+					<button
+						class="target-action-menu-item menu-action"
+						onpointerdown={(event) => event.preventDefault()}
+						onclick={() => openTargetActionMenuFromAffordance(target, rootShortcutLabel)}
+						in:slide={getMenuSlide()}
+						out:slide={getMenuSlide()}
+					>
+						<span
+							class:animate-pseudo-badge={!reducedMotion}
+							class="shortcut-label pseudo-menu-shortcut-badge"
+							style={getPseudoMenuBadgeStyle()}
+							>{rootShortcutLabel}</span
+						>
+						<span>Open menu</span>
+					</button>
+				{/if}
+			</div>
+		</div>
+	{/if}
 {/snippet}
 
 <main>
@@ -2639,16 +3002,133 @@
 		margin-block-start: var(--size-3);
 	}
 
+	.target-action-menu {
+		display: grid;
+		gap: var(--size-1);
+		min-width: 0;
+	}
+
+	.action-item > .target-action-menu {
+		grid-column: 1 / -1;
+	}
+
+	.launcher-group > .target-action-menu {
+		padding: var(--size-2) var(--size-3);
+		background: color-mix(in srgb, var(--nc-primary) 8%, var(--nc-surface-1));
+		border-inline: 1px solid var(--nc-primary);
+		border-bottom: 1px solid var(--nc-primary);
+	}
+
+	.target-action-menu-replacement {
+		display: grid;
+		gap: var(--size-1);
+	}
+
+	.target-action-menu-detail {
+		display: grid;
+		min-width: 0;
+	}
+
+	.target-action-menu-detail > * {
+		grid-area: 1 / 1;
+	}
+
+	.target-action-menu-item {
+		display: grid;
+		grid-template-columns: 1.45rem minmax(0, 1fr);
+		align-items: center;
+		gap: var(--size-1);
+		width: 100%;
+		min-width: 0;
+		margin: 0;
+		padding: 0.35rem 0.55rem;
+		color: var(--nc-tx-1);
+		background: color-mix(in srgb, var(--nc-surface-2) 74%, transparent);
+		border: 1px solid color-mix(in srgb, var(--nc-primary) 28%, var(--nc-border));
+		border-radius: calc(var(--nc-radius) * 0.75);
+		font-size: var(--font-size-0);
+		font-weight: 700;
+		line-height: 1.2;
+		text-align: left;
+		box-shadow: none;
+	}
+
+	.target-action-menu-item span:last-child {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.target-action-menu-item:hover,
+	.target-action-menu-item:focus {
+		background: color-mix(in srgb, var(--nc-primary) 12%, var(--nc-surface-2));
+		box-shadow: none;
+	}
+
+	.staged-action-menu-item {
+		grid-template-columns: 1.45rem minmax(0, 1fr) auto;
+		background: var(--nc-surface-1);
+	}
+
+	.target-action-menu.full .primary-action {
+		background: var(--nc-surface-1);
+	}
+
+	.target-action-menu .primary-action {
+		grid-template-columns: 1.45rem minmax(0, 1fr) auto;
+	}
+
+	.staged-action-menu-shortcut {
+		display: inline-grid;
+		place-items: center;
+	}
+
+	.staged-action-menu-shortcut .shortcut-label {
+		margin-inline: 0;
+	}
+
+	.shortcut-rail {
+		display: inline-grid;
+		place-items: center;
+		min-width: 0;
+	}
+
+	.shortcut-rail .shortcut-label,
+	.target-action-menu-item .shortcut-label {
+		margin-inline: 0;
+	}
+
+	.staged-action-menu-label {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.enter-shortcut-label {
+		justify-self: end;
+	}
+
+	.staged-action-menu-item.armed {
+		color: var(--nc-primary);
+		border-color: color-mix(in srgb, var(--nc-primary) 55%, var(--nc-border));
+	}
+
+	.staged-action-menu-item:hover,
+	.staged-action-menu-item:focus {
+		background: color-mix(in srgb, var(--nc-primary) 10%, var(--nc-surface-1));
+		box-shadow: none;
+	}
+
 	.launcher-group {
 		display: grid;
 		gap: 0;
 	}
 
 	.launcher-group-header {
-		display: flex;
+		display: grid;
+		grid-template-columns: 1.45rem minmax(0, 1fr) auto;
 		align-items: center;
-		justify-content: space-between;
-		gap: var(--size-3);
+		gap: var(--size-2);
 		width: 100%;
 		margin: 0;
 		padding: var(--size-2) var(--size-3);
@@ -2825,11 +3305,18 @@
 			transform 120ms ease;
 	}
 
-	.item-run {
-		display: flex;
+	.action-item.has-staged-menu,
+	.action-item.has-target-actions {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto auto;
 		align-items: center;
-		justify-content: space-between;
-		gap: var(--size-3);
+	}
+
+	.item-run {
+		display: grid;
+		grid-template-columns: 1.45rem minmax(0, 1fr) auto;
+		align-items: center;
+		gap: var(--size-2);
 		flex: 1 1 auto;
 		min-width: 0;
 		margin: 0;
@@ -3006,13 +3493,17 @@
 			0 1px 2px color-mix(in srgb, black 12%, transparent);
 	}
 
-	.action-item.primary .shortcut-label,
-	.launcher-group-header.primary .shortcut-label {
-		color: var(--nc-primary);
+	.shortcut-label.disabled {
+		color: color-mix(in srgb, var(--nc-tx-2) 58%, transparent);
+		background: color-mix(in srgb, var(--nc-surface-2) 48%, transparent);
+		border-color: color-mix(in srgb, var(--nc-border) 60%, transparent);
+		box-shadow: none;
+		opacity: 0.58;
 	}
 
 	.action-item.primary .shortcut-label,
 	.launcher-group-header.primary .shortcut-label {
+		color: var(--nc-primary);
 		border-color: color-mix(in srgb, var(--nc-primary) 55%, var(--nc-border));
 	}
 
@@ -3050,6 +3541,28 @@
 		white-space: nowrap;
 	}
 
+	.pseudo-menu-shortcut-badge.animate-pseudo-badge {
+		animation: pseudo-badge-pop var(--pseudo-menu-badge-duration) cubic-bezier(0.2, 0.8, 0.2, 1)
+			var(--pseudo-menu-badge-delay) both;
+	}
+
+	@keyframes pseudo-badge-pop {
+		from {
+			opacity: 0;
+			transform: scale(0.88);
+		}
+
+		65% {
+			opacity: 1;
+			transform: scale(1.06);
+		}
+
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
 	@media (max-width: 520px) {
 		.launcher-list {
 			gap: var(--size-2);
@@ -3066,50 +3579,21 @@
 			gap: var(--size-1);
 		}
 
-		.item-run.has-shortcut {
-			display: grid;
-			grid-template-columns: minmax(0, 1fr) auto;
+		.item-run {
+			grid-template-columns: 1.45rem minmax(0, 1fr) auto;
 			align-items: start;
 			gap: 0.125rem var(--size-2);
 		}
 
-		.item-run.has-shortcut .item-text {
-			display: contents;
-		}
-
-		.item-run.has-shortcut .item-heading {
-			grid-column: 1;
-		}
-
-		.item-run.has-shortcut .item-text small {
-			grid-column: 1 / -1;
-		}
-
-		.item-run.has-shortcut .item-aside {
-			grid-column: 2;
-			grid-row: 1;
-		}
-
 		.launcher-group-header {
-			display: grid;
-			grid-template-columns: minmax(0, 1fr) auto;
+			grid-template-columns: 1.45rem minmax(0, 1fr) auto;
 			align-items: start;
 			gap: 0.125rem var(--size-2);
 			padding: var(--size-1) var(--size-2);
 		}
 
-		.launcher-group-header .item-text {
-			display: contents;
-		}
-
-		.launcher-group-header .item-heading {
-			grid-column: 1;
-			grid-row: 1;
-		}
-
-		.launcher-group-header .item-aside {
-			grid-column: 2;
-			grid-row: 1;
+		.launcher-group > .target-action-menu {
+			padding-inline: var(--size-2);
 		}
 
 		.launcher-group-header .meta,
@@ -3119,8 +3603,6 @@
 
 		.group-mobile-count {
 			display: block;
-			grid-column: 1 / -1;
-			grid-row: 2;
 			overflow: hidden;
 			color: var(--nc-tx-2);
 			text-overflow: ellipsis;

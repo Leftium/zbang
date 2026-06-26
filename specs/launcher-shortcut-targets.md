@@ -43,32 +43,37 @@ Status: Mostly complete; remaining action-menu and parent/out normalization is d
 
 ### Stage 2: Staged Shortcut State
 
-Status: In progress.
+Status: In progress; staged target sequences can now downgrade from upgraded menu lanes.
 
 - [x] Separate committed text from staged shortcut text for shortcut initiators.
 - [x] Stage only uppercase initiators that match the current valid shortcut map.
 - [x] Resolve nonmatching staged text as literal input.
 - [x] Support `Enter` confirmation and `Backspace` cancellation for single-key staged shortcuts.
-- [ ] Support `Backspace` downgrade for multi-key staged shortcuts.
+- [x] Support `Backspace` downgrade for multi-key staged shortcuts.
 - [ ] Add Caps entry mode for literal uppercase shortcut letters.
 - [x] Render staged shortcut text distinctly from committed text with a minimal textarea preview foundation.
 
 ### Stage 3: Target Shortcut Sequences
 
-Status: Planned.
+Status: In progress.
 
-- [ ] Support `Q` to `Y` item target slots.
-- [ ] Support `U`, `I`, and `O` relative group target slots.
-- [ ] Capture the addressed target when a shortcut first arms.
-- [ ] Support same-letter progressive action upgrades such as `Q` and `Qq`.
-- [ ] Confirm armed target actions with `Enter` without recomputing the target.
-- [ ] Reserve the captured target's root shortcut key when its action menu is open.
+- [x] Support `Q` to `Y` item target slots.
+- [x] Support `U`, `I`, and `O` relative group target slots.
+- [x] Capture the addressed target when a shortcut first arms.
+- [x] Support same-letter progressive action upgrades such as `Q` and `Qq`.
+- [x] Confirm armed target actions with `Enter` without recomputing the target.
+- [x] Reserve the captured target's root shortcut key when its action menu is open.
+- [x] Open the focused target's action menu directly from its visible root shortcut affordance.
 
 ### Stage 4: Armed Feedback And Staged Rendering
 
-Status: Started with a minimal textarea status-row replacement.
+Status: In progress; focused targets now show inline primary/menu affordances instead of relying on target status hints.
 
 - [x] Replace the textarea status row with a minimal armed confirmation hint while a shortcut is staged.
+- [x] Replace target staged-action text with focused-row primary/menu affordances.
+- [x] Align row shortcuts, focused pseudo menus, and full action menus on a shared left shortcut rail.
+- [x] Hide duplicate row shortcut badges while their pseudo/full menu is expanded.
+- [x] Add downward badge fly and vertical slide replacement for pseudo/full menu transitions.
 - [ ] Decide whether a separate pinned armed command row is still needed after the status-row approach is tested.
 - [ ] Keep the armed command row out of item shortcut slot indexing.
 - [ ] Decide whether repeat-key and `Backspace` affordances should be shown in the armed feedback, or remain implicit expert behavior.
