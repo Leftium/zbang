@@ -154,6 +154,7 @@
 		ts: number;
 	};
 	type InputPreviewSegment = { kind: 'committed' | 'shortcut-staged'; text: string };
+	type StatusHint = { key: string; label: string };
 	type SettingGroupDefinition = {
 		id: string;
 		title: string;
@@ -323,6 +324,7 @@
 	const textareaPlaceholder = $derived(getTextareaPlaceholder());
 	const inputDisplayValue = $derived(getInputDisplayValue());
 	const inputPreviewSegments = $derived(getInputPreviewSegments());
+	const stagedShortcutStatusHint = $derived(getStagedShortcutStatusHint());
 	const selectablePrimaryTargets = $derived(getSelectablePrimaryTargets());
 	const activeLauncherGroup = $derived(getActiveLauncherGroup());
 	const shortcutItemTargets = $derived(
@@ -680,6 +682,50 @@
 		];
 	}
 
+	function getStagedShortcutStatusHint(): StatusHint | undefined {
+		if (!stagedShortcut) return undefined;
+
+		const label = getStagedShortcutConfirmationLabel(stagedShortcut.binding);
+		if (!label) return undefined;
+
+		return { key: 'ENTER', label };
+	}
+
+	function getStagedShortcutConfirmationLabel(binding: ShortcutBinding) {
+		if (binding.kind === 'target') {
+			if (binding.lane === 'group-menu') return undefined;
+
+			const action =
+				binding.lane === 'item-menu'
+					? getSecondaryAction(binding.target)
+					: getPrimaryAction(binding.target);
+
+			if (action) return action.title ?? action.label;
+			if (binding.lane === 'item-menu') return undefined;
+
+			return binding.target.title;
+		}
+
+		if (binding.kind === 'utility') {
+			if (binding.key === 'Z') return fullscreen ? 'Restore input' : 'Fullscreen input';
+			if (binding.key === 'X') return wordwrap ? 'Disable line wrap' : 'Enable line wrap';
+			if (binding.key === 'C') {
+				return (fullscreen ? enterNewlineFullscreen : enterNewlineRestored)
+					? 'Run action with Enter'
+					: 'Insert newline with Enter';
+			}
+			if (binding.key === 'V') {
+				return getPrimaryAction(primaryLauncherTarget)?.label ?? 'Run primary action';
+			}
+		}
+
+		if (binding.kind === 'parent') return 'Return to input';
+		if (binding.kind === 'text-transform' && binding.key === ' ') return 'Insert !';
+		if (binding.kind === 'text-transform' && binding.key === '.') return 'Search';
+
+		return undefined;
+	}
+
 	function isUppercaseShortcutInitiator(key: string | null | undefined) {
 		if (!key || key.length !== 1) return false;
 
@@ -776,6 +822,11 @@
 		}
 
 		if (binding.kind === 'utility') {
+			if (binding.key === 'V') {
+				void getPrimaryAction(primaryLauncherTarget)?.run();
+				return;
+			}
+
 			executeUtilityShortcut(binding.key);
 			return;
 		}
@@ -2485,6 +2536,7 @@
 			bind:value
 			displayValue={inputDisplayValue}
 			previewSegments={inputPreviewSegments}
+			statusHint={stagedShortcutStatusHint}
 			bind:fullscreen
 			bind:wordwrap
 			bind:enterNewlineRestored

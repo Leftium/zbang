@@ -66,11 +66,12 @@ Status: Planned.
 
 ### Stage 4: Armed Feedback And Staged Rendering
 
-Status: Planned.
+Status: Started with a minimal textarea status-row replacement.
 
-- [ ] Render a pinned armed command row above normal results.
+- [x] Replace the textarea status row with a minimal armed confirmation hint while a shortcut is staged.
+- [ ] Decide whether a separate pinned armed command row is still needed after the status-row approach is tested.
 - [ ] Keep the armed command row out of item shortcut slot indexing.
-- [ ] Show `Enter`, repeat-key, and `Backspace` affordances in the command row.
+- [ ] Decide whether repeat-key and `Backspace` affordances should be shown in the armed feedback, or remain implicit expert behavior.
 - [x] Render staged shortcut text distinctly from committed text with a minimal textarea preview foundation.
 - [ ] Polish staged text rendering for broader staged input, including future voice interim text.
 - [ ] Make staged `SPACE` visible with inline styling or overlay treatment.
@@ -409,28 +410,28 @@ Broader behavior:
 
 ### Armed Command Row
 
-When a shortcut buffer is active, the launcher should render a pinned armed command row above the normal launcher results.
+When a shortcut buffer is active, the launcher should render armed feedback near the input. The first implementation should replace the existing textarea status row rather than adding a separate pinned launcher row.
 
-The command row should:
+The minimal armed status row should:
 
-- Describe the currently armed target or command.
-- Show what `Enter` will confirm.
-- Show the next repeat-key upgrade when one exists.
-- Show `Backspace` cancellation or downgrade affordance.
+- Show only an `Enter` key badge and a short title for the command that `Enter` will confirm.
+- Replace the normal textarea controls and counts only while the staged shortcut is active.
 - Update as the shortcut sequence is upgraded or downgraded.
-- Be excluded from normal item shortcut slot indexing so it does not shift `Q` to `Y` item targets.
+- Avoid changing normal item shortcut slot indexing because it lives inside the input chrome rather than in the results list.
 
 Examples:
 
-- `SPACE`: show `Enter` inserts `!`, `Space` also inserts `!`, and `Backspace` cancels.
-- `F`: show `Enter` toggles fullscreen, `f` fast-confirms when enabled, and `Backspace` cancels.
-- `L`: show `Enter` toggles line wrap, `l` fast-confirms when enabled, and `Backspace` cancels.
-- `N`: show `Enter` toggles Enter-newline behavior, `n` fast-confirms when enabled, and `Backspace` cancels.
-- `S`: show `Enter` submits the search, `s` fast-confirms when enabled, and `Backspace` cancels.
-- `Q`: show item slot 1 is focused and `q` upgrades to the primary action.
-- `Qq`: show `Enter` runs the primary action and `q` upgrades to the action menu.
+- `SPACE`: show `Enter` inserts `!`.
+- `F`: show `Enter` toggles fullscreen.
+- `L`: show `Enter` toggles line wrap.
+- `N`: show `Enter` toggles Enter-newline behavior.
+- `S`: show `Enter` submits the search.
+- `Q`: show `Enter` runs the captured item slot 1 primary action.
+- `Qq`: show `Enter` runs the currently armed menu or secondary action.
 
-The command row can use full keyboard-shortcut badge styling from the first implementation because it does not affect textarea layout.
+Repeat-key fast confirmation and `Backspace` cancellation remain supported behavior, but they do not need to be shown in the minimal first row. They can be added later if discoverability is weak.
+
+A separate pinned command row above results remains a possible later direction if the textarea status-row treatment is too cramped, especially for nested menus or mobile polish.
 
 ### Rendering Staged Text
 

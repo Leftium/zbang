@@ -8,12 +8,14 @@
 	} from 'svelte/elements';
 
 	type PreviewSegment = { kind: 'committed' | 'shortcut-staged'; text: string };
+	type StatusHint = { key: string; label: string };
 
 	let {
 		textareaElement = $bindable(),
 		value = $bindable(''),
 		displayValue,
 		previewSegments,
+		statusHint,
 		fullscreen = $bindable(false),
 		wordwrap = $bindable(true),
 		enterNewlineRestored = $bindable(false),
@@ -28,6 +30,7 @@
 		value?: string;
 		displayValue?: string;
 		previewSegments?: PreviewSegment[];
+		statusHint?: StatusHint;
 		fullscreen?: boolean;
 		wordwrap?: boolean;
 		enterNewlineRestored?: boolean;
@@ -183,36 +186,43 @@
 	</div>
 
 	<div class="status-bar">
-		<div>
-			<button class="secondary outline" onclick={() => (fullscreen = !fullscreen)}>
-				{fullscreen ? 'Restore' : 'Fullscreen'}
-			</button>
-			<label title="wrap lines"><input type="checkbox" bind:checked={wordwrap} /> <b>wrap</b></label
-			>
-		</div>
+		{#if statusHint}
+			<div class="status-hint">
+				<span class="status-key">{statusHint.key}</span>
+				<span class="status-label">{statusHint.label}</span>
+			</div>
+		{:else}
+			<div>
+				<button class="secondary outline" onclick={() => (fullscreen = !fullscreen)}>
+					{fullscreen ? 'Restore' : 'Fullscreen'}
+				</button>
+				<label title="wrap lines"><input type="checkbox" bind:checked={wordwrap} /> <b>wrap</b></label
+				>
+			</div>
 
-		<div class="counts">
-			{#if lineCount > 1}{lineCount}L{/if}
-			{wordCount}w {charCount}c
-		</div>
+			<div class="counts">
+				{#if lineCount > 1}{lineCount}L{/if}
+				{wordCount}w {charCount}c
+			</div>
 
-		<div>
-			<label title="ENTER inserts newline">
-				<input
-					type="checkbox"
-					checked={enterNewline}
-					onchange={(event) => {
-						if (fullscreen) {
-							enterNewlineFullscreen = event.currentTarget.checked;
-						} else {
-							enterNewlineRestored = event.currentTarget.checked;
-						}
-					}}
-					onmousedown={(event) => event.preventDefault()}
-				/>
-				<b>ENTER</b>
-			</label>
-		</div>
+			<div>
+				<label title="ENTER inserts newline">
+					<input
+						type="checkbox"
+						checked={enterNewline}
+						onchange={(event) => {
+							if (fullscreen) {
+								enterNewlineFullscreen = event.currentTarget.checked;
+							} else {
+								enterNewlineRestored = event.currentTarget.checked;
+							}
+						}}
+						onmousedown={(event) => event.preventDefault()}
+					/>
+					<b>ENTER</b>
+				</label>
+			</div>
+		{/if}
 	</div>
 
 	{#if primaryAction}
@@ -346,6 +356,37 @@
 		white-space: nowrap;
 	}
 
+	.status-hint {
+		display: flex;
+		min-width: 0;
+		align-items: center;
+		gap: var(--size-2);
+	}
+
+	.status-key {
+		display: inline-grid;
+		box-sizing: border-box;
+		place-items: center;
+		min-width: 2.6rem;
+		height: 1.05rem;
+		padding: 0 0.35rem;
+		font-family: monospace;
+		font-size: 0.68rem;
+		font-weight: 700;
+		line-height: 1;
+		color: var(--nc-primary);
+		background: color-mix(in srgb, var(--nc-primary) 10%, var(--nc-surface-2));
+		border: 1px solid color-mix(in srgb, var(--nc-primary) 55%, var(--nc-border));
+		border-radius: calc(var(--nc-radius) * 0.55);
+	}
+
+	.status-label {
+		overflow: hidden;
+		font-weight: var(--font-weight-6);
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
 	.primary-action {
 		display: grid;
 		gap: var(--size-2);
@@ -392,6 +433,17 @@
 
 		.counts {
 			flex: 1 0 auto;
+		}
+
+		.status-hint {
+			flex: 1;
+			gap: var(--size-1);
+		}
+
+		.status-key {
+			min-width: 2.35rem;
+			height: 1rem;
+			font-size: 0.62rem;
 		}
 
 		.primary-action {
