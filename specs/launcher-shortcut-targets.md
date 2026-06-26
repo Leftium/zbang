@@ -67,13 +67,16 @@ Status: In progress.
 
 ### Stage 4: Armed Feedback And Staged Rendering
 
-Status: In progress; focused targets now show inline primary/menu affordances instead of relying on target status hints.
+Status: In progress; eligible action rows now use compact inline primary/menu affordances instead of relying on target status hints or the older expanded row menu treatment.
 
 - [x] Replace the textarea status row with a minimal armed confirmation hint while a shortcut is staged.
 - [x] Replace target staged-action text with focused-row primary/menu affordances.
-- [x] Align row shortcuts, focused pseudo menus, and full action menus on a shared left shortcut rail.
+- [x] Align compact row shortcut badges on a stable right-side rail.
 - [x] Hide duplicate row shortcut badges while their pseudo/full menu is expanded.
 - [x] Add downward badge fly and vertical slide replacement for pseudo/full menu transitions.
+- [x] Use compact action rows for search, clipboard, and bang items.
+- [x] Remove the secondary action pill from compact rows.
+- [x] Render compact full-menu rows below the primary row with right-aligned shortcut badges.
 - [ ] Decide whether a separate pinned armed command row is still needed after the status-row approach is tested.
 - [ ] Keep the armed command row out of item shortcut slot indexing.
 - [ ] Decide whether repeat-key and `Backspace` affordances should be shown in the armed feedback, or remain implicit expert behavior.
@@ -185,13 +188,30 @@ Examples:
 
 ### Action Menu
 
-The action menu shows the full `actions[]` list for a target.
+The action menu exposes the full `actions[]` list for a target. Compact rows may render `actions[0]` as the always-visible title row and show the remaining actions only when the menu expands.
 
 Opening a menu should focus the target first. This keeps shortcuts consistent even when the target was not already focused.
 
 Menu-opening shortcuts should still open a menu when a target has only one action. Showing the one-action menu preserves consistent shortcut behavior and makes the available action explicit.
 
 Running an action from a menu should close the menu unless the action explicitly keeps it open.
+
+### Compact Action Rows
+
+Compact action rows are the current preferred presentation for high-density action items. They currently apply to search, clipboard, and bang result items.
+
+The compact row model is:
+
+- The item title is the primary action.
+- The primary row renders the full title first.
+- The description uses the remaining horizontal space, stays on one line, and ellipsizes when needed.
+- The compact menu affordance lives on the right side of the row.
+- Opening the menu keeps the primary action in the title row and expands remaining menu actions vertically below it.
+- Shortcut badges remain right-aligned across the primary row and expanded menu rows.
+- Armed menu actions show `Enter` plus the menu shortcut alternative, such as `Enter or Q`.
+- Duplicate outer row shortcut badges are hidden while the compact menu is open.
+
+The older non-compact item menu presentation should be phased out in favor of compact menus where practical. Non-compact rows may remain temporarily for settings, mode navigation, notification, or other rows whose semantics still need separate treatment.
 
 ### Parent Or Out
 
