@@ -354,17 +354,6 @@
 				.filter((entry) => entry !== undefined)
 		])
 	);
-	const secondaryShortcutTargetIds = $derived(
-		new Map(
-			shortcutItemTargets
-				.map((target, index) =>
-					target.kind === 'item' && getSecondaryAction(target)
-						? ([target.id, itemMenuShortcutLabels[index]] as const)
-						: undefined
-				)
-				.filter((entry) => entry !== undefined)
-		)
-	);
 	const primaryLauncherTarget = $derived(
 		selectablePrimaryTargets.find((target) => target.id === selectedPrimaryItemId) ??
 			selectablePrimaryTargets.find((target) => target.kind === 'item' && target.item.safeForEnter)
@@ -1535,8 +1524,12 @@
 		return shortcutTargetIds.get(targetId);
 	}
 
-	function getSecondaryShortcutLabel(targetId: string) {
-		return secondaryShortcutTargetIds.get(targetId);
+	function getCompactActionTarget(
+		item: LauncherItem,
+		focusedTarget: PrimaryLauncherTarget | undefined,
+		stagedMenu: StagedActionMenu | undefined
+	) {
+		return stagedMenu?.target ?? focusedTarget ?? createSelectableItemTarget(item)[0];
 	}
 
 	function getGroupNavigationShortcuts(group: LauncherGroup) {
@@ -2034,7 +2027,7 @@
 							kind: 'action',
 							title,
 							titleSegments: provider === 'custom' ? getBangCodeLabelSegments(title) : undefined,
-							description: `Search for "${context.text}".`,
+							description: `for "${context.text}".`,
 							score: provider === settings.searchProvider ? 100 : 65,
 							safeForEnter: provider === settings.searchProvider,
 							run: () => search(provider),
@@ -2627,12 +2620,15 @@
 {#snippet actionItem(item: LauncherItem, shortcutLabel: string | undefined)}
 	{@const itemMeta = formatItemMeta(item)}
 	{@const itemShortcutLabel = item.pluginId === 'bang-data' ? undefined : shortcutLabel}
-	{@const secondaryShortcutLabel = getSecondaryShortcutLabel(item.id)}
 	{@const isFocused = item.id === primaryLauncherItem?.id}
 	{@const focusedTarget = isFocused && primaryLauncherTarget?.kind === 'item' ? primaryLauncherTarget : undefined}
 	{@const stagedMenu = stagedActionMenu?.target.id === item.id ? stagedActionMenu : undefined}
+	{@const useCompactActionMenu = item.pluginId === 'search' || item.pluginId === 'clipboard'}
 	{@const hasShortcut = Boolean(itemShortcutLabel)}
 	{@const rowShortcutExpanded = Boolean(focusedTarget || stagedMenu)}
+	{#if useCompactActionMenu}
+		{@render compactActionItem(item, itemShortcutLabel, focusedTarget, stagedMenu)}
+	{:else}
 	<div
 		class:has-staged-menu={Boolean(stagedMenu)}
 		class:has-target-actions={Boolean(focusedTarget) && !stagedMenu}
@@ -2680,29 +2676,110 @@
 			{/if}
 		</button>
 
-		{#if item.secondaryAction && !focusedTarget}
-			<button
-				class="secondary-action"
-				title={item.secondaryAction.title}
-				onclick={() => item.secondaryAction?.run()}
-			>
-				{#if secondaryShortcutLabel}<span class="shortcut-label secondary-action-shortcut"
-						>{secondaryShortcutLabel}</span
-					>{/if}
-				{item.secondaryAction.label}
-			</button>
-		{/if}
-
-		{#if item.secondaryAction && !focusedTarget && isFocused && itemMeta}
-			<span class="item-aside">
-				<span class="meta">{itemMeta}</span>
-			</span>
-		{/if}
-
 		{#if focusedTarget || stagedMenu}
 			{@render targetActionMenu(stagedMenu?.target ?? focusedTarget, itemShortcutLabel, stagedMenu)}
 		{/if}
 	</div>
+	{/if}
+{/snippet}
+
+{#snippet compactActionItem(
+	item: LauncherItem,
+	itemShortcutLabel: string | undefined,
+	focusedTarget: PrimaryLauncherTarget | undefined,
+	stagedMenu: StagedActionMenu | undefined
+)}
+	{@const itemTarget = getCompactActionTarget(item, focusedTarget, stagedMenu)}
+	{@const rowActive = Boolean(focusedTarget || stagedMenu)}
+	{@const primaryAction = getPrimaryAction(itemTarget)}
+	{@const armedAction = stagedMenu ? getStagedActionMenuArmedAction(stagedMenu) : undefined}
+	{@const primaryMenuShortcutLabel = stagedMenu ? getActionMenuShortcutLabel(stagedMenu, 0) : undefined}
+	{@const primaryActionArmed = rowActive && (!stagedMenu || primaryAction?.id === armedAction?.id)}
+	<div
+		class:has-staged-menu={Boolean(stagedMenu)}
+		class:has-target-actions={Boolean(focusedTarget) && !stagedMenu}
+		class:primary={item.id === primaryLauncherItem?.id}
+		class="launcher-item action-item compact-action-item"
+	>
+		<button
+			class:active-action={rowActive}
+			class="item-run compact-action-primary"
+			disabled={!item.run}
+			onclick={() => item.run?.()}
+		>
+			<span class="item-text">
+				<span class="item-heading">
+					<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
+				</span>
+				<span
+					class:compact-action-hidden={!rowActive || !item.description}
+					class="compact-action-description"
+				>
+					{#if item.description}{@render highlightedText(item.descriptionSegments, item.description)}{/if}
+				</span>
+			</span>
+			<span class="compact-action-shortcuts">
+				{#if primaryActionArmed}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
+				{#if primaryActionArmed && primaryMenuShortcutLabel}<span class="shortcut-or-label">or</span>{/if}
+				{#if primaryMenuShortcutLabel}<span class="shortcut-label">{primaryMenuShortcutLabel}</span>{/if}
+			</span>
+		</button>
+
+		{@render compactActionMenu(itemTarget, itemShortcutLabel, stagedMenu, rowActive)}
+	</div>
+{/snippet}
+
+{#snippet compactActionMenu(
+	target: PrimaryLauncherTarget | undefined,
+	rootShortcutLabel: string | undefined,
+	menu: StagedActionMenu | undefined,
+	rowActive = true
+)}
+	{#if target}
+		{@const armedAction = menu ? getStagedActionMenuArmedAction(menu) : undefined}
+		<div
+			class="target-action-menu compact-action-menu"
+			class:active-action={rowActive}
+			class:full={Boolean(menu)}
+			role={menu ? 'menu' : undefined}
+			aria-label={`Actions for ${target.title}`}
+		>
+			{#if menu}
+				{#each menu.actions.slice(1) as action, offset (action.id)}
+					{@const index = offset + 1}
+					{@const shortcutLabel = getActionMenuShortcutLabel(menu, index)}
+					<button
+						class:armed={action.id === armedAction?.id}
+						class="target-action-menu-item staged-action-menu-item compact-action-menu-item"
+						role="menuitem"
+						onpointerdown={(event) => event.preventDefault()}
+						onclick={() => runStagedActionMenuAction(action)}
+					>
+						<span class="staged-action-menu-label">{action.title ?? action.label}</span>
+						<span class="compact-action-shortcuts">
+							{#if action.id === armedAction?.id}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
+							{#if action.id === armedAction?.id && shortcutLabel}<span class="shortcut-or-label">or</span>{/if}
+							{#if shortcutLabel}<span class="shortcut-label">{shortcutLabel}</span>{/if}
+						</span>
+					</button>
+				{/each}
+			{:else if rootShortcutLabel}
+				<button
+					class="target-action-menu-item menu-action compact-action-menu-item"
+					onpointerdown={(event) => event.preventDefault()}
+					onclick={() => openTargetActionMenuFromAffordance(target, rootShortcutLabel)}
+				>
+					<span class:compact-action-invisible={!rowActive}>Open menu</span>
+					<span
+						class:disabled={!rowActive && isItemShortcutLabelDisabled(rootShortcutLabel)}
+						class:inactive-compact-shortcut={!rowActive}
+						class="shortcut-label pseudo-menu-shortcut-badge"
+						>{rootShortcutLabel}</span
+					>
+				</button>
+			{/if}
+		</div>
+	{/if}
 {/snippet}
 
 {#snippet insightItem(item: LauncherItem)}
@@ -3312,6 +3389,26 @@
 		align-items: center;
 	}
 
+	.compact-action-item {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 7rem;
+		gap: 0.4rem;
+		padding: 0.4rem 0 0.4rem 0.4rem;
+	}
+
+	.compact-action-item.has-staged-menu {
+		grid-template-columns: minmax(0, 1fr);
+		padding-inline-end: 0.4rem;
+	}
+
+	.compact-action-item > .compact-action-menu {
+		grid-column: auto;
+	}
+
+	.compact-action-item.has-staged-menu > .compact-action-menu {
+		grid-column: 1 / -1;
+	}
+
 	.item-run {
 		display: grid;
 		grid-template-columns: 1.45rem minmax(0, 1fr) auto;
@@ -3340,33 +3437,101 @@
 		opacity: 1;
 	}
 
-	.secondary-action {
-		flex: 0 0 auto;
-		align-self: flex-start;
-		display: inline-flex;
-		align-items: center;
-		gap: 0.375rem;
+	.compact-action-primary,
+	.compact-action-menu-item {
 		margin: 0;
-		padding: 0.2rem 0.5rem;
-		color: var(--nc-tx-2);
-		background: color-mix(in srgb, var(--nc-surface-2) 72%, transparent);
-		border: 1px solid var(--nc-border);
-		border-radius: 999px;
-		font-size: var(--font-size-0);
-		font-weight: 700;
+		padding: 0.2rem 0.4rem;
+		color: var(--nc-tx-1);
+		background: transparent;
+		border: 1px solid transparent;
+		border-radius: calc(var(--nc-radius) * 0.75);
 		line-height: 1.2;
 		box-shadow: none;
 	}
 
-	.secondary-action-shortcut {
-		margin-inline: 0;
+	.compact-action-primary {
+		grid-template-columns: minmax(0, 1fr) auto;
 	}
 
-	.secondary-action:hover,
-	.secondary-action:focus {
-		color: var(--nc-tx-1);
-		background: color-mix(in srgb, var(--nc-primary) 10%, var(--nc-surface-2));
-		box-shadow: none;
+	.compact-action-shortcuts {
+		display: inline-flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0.25rem;
+	}
+
+	.shortcut-or-label {
+		color: var(--nc-tx-2);
+		font-size: var(--font-size-0);
+		font-weight: 600;
+		line-height: 1;
+	}
+
+	.compact-action-primary.active-action,
+	.compact-action-menu.active-action .compact-action-menu-item {
+		background: color-mix(in srgb, var(--nc-surface-2) 74%, transparent);
+		border-color: color-mix(in srgb, var(--nc-primary) 28%, var(--nc-border));
+	}
+
+	.compact-action-primary.active-action:hover,
+	.compact-action-primary.active-action:focus,
+	.compact-action-menu.active-action .compact-action-menu-item:hover,
+	.compact-action-menu.active-action .compact-action-menu-item:focus {
+		background: color-mix(in srgb, var(--nc-primary) 12%, var(--nc-surface-2));
+	}
+
+	.compact-action-primary .item-text {
+		display: flex;
+		align-items: baseline;
+		gap: 0.4rem;
+	}
+
+	.compact-action-primary .item-heading {
+		flex: 0 1 auto;
+	}
+
+	.compact-action-description {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.compact-action-hidden {
+		display: none;
+	}
+
+	.compact-action-invisible {
+		visibility: hidden;
+	}
+
+	.compact-action-menu {
+		justify-self: end;
+		width: max-content;
+		max-width: 100%;
+	}
+
+	.compact-action-menu.full {
+		justify-self: stretch;
+		width: 100%;
+	}
+
+	.compact-action-menu-item {
+		grid-template-columns: minmax(0, 1fr) auto;
+		justify-content: stretch;
+		gap: 0.4rem;
+		width: 100%;
+		max-width: 100%;
+		white-space: nowrap;
+	}
+
+	.compact-action-menu.full .compact-action-menu-item {
+		grid-template-columns: minmax(0, 1fr) auto;
+		justify-content: stretch;
+		padding-inline-end: 0.25rem;
+		width: 100%;
+	}
+
+	.compact-action-item.has-staged-menu .compact-action-primary {
+		padding-inline-end: 0.25rem;
 	}
 
 	.action-item.primary {
@@ -3377,6 +3542,10 @@
 		border-color: var(--nc-primary);
 		box-shadow: 0 0.375rem 1rem color-mix(in srgb, var(--nc-primary) 16%, transparent);
 		transform: translateY(-1px);
+	}
+
+	.compact-action-item.primary {
+		transform: none;
 	}
 
 	.launcher-group .action-item.primary {
@@ -3507,6 +3676,18 @@
 		border-color: color-mix(in srgb, var(--nc-primary) 55%, var(--nc-border));
 	}
 
+	.compact-action-menu-item .shortcut-label {
+		margin-inline: 0;
+	}
+
+	.compact-action-shortcuts .shortcut-label {
+		margin-inline: 0;
+	}
+
+	.compact-action-menu-item .inactive-compact-shortcut {
+		margin-inline-end: 0.4rem;
+	}
+
 	.launcher-item strong,
 	.launcher-item small {
 		display: block;
@@ -3583,6 +3764,24 @@
 			grid-template-columns: 1.45rem minmax(0, 1fr) auto;
 			align-items: start;
 			gap: 0.125rem var(--size-2);
+		}
+
+		.compact-action-item.has-staged-menu {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.compact-action-primary {
+			grid-template-columns: minmax(0, 1fr) auto;
+		}
+
+		.compact-action-primary .item-text {
+			display: grid;
+			gap: 0.125rem;
+		}
+
+		.compact-action-menu.full,
+		.compact-action-menu.full .compact-action-menu-item {
+			width: 100%;
 		}
 
 		.launcher-group-header {
