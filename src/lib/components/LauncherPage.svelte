@@ -3074,8 +3074,10 @@
 	}
 
 	.launcher-list {
+		--launcher-row-gap: var(--size-2);
+
 		display: grid;
-		gap: var(--size-3);
+		gap: var(--launcher-row-gap);
 		margin-block-start: var(--size-3);
 	}
 
@@ -3198,7 +3200,7 @@
 
 	.launcher-group {
 		display: grid;
-		gap: 0;
+		gap: var(--launcher-row-gap);
 	}
 
 	.launcher-group-header {
@@ -3213,7 +3215,7 @@
 		text-align: left;
 		background: var(--nc-surface-2);
 		border: 1px solid var(--nc-border);
-		border-radius: var(--nc-radius) var(--nc-radius) 0 0;
+		border-radius: var(--nc-radius);
 		box-shadow: none;
 	}
 
@@ -3235,16 +3237,15 @@
 
 	.launcher-group-items {
 		display: grid;
-		gap: 0;
+		gap: var(--launcher-row-gap);
 	}
 
 	.launcher-group-items > .launcher-item {
-		border-top: 0;
-		border-radius: 0;
+		border-radius: var(--nc-radius);
 	}
 
 	.launcher-group-items > .launcher-item:last-child {
-		border-radius: 0 0 var(--nc-radius) var(--nc-radius);
+		border-radius: var(--nc-radius);
 	}
 
 	.group-toggle-label {
@@ -3746,7 +3747,8 @@
 
 	@media (max-width: 520px) {
 		.launcher-list {
-			gap: var(--size-2);
+			--launcher-row-gap: var(--size-1);
+
 			margin-block-start: var(--size-2);
 		}
 
