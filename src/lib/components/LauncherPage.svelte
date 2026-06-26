@@ -145,6 +145,15 @@
 	type ShortcutBinding =
 		| { key: string; kind: 'target'; lane: ShortcutLane; target: PrimaryLauncherTarget }
 		| { key: string; kind: 'parent' | 'utility' | 'text-transform'; lane: ShortcutLane };
+	type StagedShortcut = {
+		buffer: string;
+		binding: ShortcutBinding;
+		focusSnapshot: FocusSnapshot;
+		selectionStart: number;
+		selectionEnd: number;
+		ts: number;
+	};
+	type InputPreviewSegment = { kind: 'committed' | 'shortcut-staged'; text: string };
 	type SettingGroupDefinition = {
 		id: string;
 		title: string;
@@ -235,6 +244,7 @@
 	let pendingShortcutPrimaryTarget: PrimaryLauncherTarget | undefined;
 	let pendingShortcutFocusSnapshot: FocusSnapshot | undefined;
 	let pendingTripleShortcut: PendingTripleShortcut | undefined;
+	let stagedShortcut = $state<StagedShortcut>();
 	let myBangWrite = Promise.resolve();
 	let loadingBangProvider = $state<BangProviderId>();
 	let doubleKeypress = $state<string>();
@@ -311,6 +321,8 @@
 		)
 	);
 	const textareaPlaceholder = $derived(getTextareaPlaceholder());
+	const inputDisplayValue = $derived(getInputDisplayValue());
+	const inputPreviewSegments = $derived(getInputPreviewSegments());
 	const selectablePrimaryTargets = $derived(getSelectablePrimaryTargets());
 	const activeLauncherGroup = $derived(getActiveLauncherGroup());
 	const shortcutItemTargets = $derived(
@@ -648,11 +660,209 @@
 		requestAnimationFrame(() => textareaElement?.setSelectionRange(cursor, cursor));
 	}
 
+	function getInputDisplayValue() {
+		if (!stagedShortcut) return undefined;
+
+		return (
+			value.slice(0, stagedShortcut.selectionStart) +
+			stagedShortcut.buffer +
+			value.slice(stagedShortcut.selectionEnd)
+		);
+	}
+
+	function getInputPreviewSegments(): InputPreviewSegment[] | undefined {
+		if (!stagedShortcut) return undefined;
+
+		return [
+			{ kind: 'committed', text: value.slice(0, stagedShortcut.selectionStart) },
+			{ kind: 'shortcut-staged', text: stagedShortcut.buffer },
+			{ kind: 'committed', text: value.slice(stagedShortcut.selectionEnd) }
+		];
+	}
+
+	function isUppercaseShortcutInitiator(key: string | null | undefined) {
+		if (!key || key.length !== 1) return false;
+
+		const shortcutKey = key.toLocaleUpperCase();
+
+		return /^[A-Z]$/.test(shortcutKey) && key === shortcutKey && validShortcutBindings.has(shortcutKey);
+	}
+
+	function stageShortcutInitiator(key: string, ts = Date.now()) {
+		if (!isUppercaseShortcutInitiator(key) || !textareaElement) return false;
+
+		const shortcutKey = key.toLocaleUpperCase();
+		const binding = validShortcutBindings.get(shortcutKey);
+		if (!binding) return false;
+
+		const { selectionStart, selectionEnd } = textareaElement;
+		const focusSnapshot = captureFocusSnapshot();
+
+		captureShortcutSnapshot(shortcutKey);
+
+		stagedShortcut = {
+			buffer: key,
+			binding,
+			focusSnapshot,
+			selectionStart,
+			selectionEnd,
+			ts
+		};
+
+		if (binding.kind === 'target') focusLauncherTarget(binding.target);
+
+		requestAnimationFrame(() => {
+			const cursor = selectionStart + key.length;
+			textareaElement?.setSelectionRange(cursor, cursor);
+		});
+
+		return true;
+	}
+
+	function commitStagedShortcutLiteral(extraText = '') {
+		if (!stagedShortcut) return false;
+
+		const { buffer, selectionStart, selectionEnd, focusSnapshot } = stagedShortcut;
+		const text = buffer + extraText;
+		const cursor = selectionStart + text.length;
+
+		value = value.slice(0, selectionStart) + text + value.slice(selectionEnd);
+		restoreFocusSnapshot(focusSnapshot);
+		resetShortcutState();
+
+		requestAnimationFrame(() => {
+			textareaElement?.setSelectionRange(cursor, cursor);
+			if (textareaElement) updateBangEntry(textareaElement);
+		});
+
+		return true;
+	}
+
+	function cancelStagedShortcut() {
+		if (!stagedShortcut) return false;
+
+		const { selectionStart, focusSnapshot } = stagedShortcut;
+
+		restoreFocusSnapshot(focusSnapshot);
+		resetShortcutState();
+
+		requestAnimationFrame(() => textareaElement?.setSelectionRange(selectionStart, selectionStart));
+
+		return true;
+	}
+
+	function confirmStagedShortcut() {
+		if (!stagedShortcut) return false;
+
+		executeStagedShortcutConfirmation(stagedShortcut.binding);
+		resetShortcutState();
+
+		return true;
+	}
+
+	function executeStagedShortcutConfirmation(binding: ShortcutBinding) {
+		if (binding.kind === 'target') {
+			focusLauncherTarget(binding.target);
+
+			if (binding.lane === 'item-menu') {
+				void getSecondaryAction(binding.target)?.run();
+				return;
+			}
+
+			if (binding.lane === 'group-menu') return;
+
+			void getPrimaryAction(binding.target)?.run();
+			return;
+		}
+
+		if (binding.kind === 'utility') {
+			executeUtilityShortcut(binding.key);
+			return;
+		}
+
+		if (binding.kind === 'parent') {
+			focusInput();
+		}
+	}
+
+	function fastConfirmStagedShortcut(key: string, ts: number) {
+		if (!stagedShortcut) return false;
+		if (ts - stagedShortcut.ts >= shortcutDelay) return false;
+		if (key.toLocaleLowerCase() !== stagedShortcut.binding.key.toLocaleLowerCase()) return false;
+
+		executeStagedShortcutConfirmation(stagedShortcut.binding);
+		resetShortcutState();
+
+		return true;
+	}
+
+	function handleStagedShortcutKeydown(event: KeyboardEvent) {
+		if (!stagedShortcut) return false;
+
+		const ts = Date.now();
+
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			return confirmStagedShortcut();
+		}
+
+		if (event.key === 'Backspace') {
+			event.preventDefault();
+			return cancelStagedShortcut();
+		}
+
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			return cancelStagedShortcut();
+		}
+
+		if (event.key.length !== 1 || event.metaKey || event.ctrlKey || event.altKey) {
+			if (!['Shift', 'Control', 'Alt', 'Meta'].includes(event.key)) cancelStagedShortcut();
+			return false;
+		}
+
+		event.preventDefault();
+
+		if (fastConfirmStagedShortcut(event.key, ts)) return true;
+
+		return commitStagedShortcutLiteral(event.key);
+	}
+
+	function handleStagedShortcutBeforeInput(event: InputEvent) {
+		const { data, inputType } = event;
+		const ts = Date.now();
+
+		if (stagedShortcut && inputType === 'insertLineBreak') {
+			event.preventDefault();
+			return confirmStagedShortcut();
+		}
+
+		if (stagedShortcut && inputType === 'deleteContentBackward') {
+			event.preventDefault();
+			return cancelStagedShortcut();
+		}
+
+		if (inputType !== 'insertText' || !data) return false;
+
+		if (stagedShortcut) {
+			event.preventDefault();
+			if (fastConfirmStagedShortcut(data, ts)) return true;
+			return commitStagedShortcutLiteral(data);
+		}
+
+		if (!isUppercaseShortcutInitiator(data)) return false;
+
+		event.preventDefault();
+		return stageShortcutInitiator(data);
+	}
+
 	function handleLauncherBeforeInput(event: InputEvent) {
 		const { data, inputType } = event;
 		const ts = Date.now();
 		const lastInput = inputHistory[0];
 		const interval = lastInput ? ts - lastInput.ts : Infinity;
+
+		if (handleStagedShortcutBeforeInput(event)) return;
 
 		doubleKeypress = undefined;
 		tripleKeypress = undefined;
@@ -685,7 +895,14 @@
 	function handleLauncherKeydown(event: KeyboardEvent) {
 		const textarea = event.currentTarget as HTMLTextAreaElement;
 
+		if (handleStagedShortcutKeydown(event)) return;
+
 		if (handleShortcutKeydown(event)) return;
+
+		if (!event.metaKey && !event.ctrlKey && !event.altKey && stageShortcutInitiator(event.key)) {
+			event.preventDefault();
+			return;
+		}
 
 		if (handlePrimaryNavigation(event)) return;
 
@@ -711,6 +928,7 @@
 		const textarea = event.currentTarget as HTMLTextAreaElement;
 
 		clearBangFanoutMessage();
+		if (stagedShortcut) return;
 
 		if (handleShortcutInput()) return;
 
@@ -968,6 +1186,7 @@
 		tripleKeypress = undefined;
 		inputHistory = [];
 		keyHistory = [];
+		stagedShortcut = undefined;
 		pendingShortcutItemTargets = [];
 		pendingShortcutGroupTargets = [];
 		pendingShortcutPrimaryTarget = undefined;
@@ -1059,7 +1278,22 @@
 	}
 
 	function handleLauncherCursorChange(event: Event) {
+		if (stagedShortcut) {
+			cancelStagedShortcut();
+			return;
+		}
+
 		updateBangEntry(event.currentTarget as HTMLTextAreaElement);
+	}
+
+	function handleLauncherKeyup(event: Event) {
+		if (stagedShortcut) return;
+
+		updateBangEntry(event.currentTarget as HTMLTextAreaElement);
+	}
+
+	function handleLauncherBlur() {
+		cancelStagedShortcut();
 	}
 
 	function isBangTrigger(input: string, index: number) {
@@ -2249,6 +2483,8 @@
 		<ExpandingTextarea
 			bind:textareaElement
 			bind:value
+			displayValue={inputDisplayValue}
+			previewSegments={inputPreviewSegments}
 			bind:fullscreen
 			bind:wordwrap
 			bind:enterNewlineRestored
@@ -2258,11 +2494,12 @@
 			autocomplete="off"
 			autocapitalize="off"
 			placeholder={textareaPlaceholder}
+			onblur={handleLauncherBlur}
 			onbeforeinput={handleLauncherBeforeInput}
 			onclick={handleLauncherCursorChange}
 			oninput={handleLauncherInput}
 			onkeydown={handleLauncherKeydown}
-			onkeyup={handleLauncherCursorChange}
+			onkeyup={handleLauncherKeyup}
 			onprimaryaction={runPrimaryAction}
 		>
 			{#snippet primaryAction()}

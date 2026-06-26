@@ -33,22 +33,25 @@ Use these stages to track implementation progress. Status should be updated as w
 
 ### Stage 1: Target And Focus Foundation
 
-Status: In progress.
+Status: Mostly complete; remaining action-menu and parent/out normalization is deferred until nested menus and parent contexts are implemented.
 
 - [x] Represent item and group headers as launcher targets.
 - [ ] Normalize target actions as primary, secondary, action menu, and parent/out behaviors.
-- [ ] Make focus snapshots restorable after shortcut cancellation or nested context exit.
+- [x] Make focus snapshots restorable after shortcut cancellation.
+- [ ] Make focus snapshots restorable after nested context exit.
 - [x] Build a mode-aware valid shortcut map for visible targets and global commands.
 
 ### Stage 2: Staged Shortcut State
 
-Status: Planned.
+Status: In progress.
 
-- [ ] Separate committed text from staged shortcut text.
-- [ ] Stage only uppercase initiators that match the current valid shortcut map.
-- [ ] Resolve nonmatching staged text as literal input.
-- [ ] Support `Enter` confirmation and `Backspace` downgrade or cancellation.
+- [x] Separate committed text from staged shortcut text for shortcut initiators.
+- [x] Stage only uppercase initiators that match the current valid shortcut map.
+- [x] Resolve nonmatching staged text as literal input.
+- [x] Support `Enter` confirmation and `Backspace` cancellation for single-key staged shortcuts.
+- [ ] Support `Backspace` downgrade for multi-key staged shortcuts.
 - [ ] Add Caps entry mode for literal uppercase shortcut letters.
+- [x] Render staged shortcut text distinctly from committed text with a minimal textarea preview foundation.
 
 ### Stage 3: Target Shortcut Sequences
 
@@ -57,8 +60,9 @@ Status: Planned.
 - [ ] Support `Q` to `Y` item target slots.
 - [ ] Support `U`, `I`, and `O` relative group target slots.
 - [ ] Capture the addressed target when a shortcut first arms.
-- [ ] Support same-letter progressive action upgrades such as `Q`, `Qq`, `Qqq`, and `Qqqq`.
+- [ ] Support same-letter progressive action upgrades such as `Q` and `Qq`.
 - [ ] Confirm armed target actions with `Enter` without recomputing the target.
+- [ ] Reserve the captured target's root shortcut key when its action menu is open.
 
 ### Stage 4: Armed Feedback And Staged Rendering
 
@@ -67,7 +71,8 @@ Status: Planned.
 - [ ] Render a pinned armed command row above normal results.
 - [ ] Keep the armed command row out of item shortcut slot indexing.
 - [ ] Show `Enter`, repeat-key, and `Backspace` affordances in the command row.
-- [ ] Render staged text distinctly from committed text.
+- [x] Render staged shortcut text distinctly from committed text with a minimal textarea preview foundation.
+- [ ] Polish staged text rendering for broader staged input, including future voice interim text.
 - [ ] Make staged `SPACE` visible with inline styling or overlay treatment.
 
 ### Stage 5: Global Commands And Text Transforms
@@ -291,7 +296,7 @@ If an uppercase key does not match a currently valid shortcut initiator, it shou
 
 Examples:
 
-- `Q`: stage `Q`, focus item slot 1, and show the armed command row for that item.
+- `Q`: stage `Q`, focus item slot 1, and show the armed command row for that item's primary action.
 - `F`: stage `F` and show the armed command row for fullscreen toggle.
 - `L`: stage `L` and show the armed command row for line wrap toggle.
 - `N`: stage `N` and show the armed command row for Enter-newline behavior.
@@ -307,19 +312,19 @@ Repeating the same shortcut key, case-insensitively, should upgrade the armed ac
 
 Default target action levels:
 
-- `Q`: focus item slot 1.
-- `Qq`: arm the primary action for item slot 1.
-- `Qqq`: arm the action menu for item slot 1.
-- `Qqqq`: arm the secondary fast action for item slot 1 when present; otherwise fall back to the action menu when actions exist.
+- `Q`: focus item slot 1 and arm its primary action.
+- `Qq`: open that target's action menu and arm the secondary action when present.
 
 Group examples:
 
-- `U`: focus the previous group slot.
-- `Uu`: arm the previous group's primary action.
-- `Uuu`: arm the previous group's action menu.
-- `Uuuu`: arm the previous group's secondary fast action when present; otherwise fall back to the action menu when actions exist.
+- `U`: focus the previous group slot and arm its primary action.
+- `Uu`: open the previous group's action menu and arm its secondary action when present.
 
-This ordering is an initial default. Modes may swap the menu and secondary levels when the secondary action is safer or more useful than opening the menu.
+Opening an action menu from a staged target shortcut must not replace the active parent shortcut context. The addressed launcher target remains captured until the staged sequence confirms, downgrades, or cancels.
+
+When a staged target sequence opens that target's action menu, the root shortcut key remains reserved for the captured parent target. The menu-local shortcut map must exclude that root key case-insensitively, so the original staged sequence can still downgrade, confirm, or continue without being stolen by menu rows. For example, if `Qq` opens the item 1 menu, menu rows may use `W`, `E`, `R`, `T`, or `Y`, but not `Q` or `q`.
+
+This ordering is an initial default. Modes may change which menu action is armed by default, but the first staged key should remain useful: `Q Enter` should run the captured target's primary action rather than merely re-focusing an already focused target.
 
 Shorter staged sequences must remain safe because they may become literal text or be upgraded by later input. Avoid mappings where an early level performs an unsafe action and a later level merely focuses.
 
@@ -351,6 +356,8 @@ Examples:
 Fullscreen, line wrap, Enter-newline behavior, and search submit map back to historical double-key shortcuts: `FF`, `LL`, `NN`, and `MM`. Parent/out previously used `PP` in this spec. The new primary model is staged mnemonic initiator plus `Enter`, with same-letter fast confirmation optional for reversible or frequently used commands. More destructive global commands should require explicit `Enter` confirmation.
 
 `MM` was historically a search-submit shortcut, but `S` is the preferred mnemonic initiator now that the old action-menu row is no longer reserved. The historical `..` search-submit shortcut may remain as a punctuation fast path when safe, but it should not be the main documented command because periods are normal text input.
+
+Legacy time-window shortcuts should remain available as quick alternatives to the staged input plus confirmation flow where they are already safe. These fast paths do not require `Enter`, but they must stay time-limited and must not replace the discoverable staged command path.
 
 ### Activation And Cancellation
 

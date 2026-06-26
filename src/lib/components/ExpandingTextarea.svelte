@@ -7,9 +7,13 @@
 		KeyboardEventHandler
 	} from 'svelte/elements';
 
+	type PreviewSegment = { kind: 'committed' | 'shortcut-staged'; text: string };
+
 	let {
 		textareaElement = $bindable(),
 		value = $bindable(''),
+		displayValue,
+		previewSegments,
 		fullscreen = $bindable(false),
 		wordwrap = $bindable(true),
 		enterNewlineRestored = $bindable(false),
@@ -22,6 +26,8 @@
 	}: Omit<HTMLTextareaAttributes, 'value'> & {
 		textareaElement?: HTMLTextAreaElement;
 		value?: string;
+		displayValue?: string;
+		previewSegments?: PreviewSegment[];
 		fullscreen?: boolean;
 		wordwrap?: boolean;
 		enterNewlineRestored?: boolean;
@@ -30,6 +36,8 @@
 		onprimaryaction?: () => void;
 	} = $props();
 
+	let textareaValue = $derived(displayValue ?? value);
+	let hasPreview = $derived(Boolean(previewSegments?.length));
 	let lineCount = $derived(value ? value.split('\n').length : 1);
 	let wordCount = $derived(value.trim() ? value.trim().split(/\s+/).length : 0);
 	let charCount = $derived(value.trim().length);
@@ -67,11 +75,16 @@
 	}
 
 	function handleInput(event: Parameters<FormEventHandler<HTMLTextAreaElement>>[0]) {
+		if (displayValue === undefined) value = event.currentTarget.value;
+
 		oninput?.(event);
 		adjustHeight();
 	}
 
 	function handleKeydown(event: Parameters<KeyboardEventHandler<HTMLTextAreaElement>>[0]) {
+		onkeydown?.(event);
+		if (event.defaultPrevented) return;
+
 		if (event.key === 'Enter') {
 			event.preventDefault();
 
@@ -83,8 +96,6 @@
 
 			return;
 		}
-
-		onkeydown?.(event);
 	}
 
 	$effect(() => {
@@ -152,13 +163,24 @@
 </script>
 
 <div bind:this={growWrapElement} class:fullscreen class:wordwrap class="grow-wrap">
-	<textarea
-		rows="1"
-		bind:this={textareaElement}
-		bind:value
-		oninput={handleInput}
-		onkeydown={handleKeydown}
-		{...props}></textarea>
+	<div class="textarea-shell">
+		{#if hasPreview}
+			<div class="textarea-preview" aria-hidden="true">
+				{#each previewSegments ?? [] as segment, index (`${index}-${segment.kind}`)}<span
+						class:shortcut-staged={segment.kind === 'shortcut-staged'}>{segment.text}</span
+					>{/each}
+			</div>
+		{/if}
+
+		<textarea
+			rows="1"
+			bind:this={textareaElement}
+			class:previewing={hasPreview}
+			value={textareaValue}
+			oninput={handleInput}
+			onkeydown={handleKeydown}
+			{...props}></textarea>
+	</div>
 
 	<div class="status-bar">
 		<div>
@@ -218,7 +240,22 @@
 		z-index: 1;
 	}
 
-	textarea {
+	.grow-wrap.fullscreen .textarea-shell {
+		flex: 1;
+		min-height: 0;
+	}
+
+	.grow-wrap.fullscreen textarea,
+	.grow-wrap.fullscreen .textarea-preview {
+		height: 100%;
+	}
+
+	.textarea-shell {
+		position: relative;
+	}
+
+	textarea,
+	.textarea-preview {
 		flex: 1;
 		width: 100%;
 		margin: 0;
@@ -227,8 +264,34 @@
 		white-space: pre;
 		overflow-x: auto;
 		font-family: monospace;
+		font-size: inherit;
+		font-weight: normal;
+		font-style: normal;
+		font-kerning: none;
+		font-variant-ligatures: none;
+		letter-spacing: normal;
+		word-spacing: normal;
+		text-rendering: auto;
 		border: none;
+	}
+
+	.textarea-preview {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		color: var(--nc-tx-1);
+		overflow: hidden;
+	}
+
+	textarea {
+		position: relative;
+		background: transparent;
 		resize: none;
+	}
+
+	textarea.previewing {
+		color: transparent;
+		caret-color: var(--nc-tx-1);
 	}
 
 	textarea:focus {
@@ -237,11 +300,22 @@
 		outline: none;
 	}
 
-	.grow-wrap:not(.wordwrap) textarea {
+	.shortcut-staged {
+		color: var(--nc-tx-2);
+		font-weight: 500;
+		opacity: 0.48;
+		text-decoration: underline;
+		text-decoration-color: currentColor;
+		text-decoration-style: dotted;
+	}
+
+	.grow-wrap:not(.wordwrap) textarea,
+	.grow-wrap:not(.wordwrap) .textarea-preview {
 		padding-bottom: 0.75rem;
 	}
 
-	.grow-wrap.wordwrap textarea {
+	.grow-wrap.wordwrap textarea,
+	.grow-wrap.wordwrap .textarea-preview {
 		white-space: pre-wrap;
 		overflow-x: hidden;
 		overflow-wrap: break-word;
