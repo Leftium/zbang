@@ -107,15 +107,22 @@
 		selected?: () => boolean;
 		run: () => void;
 	};
+	type LauncherAction = {
+		id: string;
+		label: string;
+		title?: string;
+		run: () => void | Promise<void>;
+	};
 	type PrimaryLauncherTarget =
 		| {
 				id: string;
 				kind: 'item';
+				title: string;
 				item: LauncherItem;
 				groupId?: string;
-				run: () => void | Promise<void>;
+				actions: LauncherAction[];
 		  }
-		| { id: string; kind: 'group'; group: LauncherGroup; run: () => void };
+		| { id: string; kind: 'group'; title: string; group: LauncherGroup; actions: LauncherAction[] };
 	type ShortcutLane =
 		| 'item-focus'
 		| 'item-menu'
@@ -131,6 +138,13 @@
 		target?: PrimaryLauncherTarget;
 	};
 	type ShortcutTargetSlot = PrimaryLauncherTarget | undefined;
+	type FocusSnapshot = {
+		selectedPrimaryItemId: string | undefined;
+		activeLauncherGroupId: string | undefined;
+	};
+	type ShortcutBinding =
+		| { key: string; kind: 'target'; lane: ShortcutLane; target: PrimaryLauncherTarget }
+		| { key: string; kind: 'parent' | 'utility' | 'text-transform'; lane: ShortcutLane };
 	type SettingGroupDefinition = {
 		id: string;
 		title: string;
@@ -219,6 +233,7 @@
 	let pendingShortcutItemTargets: PrimaryLauncherTarget[] = [];
 	let pendingShortcutGroupTargets: ShortcutTargetSlot[] = [];
 	let pendingShortcutPrimaryTarget: PrimaryLauncherTarget | undefined;
+	let pendingShortcutFocusSnapshot: FocusSnapshot | undefined;
 	let pendingTripleShortcut: PendingTripleShortcut | undefined;
 	let myBangWrite = Promise.resolve();
 	let loadingBangProvider = $state<BangProviderId>();
@@ -302,6 +317,7 @@
 		getShortcutItemTargets().slice(0, itemShortcutLabels.length)
 	);
 	const shortcutGroupTargets = $derived(getShortcutGroupTargets());
+	const validShortcutBindings = $derived(getValidShortcutBindings());
 	const shortcutTargetIds = $derived(
 		new Map([
 			...shortcutItemTargets.map(
@@ -318,7 +334,7 @@
 		new Map(
 			shortcutItemTargets
 				.map((target, index) =>
-					target.kind === 'item' && target.item.secondaryAction
+					target.kind === 'item' && getSecondaryAction(target)
 						? ([target.id, itemMenuShortcutLabels[index]] as const)
 						: undefined
 				)
@@ -799,7 +815,7 @@
 		}
 
 		if (key === '.' || key === 'V') {
-			void (pendingShortcutPrimaryTarget ?? primaryLauncherTarget)?.run();
+			void getPrimaryAction(pendingShortcutPrimaryTarget ?? primaryLauncherTarget)?.run();
 			armTripleShortcut(key, 'primary', pendingShortcutPrimaryTarget ?? primaryLauncherTarget);
 			return;
 		}
@@ -849,13 +865,13 @@
 
 		if (target && (lane === 'item-focus' || lane === 'group-focus')) {
 			focusLauncherTarget(target);
-			void target.run();
+			void getPrimaryAction(target)?.run();
 			return;
 		}
 
 		if (target && lane === 'item-menu' && target.kind === 'item') {
 			focusLauncherTarget(target);
-			void target.item.secondaryAction?.run();
+			void getSecondaryAction(target)?.run();
 			return;
 		}
 
@@ -909,16 +925,39 @@
 		return pendingShortcutGroupTargets.length ? pendingShortcutGroupTargets : shortcutGroupTargets;
 	}
 
+	function getPrimaryAction(target: PrimaryLauncherTarget | undefined) {
+		return target?.actions[0];
+	}
+
+	function getSecondaryAction(target: PrimaryLauncherTarget | undefined) {
+		return target?.actions[1];
+	}
+
+	function captureFocusSnapshot(): FocusSnapshot {
+		return { selectedPrimaryItemId, activeLauncherGroupId };
+	}
+
+	function restoreFocusSnapshot(snapshot: FocusSnapshot | undefined) {
+		if (!snapshot) return;
+
+		selectedPrimaryItemId = snapshot.selectedPrimaryItemId;
+		activeLauncherGroupId = snapshot.activeLauncherGroupId;
+	}
+
 	function captureShortcutSnapshot(shortcutKey: string) {
 		if (!isShortcutInitiator(shortcutKey)) return;
 
+		pendingShortcutFocusSnapshot = captureFocusSnapshot();
 		pendingShortcutItemTargets = shortcutItemTargets;
 		pendingShortcutGroupTargets = shortcutGroupTargets;
 		pendingShortcutPrimaryTarget = primaryLauncherTarget;
 	}
 
 	function isShortcutInitiator(key: string | null | undefined) {
-		if (!key || !shortcutKeys.has(key)) return false;
+		if (!key) return false;
+
+		const shortcutKey = key === ' ' || key === '.' ? key : key.toLocaleUpperCase();
+		if (!validShortcutBindings.has(shortcutKey)) return false;
 
 		// Requiring the first letter to be shifted avoids accidental triggers while typing plain text.
 		return key === ' ' || key === '.' || key.toLocaleUpperCase() === key;
@@ -932,9 +971,56 @@
 		pendingShortcutItemTargets = [];
 		pendingShortcutGroupTargets = [];
 		pendingShortcutPrimaryTarget = undefined;
+		pendingShortcutFocusSnapshot = undefined;
 		if (!keepPendingTriple) pendingTripleShortcut = undefined;
 		isPeriodShortcut = false;
 		isMobilePeriodShortcut = false;
+	}
+
+	function getValidShortcutBindings() {
+		const bindings = new Map<string, ShortcutBinding>();
+
+		bindings.set(' ', { key: ' ', kind: 'text-transform', lane: 'utility' });
+		bindings.set('.', { key: '.', kind: 'text-transform', lane: 'primary' });
+		bindings.set(parentShortcutLabel, { key: parentShortcutLabel, kind: 'parent', lane: 'parent' });
+
+		for (const label of utilityShortcutLabels) {
+			bindings.set(label, { key: label, kind: 'utility', lane: 'utility' });
+		}
+
+		shortcutItemTargets.forEach((target, index) => {
+			bindings.set(itemShortcutLabels[index], {
+				key: itemShortcutLabels[index],
+				kind: 'target',
+				lane: 'item-focus',
+				target
+			});
+			bindings.set(itemMenuShortcutLabels[index], {
+				key: itemMenuShortcutLabels[index],
+				kind: 'target',
+				lane: 'item-menu',
+				target
+			});
+		});
+
+		shortcutGroupTargets.forEach((target, index) => {
+			if (!target) return;
+
+			bindings.set(groupShortcutLabels[index], {
+				key: groupShortcutLabels[index],
+				kind: 'target',
+				lane: 'group-focus',
+				target
+			});
+			bindings.set(groupMenuShortcutLabels[index], {
+				key: groupMenuShortcutLabels[index],
+				kind: 'target',
+				lane: 'group-menu',
+				target
+			});
+		});
+
+		return bindings;
 	}
 
 	function focusInput() {
@@ -1045,7 +1131,7 @@
 	}
 
 	function runPrimaryAction() {
-		void primaryLauncherTarget?.run();
+		void getPrimaryAction(primaryLauncherTarget)?.run();
 	}
 
 	function focusLauncherTarget(target: PrimaryLauncherTarget) {
@@ -1127,8 +1213,15 @@
 		return {
 			id: group.id,
 			kind: 'group',
+			title: group.title,
 			group,
-			run: () => activateLauncherGroup(group.id)
+			actions: [
+				{
+					id: `${group.id}.activate`,
+					label: getGroupPrimaryActionLabel(group),
+					run: () => activateLauncherGroup(group.id)
+				}
+			]
 		};
 	}
 
@@ -1138,7 +1231,39 @@
 	): PrimaryLauncherTarget[] {
 		if (item.kind !== 'action' || !item.run) return [];
 
-		return [{ id: item.id, kind: 'item', item, groupId, run: item.run }];
+		return [
+			{
+				id: item.id,
+				kind: 'item',
+				title: item.title,
+				item,
+				groupId,
+				actions: getItemActions(item)
+			}
+		];
+	}
+
+	function getItemActions(item: LauncherItem): LauncherAction[] {
+		const actions: LauncherAction[] = [];
+
+		if (item.run) {
+			actions.push({ id: `${item.id}.primary`, label: item.title, run: item.run });
+		}
+
+		if (item.secondaryAction) {
+			actions.push({
+				id: `${item.id}.secondary`,
+				label: item.secondaryAction.label,
+				title: item.secondaryAction.title,
+				run: item.secondaryAction.run
+			});
+		}
+
+		return actions;
+	}
+
+	function getGroupPrimaryActionLabel(group: LauncherGroup) {
+		return isLauncherGroupExpanded(group) ? 'Collapse group' : 'Activate group';
 	}
 
 	function getGroupCollapsedLimit(group: LauncherGroup) {
@@ -2169,8 +2294,8 @@
 			<div>
 				<strong>Popups may be blocked</strong>
 				<p>
-					{bangFanoutError} Use the popup-blocked icon in the address bar to allow popups, then
-					retry the bang search.
+					{bangFanoutError} Use the popup-blocked icon in the address bar to allow popups, then retry
+					the bang search.
 				</p>
 			</div>
 			{#if bangFanoutTargets.length}
@@ -2178,7 +2303,8 @@
 					{#each bangFanoutTargets as targetUrl, index (`${index}-${targetUrl}`)}
 						<li>
 							<a {...getBangFanoutLinkAttributes(targetUrl)} class="bang-fanout-target">
-								{bangFanoutActionLabel} {getBangFanoutTargetLabel(targetUrl)}
+								{bangFanoutActionLabel}
+								{getBangFanoutTargetLabel(targetUrl)}
 							</a>
 						</li>
 					{/each}

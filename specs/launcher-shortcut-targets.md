@@ -33,12 +33,12 @@ Use these stages to track implementation progress. Status should be updated as w
 
 ### Stage 1: Target And Focus Foundation
 
-Status: Planned.
+Status: In progress.
 
-- [ ] Represent item and group headers as launcher targets.
+- [x] Represent item and group headers as launcher targets.
 - [ ] Normalize target actions as primary, secondary, action menu, and parent/out behaviors.
 - [ ] Make focus snapshots restorable after shortcut cancellation or nested context exit.
-- [ ] Build a mode-aware valid shortcut map for visible targets and global commands.
+- [x] Build a mode-aware valid shortcut map for visible targets and global commands.
 
 ### Stage 2: Staged Shortcut State
 
