@@ -81,6 +81,7 @@ Status: In progress; action items and group headers now use compact inline prima
 - [ ] Keep the armed command row out of item shortcut slot indexing.
 - [ ] Decide whether repeat-key and `Backspace` affordances should be shown in the armed feedback, or remain implicit expert behavior.
 - [x] Render staged shortcut text distinctly from committed text with a minimal textarea preview foundation.
+- [x] Render bang-picker search tokens as staged text until a bang is selected.
 - [ ] Polish staged text rendering for broader staged input, including future voice interim text.
 - [ ] Make staged `SPACE` visible with inline styling or overlay treatment.
 
@@ -467,6 +468,7 @@ Initial rendering direction:
 - Render committed and staged text in a styled preview layer over or under the textarea.
 - Keep only committed text selectable and copyable.
 - Use metric-compatible staged styling first: color, opacity, background tint, underline, or outline that does not affect text layout.
+- In bang picker mode, render the active `!fragment` token as staged because selecting a bang replaces that search token with the committed bang code.
 - For `SPACE`, render at least a visible underlined blank width or tinted space area so the staged shortcut is discoverable.
 - Avoid full shortcut-label chip styling inline until caret position, wrapping, and selection behavior are proven reliable.
 

@@ -7,7 +7,10 @@
 		KeyboardEventHandler
 	} from 'svelte/elements';
 
-	type PreviewSegment = { kind: 'committed' | 'shortcut-staged'; text: string };
+	type PreviewSegment = {
+		kind: 'committed' | 'shortcut-staged' | 'bang-picker-staged';
+		text: string;
+	};
 	type StatusHint = { key: string; label: string };
 
 	let {
@@ -170,7 +173,8 @@
 		{#if hasPreview}
 			<div class="textarea-preview" aria-hidden="true">
 				{#each previewSegments ?? [] as segment, index (`${index}-${segment.kind}`)}<span
-						class:shortcut-staged={segment.kind === 'shortcut-staged'}>{segment.text}</span
+						class:shortcut-staged={segment.kind === 'shortcut-staged'}
+						class:bang-picker-staged={segment.kind === 'bang-picker-staged'}>{segment.text}</span
 					>{/each}
 			</div>
 		{/if}
@@ -317,6 +321,12 @@
 		text-decoration: underline;
 		text-decoration-color: currentColor;
 		text-decoration-style: dotted;
+	}
+
+	.bang-picker-staged {
+		color: color-mix(in srgb, var(--nc-primary) 78%, var(--nc-tx-1));
+		background: color-mix(in srgb, var(--nc-primary) 10%, transparent);
+		box-shadow: inset 0 -0.12em 0 color-mix(in srgb, var(--nc-primary) 36%, transparent);
 	}
 
 	.grow-wrap:not(.wordwrap) textarea,

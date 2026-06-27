@@ -158,7 +158,10 @@
 		menuActionIndex?: number;
 		ts: number;
 	};
-	type InputPreviewSegment = { kind: 'committed' | 'shortcut-staged'; text: string };
+	type InputPreviewSegment = {
+		kind: 'committed' | 'shortcut-staged' | 'bang-picker-staged';
+		text: string;
+	};
 	type StatusHint = { key: string; label: string };
 	type StagedActionMenu = { target: PrimaryLauncherTarget; actions: LauncherAction[]; rootKey: string };
 	type SettingGroupDefinition = {
@@ -685,12 +688,29 @@
 	}
 
 	function getInputPreviewSegments(): InputPreviewSegment[] | undefined {
-		if (!stagedShortcut) return undefined;
+		if (!stagedShortcut) return getBangPickerPreviewSegments();
 
 		return [
 			{ kind: 'committed', text: value.slice(0, stagedShortcut.selectionStart) },
 			{ kind: 'shortcut-staged', text: stagedShortcut.buffer },
 			{ kind: 'committed', text: value.slice(stagedShortcut.selectionEnd) }
+		];
+	}
+
+	function getBangPickerPreviewSegments(): InputPreviewSegment[] | undefined {
+		if (!bangEntry) return undefined;
+
+		const fragmentStart = bangEntry.triggerIndex + 1;
+		const whitespaceIndex = value.slice(fragmentStart).search(/\s/);
+		const tokenEnd = whitespaceIndex === -1 ? value.length : fragmentStart + whitespaceIndex;
+		const token = value.slice(bangEntry.triggerIndex, tokenEnd);
+
+		if (!token.startsWith('!') || /\s/.test(token)) return undefined;
+
+		return [
+			{ kind: 'committed', text: value.slice(0, bangEntry.triggerIndex) },
+			{ kind: 'bang-picker-staged', text: token },
+			{ kind: 'committed', text: value.slice(tokenEnd) }
 		];
 	}
 
