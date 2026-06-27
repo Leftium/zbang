@@ -63,6 +63,8 @@ Status: In progress.
 - [x] Support same-letter progressive action upgrades such as `Q` and `Qq`.
 - [x] Confirm armed target actions with `Enter` without recomputing the target.
 - [x] Reserve the captured target's root shortcut key when its action menu is open.
+- [x] Use the reserved root shortcut key to toggle an open target action menu closed.
+- [x] Keep valid target and parent shortcut keys staged across repeated navigation.
 - [x] Open the focused target's action menu directly from its visible root shortcut affordance.
 
 ### Stage 4: Armed Feedback And Staged Rendering
@@ -329,27 +331,30 @@ Examples:
 - `N`: stage `N` and show the armed command row for Enter-newline behavior.
 - `S`: stage `S` and show the armed command row for search submit.
 - `Y` with fewer than 6 item slots: commit `Y` as literal text.
-- `Q` then `A`: commit `QA` as normal text and restore the previous focus snapshot when possible.
+- `Q` then `Q`: stay staged and open the first item's action menu when a secondary action exists.
+- `Q` then a nonmatching text key: commit both characters as normal text and restore the previous focus snapshot when possible.
 - `Q` then `Backspace`: cancel staged `Q`; committed query remains unchanged and previous focus is restored when possible.
 - `Q` then cursor movement, pointer interaction, blur, or explicit mode change: cancel or commit according to the least surprising behavior for that event. The implementation should avoid leaving an invisible active shortcut buffer.
 
 ### Progressive Target Actions
 
-Repeating the same shortcut key, case-insensitively, should upgrade the armed action for the captured target rather than recomputing the target from the current list.
+While a shortcut buffer is staged, printable keys that still match a current target or parent shortcut should stay in shortcut mode. Item root repeats toggle that captured item's action menu. Relative group shortcuts re-resolve from the current active group so repeated next/previous keys can walk the group list.
 
 Default target action levels:
 
 - `Q`: focus item slot 1 and arm its primary action.
-- `Qq`: open that target's action menu and arm the secondary action when present.
+- `Qq` or `QQ`: open that target's action menu and arm the secondary action when present.
+- `QqQ` or `QQQ`: close that target's action menu and return to the focused item.
 
 Group examples:
 
 - `U`: focus the previous group slot and arm its primary action.
-- `Uu`: open the previous group's action menu and arm its secondary action when present.
+- `O`, `OO`, `OOO`: keep moving through the next group slot, wrapping as needed.
+- `U` then `Enter`: run the previous group's primary action.
 
 Opening an action menu from a staged target shortcut must not replace the active parent shortcut context. The addressed launcher target remains captured until the staged sequence confirms, downgrades, or cancels.
 
-When a staged target sequence opens that target's action menu, the root shortcut key remains reserved for the captured parent target. The menu-local shortcut map must exclude that root key case-insensitively, so the original staged sequence can still downgrade, confirm, or continue without being stolen by menu rows. For example, if `Qq` opens the item 1 menu, menu rows may use `W`, `E`, `R`, `T`, or `Y`, but not `Q` or `q`.
+When a staged target sequence opens that target's action menu, the root shortcut key remains reserved for the captured parent target. The menu-local shortcut map must exclude that root key case-insensitively, so the original staged sequence can close, confirm, or continue without being stolen by menu rows. For example, if `Qq` opens the item 1 menu, menu rows may use `W`, `E`, `R`, `T`, or `Y`, but not `Q` or `q`; pressing `Q` closes the menu and keeps the item staged.
 
 This ordering is an initial default. Modes may change which menu action is armed by default, but the first staged key should remain useful: `Q Enter` should run the captured target's primary action rather than merely re-focusing an already focused target.
 
@@ -469,6 +474,7 @@ Initial rendering direction:
 - Keep only committed text selectable and copyable.
 - Use metric-compatible staged styling first: color, opacity, background tint, underline, or outline that does not affect text layout.
 - In bang picker mode, render the active `!fragment` token as staged because selecting a bang replaces that search token with the committed bang code.
+- If a shortcut buffer is staged while a bang picker token is active, keep the bang token's staged styling and render the shortcut buffer as a separate staged segment.
 - For `SPACE`, render at least a visible underlined blank width or tinted space area so the staged shortcut is discoverable.
 - Avoid full shortcut-label chip styling inline until caret position, wrapping, and selection behavior are proven reliable.
 
@@ -532,7 +538,7 @@ Mobile behavior:
 
 - Staged shortcut sequences must be sufficient for focus, menu access, primary action, secondary action, global commands, and parent navigation.
 - Arrow keys must not be required for any core operation.
-- Shortcut labels can show the single letter, such as `Q`, while staged upgrades such as `Qq` and `Qqq` remain visible in the armed command row.
+- Shortcut labels can show the single letter, such as `Q`, while staged sequences such as `Qq` and `QqQ` remain visible in the armed command row.
 - The UI may add action labels or other affordances to indicate each target's primary and secondary actions, especially where fast actions are not obvious.
 - Fullscreen or other text-priority modes may disable target shortcuts so capital letters commit normally, while keeping small global commands such as `F` then `Enter`, `L` then `Enter`, or `N` then `Enter` when useful.
 
@@ -543,9 +549,9 @@ Mobile behavior:
 For a bang result item:
 
 - `Q`: focus the first bang result and show an armed command row.
-- `Qq` then `Enter`: run `actions[0]`, such as `Insert bang`.
-- `Qqq` then `Enter`: open the bang action menu.
-- `Qqqq` then `Enter`: run `actions[1]`, such as `Add to My bangs` if available.
+- `Q` then `Enter`: run `actions[0]`, such as `Insert bang`.
+- `Qq` or `QQ`: open the bang action menu and arm the secondary action when present.
+- `QqQ` or `QQQ`: close the bang action menu and keep the result staged.
 
 This keeps insertion fast without making the first `Q` sometimes focus and sometimes insert. The focused target is captured when `Q` arms, so later repeats and `Enter` act on the same target even if the list shifts.
 
@@ -554,16 +560,15 @@ This keeps insertion fast without making the first `Q` sometimes focus and somet
 For a custom bang item:
 
 - `Q`: focus the custom bang and show an armed command row.
-- `Qq` then `Enter`: run the primary management action if safe.
-- `Qqq` then `Enter`: open a menu with actions such as edit, move, duplicate, delete, or copy URL.
-- `Qqqq` then `Enter`: run the secondary fast action when defined.
+- `Q` then `Enter`: run the primary management action if safe.
+- `Qq` or `QQ`: open a menu with actions such as edit, move, duplicate, delete, or copy URL.
+- `QqQ` or `QQQ`: close the menu and keep the custom bang staged.
 
 For bang groups:
 
 - `U` to `O`: focus previous/current/next group slots.
-- `Uu`, `Ii`, or `Oo` then `Enter`: run the aligned group primary action.
-- `Uuu`, `Iii`, or `Ooo` then `Enter`: open the aligned group action menu.
-- Four-key group sequences may run group secondary actions when defined.
+- Repeated `U` or `O` keeps moving through group slots while the shortcut remains staged.
+- `U` then `Enter`: run the previous group's primary action.
 
 Bang Management should avoid relying on hidden lists as the main way to switch sources. Group navigation should let users move between My bangs and engine bangs without arrowing through every item.
 
@@ -572,8 +577,8 @@ Bang Management should avoid relying on hidden lists as the main way to switch s
 For a settings group:
 
 - Group focus shortcut focuses the setting group header.
-- Repeating the group shortcut arms the group primary action, such as toggle open/closed.
-- A later repeat can arm the group menu with actions such as focus first option, expand, collapse, reset, or show matching options.
+- Repeating previous/next group shortcuts keeps moving between setting groups.
+- Group menus can expose actions such as focus first option, expand, collapse, reset, or show matching options.
 
 For a setting option item:
 
@@ -600,7 +605,8 @@ For a setting option item:
 - Items and groups can both be represented as launcher targets.
 - Uppercase shortcut initiators are staged only when they match a currently valid shortcut in the active mode and context.
 - Item and group shortcuts capture their addressed target when they first arm.
-- Same-letter repeats upgrade the armed action for the captured target without requiring a timing window.
+- Item root repeats toggle the captured target action menu without requiring a timing window.
+- Relative group repeats keep navigating between groups without leaving staged shortcut mode.
 - `Enter` confirms the currently armed shortcut action.
 - A pinned armed command row describes the current action, confirmation key, next upgrade when present, and cancellation path.
 - The armed command row does not consume item shortcut slots or shift normal item indexing.

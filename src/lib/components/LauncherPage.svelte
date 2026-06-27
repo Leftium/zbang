@@ -162,6 +162,7 @@
 		kind: 'committed' | 'shortcut-staged' | 'bang-picker-staged';
 		text: string;
 	};
+	type TextRange = { start: number; end: number };
 	type StatusHint = { key: string; label: string };
 	type StagedActionMenu = { target: PrimaryLauncherTarget; actions: LauncherAction[]; rootKey: string };
 	type SettingGroupDefinition = {
@@ -688,16 +689,67 @@
 	}
 
 	function getInputPreviewSegments(): InputPreviewSegment[] | undefined {
-		if (!stagedShortcut) return getBangPickerPreviewSegments();
+		const bangTokenRange = getBangPickerTokenRange();
+		if (!stagedShortcut) return getBangPickerPreviewSegments(bangTokenRange);
 
-		return [
-			{ kind: 'committed', text: value.slice(0, stagedShortcut.selectionStart) },
-			{ kind: 'shortcut-staged', text: stagedShortcut.buffer },
-			{ kind: 'committed', text: value.slice(stagedShortcut.selectionEnd) }
-		];
+		const segments: InputPreviewSegment[] = [];
+
+		appendInputPreviewValueSegments(segments, 0, stagedShortcut.selectionStart, bangTokenRange);
+		appendInputPreviewSegment(segments, {
+			kind: 'shortcut-staged',
+			text: stagedShortcut.buffer
+		});
+		appendInputPreviewValueSegments(
+			segments,
+			stagedShortcut.selectionEnd,
+			value.length,
+			bangTokenRange
+		);
+
+		return segments.length ? segments : undefined;
 	}
 
-	function getBangPickerPreviewSegments(): InputPreviewSegment[] | undefined {
+	function appendInputPreviewValueSegments(
+		segments: InputPreviewSegment[],
+		start: number,
+		end: number,
+		bangTokenRange: TextRange | undefined
+	) {
+		if (start >= end) return;
+
+		if (!bangTokenRange || end <= bangTokenRange.start || start >= bangTokenRange.end) {
+			appendInputPreviewSegment(segments, { kind: 'committed', text: value.slice(start, end) });
+			return;
+		}
+
+		const stagedStart = Math.max(start, bangTokenRange.start);
+		const stagedEnd = Math.min(end, bangTokenRange.end);
+
+		appendInputPreviewSegment(segments, { kind: 'committed', text: value.slice(start, stagedStart) });
+		appendInputPreviewSegment(segments, {
+			kind: 'bang-picker-staged',
+			text: value.slice(stagedStart, stagedEnd)
+		});
+		appendInputPreviewSegment(segments, { kind: 'committed', text: value.slice(stagedEnd, end) });
+	}
+
+	function appendInputPreviewSegment(
+		segments: InputPreviewSegment[],
+		segment: InputPreviewSegment
+	) {
+		if (!segment.text) return;
+
+		const previousSegment = segments[segments.length - 1];
+
+		if (previousSegment?.kind === segment.kind) {
+			previousSegment.text += segment.text;
+			return;
+		}
+
+		segments.push(segment);
+	}
+
+	function getBangPickerTokenRange(): TextRange | undefined {
 		if (!bangEntry) return undefined;
 
 		const fragmentStart = bangEntry.triggerIndex + 1;
@@ -707,10 +759,18 @@
 
 		if (!token.startsWith('!') || /\s/.test(token)) return undefined;
 
+		return { start: bangEntry.triggerIndex, end: tokenEnd };
+	}
+
+	function getBangPickerPreviewSegments(
+		bangTokenRange = getBangPickerTokenRange()
+	): InputPreviewSegment[] | undefined {
+		if (!bangTokenRange) return undefined;
+
 		return [
-			{ kind: 'committed', text: value.slice(0, bangEntry.triggerIndex) },
-			{ kind: 'bang-picker-staged', text: token },
-			{ kind: 'committed', text: value.slice(tokenEnd) }
+			{ kind: 'committed', text: value.slice(0, bangTokenRange.start) },
+			{ kind: 'bang-picker-staged', text: value.slice(bangTokenRange.start, bangTokenRange.end) },
+			{ kind: 'committed', text: value.slice(bangTokenRange.end) }
 		];
 	}
 
@@ -917,9 +977,11 @@
 		if (!isActionMenuLane(stagedShortcut.binding.lane)) return false;
 
 		const target = stagedShortcut.binding.target;
+		const downgradedBuffer =
+			stagedShortcut.buffer.length > 1 ? stagedShortcut.buffer.slice(0, -1) : stagedShortcut.buffer;
 		stagedShortcut = {
 			...stagedShortcut,
-			buffer: stagedShortcut.buffer.slice(0, 1),
+			buffer: downgradedBuffer,
 			menuActionIndex: undefined,
 			binding: {
 				...stagedShortcut.binding,
@@ -928,6 +990,31 @@
 		};
 
 		focusLauncherTarget(target);
+
+		requestAnimationFrame(() => {
+			const cursor = stagedShortcut
+				? stagedShortcut.selectionStart + stagedShortcut.buffer.length
+				: undefined;
+			if (cursor !== undefined) textareaElement?.setSelectionRange(cursor, cursor);
+		});
+
+		return true;
+	}
+
+	function appendStagedShortcutBinding(
+		key: string,
+		binding: ShortcutBinding,
+		menuActionIndex?: number
+	) {
+		if (!stagedShortcut) return false;
+
+		stagedShortcut = {
+			...stagedShortcut,
+			buffer: stagedShortcut.buffer + key,
+			binding,
+			menuActionIndex,
+			ts: Date.now()
+		};
 
 		requestAnimationFrame(() => {
 			const cursor = stagedShortcut
@@ -1020,32 +1107,99 @@
 		return true;
 	}
 
-	function upgradeStagedShortcut(key: string) {
+	function openStagedItemActionMenu(key: string) {
 		if (!stagedShortcut || stagedShortcut.binding.kind !== 'target') return false;
-		if (stagedShortcut.binding.lane !== getTargetFocusLane(stagedShortcut.binding.target)) return false;
+		if (stagedShortcut.binding.lane !== getTargetFocusLane(stagedShortcut.binding.target))
+			return false;
 		if (key.toLocaleLowerCase() !== stagedShortcut.binding.key.toLocaleLowerCase()) return false;
+		if (stagedShortcut.binding.target.kind !== 'item') return false;
 
-		const target = stagedShortcut.binding.target;
-		stagedShortcut = {
-			...stagedShortcut,
-			buffer: stagedShortcut.buffer + key,
-			menuActionIndex: getDefaultActionMenuIndex(target),
-			binding: {
-				...stagedShortcut.binding,
-				lane: getTargetMenuLane(target)
-			}
-		};
-
+		const binding = stagedShortcut.binding;
+		const target = binding.target;
 		focusLauncherTarget(target);
 
-		requestAnimationFrame(() => {
-			const cursor = stagedShortcut
-				? stagedShortcut.selectionStart + stagedShortcut.buffer.length
-				: undefined;
-			if (cursor !== undefined) textareaElement?.setSelectionRange(cursor, cursor);
-		});
+		return appendStagedShortcutBinding(
+			key,
+			{
+				...binding,
+				lane: getTargetMenuLane(target)
+			},
+			getDefaultActionMenuIndex(target)
+		);
+	}
 
-		return true;
+	function toggleStagedActionMenuWithRootKey(key: string) {
+		if (!stagedShortcut || stagedShortcut.binding.kind !== 'target') return false;
+		if (!isActionMenuLane(stagedShortcut.binding.lane)) return false;
+		if (key.toLocaleLowerCase() !== stagedShortcut.binding.key.toLocaleLowerCase()) return false;
+
+		const binding = stagedShortcut.binding;
+		const target = binding.target;
+		focusLauncherTarget(target);
+
+		return appendStagedShortcutBinding(key, {
+			...binding,
+			lane: getTargetFocusLane(target)
+		});
+	}
+
+	function continueStagedTargetShortcut(key: string) {
+		if (!stagedShortcut) return false;
+
+		const binding = validShortcutBindings.get(getShortcutBindingKey(key));
+		if (!binding || binding.kind !== 'target') return false;
+
+		const menuActionIndex = isActionMenuLane(binding.lane)
+			? getDefaultActionMenuIndex(binding.target)
+			: undefined;
+
+		focusLauncherTarget(binding.target);
+
+		return appendStagedShortcutBinding(key, binding, menuActionIndex);
+	}
+
+	function handleStagedParentShortcut(key: string) {
+		if (!stagedShortcut) return false;
+		if (getShortcutBindingKey(key) !== parentShortcutLabel) return false;
+
+		const binding = stagedShortcut.binding;
+
+		if (binding.kind === 'target' && isActionMenuLane(binding.lane)) {
+			const target = binding.target;
+			focusLauncherTarget(target);
+
+			return appendStagedShortcutBinding(key, {
+				...binding,
+				lane: getTargetFocusLane(target)
+			});
+		}
+
+		if (binding.kind === 'target' && binding.target.kind === 'item' && binding.target.groupId) {
+			const group = visibleLauncherGroups.find(({ id }) => id === binding.target.groupId);
+			if (group) {
+				const target = createSelectableGroupTarget(group);
+				focusLauncherTarget(target);
+
+				return appendStagedShortcutBinding(key, {
+					key: parentShortcutLabel,
+					kind: 'target',
+					lane: 'group-focus',
+					target
+				});
+			}
+		}
+
+		focusInput();
+
+		return appendStagedShortcutBinding(key, {
+			key: parentShortcutLabel,
+			kind: 'parent',
+			lane: 'parent'
+		});
+	}
+
+	function getShortcutBindingKey(key: string) {
+		return key === ' ' || key === '.' ? key : key.toLocaleUpperCase();
 	}
 
 	function handleStagedShortcutKeydown(event: KeyboardEvent) {
@@ -1082,8 +1236,12 @@
 
 		event.preventDefault();
 
-		if (!event.repeat && upgradeStagedShortcut(event.key)) return true;
+		if (event.repeat) return true;
+		if (toggleStagedActionMenuWithRootKey(event.key)) return true;
 		if (executeStagedActionMenuShortcut(event.key)) return true;
+		if (handleStagedParentShortcut(event.key)) return true;
+		if (openStagedItemActionMenu(event.key)) return true;
+		if (continueStagedTargetShortcut(event.key)) return true;
 		if (fastConfirmStagedShortcut(event.key, ts)) return true;
 
 		return commitStagedShortcutLiteral(event.key);
@@ -1108,8 +1266,11 @@
 
 		if (stagedShortcut) {
 			event.preventDefault();
-			if (upgradeStagedShortcut(data)) return true;
+			if (toggleStagedActionMenuWithRootKey(data)) return true;
 			if (executeStagedActionMenuShortcut(data)) return true;
+			if (handleStagedParentShortcut(data)) return true;
+			if (openStagedItemActionMenu(data)) return true;
+			if (continueStagedTargetShortcut(data)) return true;
 			if (fastConfirmStagedShortcut(data, ts)) return true;
 			return commitStagedShortcutLiteral(data);
 		}
