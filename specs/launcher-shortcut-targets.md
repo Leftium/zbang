@@ -67,14 +67,14 @@ Status: In progress.
 
 ### Stage 4: Armed Feedback And Staged Rendering
 
-Status: In progress; eligible action rows now use compact inline primary/menu affordances instead of relying on target status hints or the older expanded row menu treatment.
+Status: In progress; action items and group headers now use compact inline primary/menu affordances instead of relying on target status hints or the older expanded row menu treatment.
 
 - [x] Replace the textarea status row with a minimal armed confirmation hint while a shortcut is staged.
 - [x] Replace target staged-action text with focused-row primary/menu affordances.
 - [x] Align compact row shortcut badges on a stable right-side rail.
 - [x] Hide duplicate row shortcut badges while their pseudo/full menu is expanded.
 - [x] Add downward badge fly and vertical slide replacement for pseudo/full menu transitions.
-- [x] Use compact action rows for search, clipboard, and bang items.
+- [x] Use compact action rows for action items and group headers.
 - [x] Remove the secondary action pill from compact rows.
 - [x] Render compact full-menu rows below the primary row with right-aligned shortcut badges.
 - [ ] Decide whether a separate pinned armed command row is still needed after the status-row approach is tested.
@@ -198,7 +198,7 @@ Running an action from a menu should close the menu unless the action explicitly
 
 ### Compact Action Rows
 
-Compact action rows are the current preferred presentation for high-density action items. They currently apply to search, clipboard, and bang result items.
+Compact action rows are the launcher action-menu presentation for actionable item rows and group headers. Display-only rows, such as NLP insight rows and notification-only rows, are not action-menu targets and may keep a separate presentation.
 
 The compact row model is:
 
@@ -211,7 +211,7 @@ The compact row model is:
 - Armed menu actions show `Enter` plus the menu shortcut alternative, such as `Enter or Q`.
 - Duplicate outer row shortcut badges are hidden while the compact menu is open.
 
-The older non-compact item menu presentation should be phased out in favor of compact menus where practical. Non-compact rows may remain temporarily for settings, mode navigation, notification, or other rows whose semantics still need separate treatment.
+The older non-compact item menu presentation has been removed. New action-menu UI should build on compact rows or nested compact groups rather than adding a second menu system.
 
 ### Parent Or Out
 
