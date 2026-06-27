@@ -75,14 +75,12 @@
 	const colorSchemes = Object.keys(colorSchemeLabels) as ColorScheme[];
 	const bangProviders = Object.keys(bangProviderLabels) as BangProviderId[];
 	const itemShortcutLabels = ['Q', 'W', 'E', 'R', 'T', 'Y'] as const;
-	const itemMenuShortcutLabels = ['A', 'S', 'D', 'F', 'G', 'H'] as const;
-	const groupShortcutLabels = ['U', 'I', 'O'] as const;
-	const groupMenuShortcutLabels = ['J', 'K', 'L'] as const;
+	const groupShortcutLabels = ['O', 'I', 'P'] as const;
 	const menuSlideDuration = 720;
 	const shortcutBadgeFlyDuration = 640;
 	const pseudoMenuBadgeDelay = 320;
 	const pseudoMenuBadgeDuration = 280;
-	const parentShortcutLabel = 'P';
+	const parentShortcutLabel = 'U';
 	const utilityShortcutLabels = ['Z', 'X', 'C', 'V'] as const;
 	const shortcutKeys = new Set([
 		'.',
@@ -90,9 +88,7 @@
 		parentShortcutLabel,
 		...utilityShortcutLabels,
 		...itemShortcutLabels,
-		...itemMenuShortcutLabels,
-		...groupShortcutLabels,
-		...groupMenuShortcutLabels
+		...groupShortcutLabels
 	]);
 	const shortcutDelay = 250;
 	const settingsMatchThreshold = 0.4;
@@ -912,7 +908,11 @@
 		const shortcutKey = key.toLocaleUpperCase();
 		const binding = validShortcutBindings.get(shortcutKey);
 		if (!binding) return false;
-		if (binding.kind === 'target' && binding.target.id === primaryLauncherTarget?.id) {
+		if (
+			binding.kind === 'target' &&
+			binding.target.kind === 'item' &&
+			binding.target.id === primaryLauncherTarget?.id
+		) {
 			return openTargetActionMenu(binding.target, shortcutKey, ts);
 		}
 
@@ -1477,27 +1477,12 @@
 			return;
 		}
 
-		const itemMenuIndex = itemMenuShortcutLabels.findIndex((label) => label === key);
-		if (itemMenuIndex !== -1) {
-			const target = getSnapshotItemTargets()[itemMenuIndex];
-			if (target) focusLauncherTarget(target);
-			armTripleShortcut(key, 'item-menu', target);
-			return;
-		}
-
 		const groupFocusIndex = groupShortcutLabels.findIndex((label) => label === key);
 		if (groupFocusIndex !== -1) {
 			const target = getSnapshotGroupTargets()[groupFocusIndex];
 			if (target) focusLauncherTarget(target);
 			armTripleShortcut(key, 'group-focus', target);
 			return;
-		}
-
-		const groupMenuIndex = groupMenuShortcutLabels.findIndex((label) => label === key);
-		if (groupMenuIndex !== -1) {
-			const target = getSnapshotGroupTargets()[groupMenuIndex];
-			if (target) focusLauncherTarget(target);
-			armTripleShortcut(key, 'group-menu', target);
 		}
 	}
 
@@ -1639,12 +1624,6 @@
 				lane: 'item-focus',
 				target
 			});
-			bindings.set(itemMenuShortcutLabels[index], {
-				key: itemMenuShortcutLabels[index],
-				kind: 'target',
-				lane: 'item-menu',
-				target
-			});
 		});
 
 		shortcutGroupTargets.forEach((target, index) => {
@@ -1654,12 +1633,6 @@
 				key: groupShortcutLabels[index],
 				kind: 'target',
 				lane: 'group-focus',
-				target
-			});
-			bindings.set(groupMenuShortcutLabels[index], {
-				key: groupMenuShortcutLabels[index],
-				kind: 'target',
-				lane: 'group-menu',
 				target
 			});
 		});
@@ -1695,15 +1668,6 @@
 		stagedMenu: StagedActionMenu | undefined
 	) {
 		return stagedMenu?.target ?? focusedTarget ?? createSelectableItemTarget(item)[0];
-	}
-
-	function getGroupNavigationShortcuts(group: LauncherGroup) {
-		if (activeLauncherGroup?.id !== group.id || visibleLauncherGroups.length < 2) return [];
-
-		return [
-			{ label: groupShortcutLabels[0], text: 'Prev group' },
-			{ label: groupShortcutLabels[2], text: 'Next group' }
-		];
 	}
 
 	function handleLauncherCursorChange(event: Event) {
@@ -1964,6 +1928,15 @@
 
 	function getGroupPrimaryActionLabel(group: LauncherGroup) {
 		return isLauncherGroupExpanded(group) ? 'Collapse group' : 'Activate group';
+	}
+
+	function isGroupPrimaryActionEffective(group: LauncherGroup) {
+		if (group.pluginId === 'bangs') {
+			if (mode.id === 'bangs' || hasBangFilter || isLauncherGroupExpanded(group)) return false;
+			return group.items.length > 0;
+		}
+
+		return (group.allItems ?? group.items).length > getGroupCollapsedLimit(group);
 	}
 
 	function getGroupCollapsedLimit(group: LauncherGroup) {
@@ -2837,7 +2810,6 @@
 	shortcutLabel: string | undefined,
 	focusedTarget: PrimaryLauncherTarget | undefined,
 	stagedMenu: StagedActionMenu | undefined,
-	navigationShortcuts: { label: string; text: string }[],
 	mobileCountLabel: string
 )}
 	{@const groupTarget = stagedMenu?.target ?? focusedTarget ?? createSelectableGroupTarget(group)}
@@ -2845,7 +2817,8 @@
 	{@const primaryAction = getPrimaryAction(groupTarget)}
 	{@const armedAction = stagedMenu ? getStagedActionMenuArmedAction(stagedMenu) : undefined}
 	{@const primaryMenuShortcutLabel = stagedMenu ? getActionMenuShortcutLabel(stagedMenu, 0) : undefined}
-	{@const primaryActionArmed = rowActive && (!stagedMenu || primaryAction?.id === armedAction?.id)}
+	{@const primaryActionEffective = isGroupPrimaryActionEffective(group)}
+	{@const primaryActionArmed = rowActive && primaryActionEffective && (!stagedMenu || primaryAction?.id === armedAction?.id)}
 	<div
 		class:has-staged-menu={Boolean(stagedMenu)}
 		class:primary={primaryLauncherTarget?.kind === 'group' && primaryLauncherTarget.id === group.id}
@@ -2877,19 +2850,6 @@
 				{#if rowActive && mobileCountLabel}
 					<span class="group-mobile-count">{mobileCountLabel}</span>
 				{/if}
-				<span
-					class:compact-action-invisible={!navigationShortcuts.length}
-					class="group-shortcut-nav"
-					aria-hidden={navigationShortcuts.length ? undefined : 'true'}
-					aria-label={navigationShortcuts.length ? 'Group navigation shortcuts' : undefined}
-				>
-					{#each navigationShortcuts as shortcut (shortcut.label)}
-						<span class="group-shortcut-nav-item">
-							<span class="shortcut-label">{shortcut.label}</span>
-							<span>{shortcut.text}</span>
-						</span>
-					{/each}
-				</span>
 			</span>
 			<span class="compact-action-shortcuts">
 				{#if primaryActionArmed}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
@@ -3000,7 +2960,6 @@
 	{@const renderedItems = getRenderedGroupItems(group)}
 	{@const mobileCountLabel = getGroupMobileCountLabel(group)}
 	{@const shortcutLabel = getShortcutLabel(group.id)}
-	{@const navigationShortcuts = getGroupNavigationShortcuts(group)}
 	{@const isFocusedGroup = primaryLauncherTarget?.kind === 'group' && primaryLauncherTarget.id === group.id}
 	{@const focusedTarget = isFocusedGroup ? primaryLauncherTarget : undefined}
 	{@const stagedMenu = stagedActionMenu?.target.id === group.id ? stagedActionMenu : undefined}
@@ -3013,7 +2972,6 @@
 			shortcutLabel,
 			focusedTarget,
 			stagedMenu,
-			navigationShortcuts,
 			mobileCountLabel
 		)}
 
@@ -3740,26 +3698,6 @@
 
 	.action-item.primary .radio-ring {
 		fill: color-mix(in srgb, var(--nc-primary) 6%, var(--nc-surface-1));
-	}
-
-	.group-shortcut-nav {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		justify-content: flex-end;
-		gap: var(--size-2);
-		min-height: 1.05rem;
-		color: var(--nc-tx-2);
-		font-size: var(--font-size-0);
-		line-height: 1;
-	}
-
-	.group-shortcut-nav-item {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.25rem;
-		line-height: 1;
-		white-space: nowrap;
 	}
 
 	.shortcut-label {

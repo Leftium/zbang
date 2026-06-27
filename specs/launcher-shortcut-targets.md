@@ -58,7 +58,7 @@ Status: In progress; staged target sequences can now downgrade from upgraded men
 Status: In progress.
 
 - [x] Support `Q` to `Y` item target slots.
-- [x] Support `U`, `I`, and `O` relative group target slots.
+- [x] Support `O`, `I`, and `P` relative group target slots.
 - [x] Capture the addressed target when a shortcut first arms.
 - [x] Support same-letter progressive action upgrades such as `Q` and `Qq`.
 - [x] Confirm armed target actions with `Enter` without recomputing the target.
@@ -91,7 +91,7 @@ Status: In progress; action items and group headers now use compact inline prima
 
 Status: Planned.
 
-- [ ] Support `P` then `Enter` for parent/up/out, with optional `Pp` fast confirmation.
+- [ ] Support `U` then `Enter` for parent/up/out, with optional `Uu` fast confirmation.
 - [ ] Support `F` then `Enter` for fullscreen toggle, with optional `Ff` fast confirmation.
 - [ ] Support `L` then `Enter` for line wrap toggle, with optional `Ll` fast confirmation.
 - [ ] Support `N` then `Enter` for Enter-inserts-newline toggle, with optional `Nn` fast confirmation.
@@ -258,15 +258,15 @@ Validity examples:
 
 - `Q` is valid only when item slot 1 exists.
 - `Y` should commit as text when there are fewer than 6 visible item slots.
-- `U`, `I`, and `O` are valid only when relative group navigation is active.
-- `P` is valid only when parent/out has a meaningful target or visible feedback.
+- `O`, `I`, and `P` are valid only when relative group navigation is active.
+- `U` is valid only when parent/out has a meaningful target or visible feedback.
 - `F`, `L`, `N`, and `S` can be valid for global commands when those commands are available.
 
 Initial target initiators:
 
 - `Q` to `Y`: item target slots 1 to 6.
-- `U` to `O`: relative group target slots for previous, current, and next group.
-- `P`: parent/up/out command.
+- `O`, `I`, and `P`: relative group target slots for previous, current, and next group.
+- `U`: parent/up/out command.
 
 Initial global command initiators:
 
@@ -282,9 +282,9 @@ Spatial mapping:
 ```text
 Items:  Q  W  E  R  T  Y
 
-Groups: U  I  O    previous, current, next
+Groups: O  I  P    previous, current, next
 
-Parent: P
+Parent: U
 
 Global: F  L  N  S    fullscreen, line wrap, newline behavior, search
 ```
@@ -348,9 +348,10 @@ Default target action levels:
 
 Group examples:
 
-- `U`: focus the previous group slot and arm its primary action.
-- `O`, `OO`, `OOO`: keep moving through the next group slot, wrapping as needed.
-- `U` then `Enter`: run the previous group's primary action.
+- `O`: focus the previous group slot and arm its primary action.
+- `I`: focus the current group slot and arm its primary action.
+- `P`, `PP`, `PPP`: keep moving through the next group slot, wrapping as needed.
+- `O` then `Enter`: run the previous group's primary action.
 
 Opening an action menu from a staged target shortcut must not replace the active parent shortcut context. The addressed launcher target remains captured until the staged sequence confirms, downgrades, or cancels.
 
@@ -381,11 +382,11 @@ Examples:
 - `S`: arm search submit and show a command row.
 - `S` then `Enter`: submit the current search.
 - `Ss`: optional fast confirm for search submit.
-- `P`: arm parent/up/out and show a command row.
-- `P` then `Enter`: run parent/up/out.
-- `Pp`: optional fast confirm for parent/up/out.
+- `U`: arm parent/up/out and show a command row.
+- `U` then `Enter`: run parent/up/out.
+- `Uu`: optional fast confirm for parent/up/out.
 
-Fullscreen, line wrap, Enter-newline behavior, and search submit map back to historical double-key shortcuts: `FF`, `LL`, `NN`, and `MM`. Parent/out previously used `PP` in this spec. The new primary model is staged mnemonic initiator plus `Enter`, with same-letter fast confirmation optional for reversible or frequently used commands. More destructive global commands should require explicit `Enter` confirmation.
+Fullscreen, line wrap, Enter-newline behavior, and search submit map back to historical double-key shortcuts: `FF`, `LL`, `NN`, and `MM`. Parent/out previously used `PP` in this spec before `P` moved to next-group navigation. The new primary model is staged mnemonic initiator plus `Enter`, with same-letter fast confirmation optional for reversible or frequently used commands. More destructive global commands should require explicit `Enter` confirmation.
 
 `MM` was historically a search-submit shortcut, but `S` is the preferred mnemonic initiator now that the old action-menu row is no longer reserved. The historical `..` search-submit shortcut may remain as a punctuation fast path when safe, but it should not be the main documented command because periods are normal text input.
 
@@ -521,7 +522,7 @@ A menu context should include:
 - The parent target that opened the menu.
 - The list of action items from the target's `actions[]`.
 - A visible way to understand that the user is inside a nested action context.
-- Parent/out behavior via `P` then `Enter`, with optional `Pp` fast confirmation.
+- Parent/out behavior via `U` then `Enter`, with optional `Uu` fast confirmation.
 
 Action menu items should be normal launcher items where practical. They can use the same staged target shortcuts and progressive action levels within the nested context.
 
@@ -566,9 +567,9 @@ For a custom bang item:
 
 For bang groups:
 
-- `U` to `O`: focus previous/current/next group slots.
-- Repeated `U` or `O` keeps moving through group slots while the shortcut remains staged.
-- `U` then `Enter`: run the previous group's primary action.
+- `O`, `I`, and `P`: focus previous/current/next group slots.
+- Repeated `O` or `P` keeps moving through group slots while the shortcut remains staged.
+- `O` then `Enter`: run the previous group's primary action.
 
 Bang Management should avoid relying on hidden lists as the main way to switch sources. Group navigation should let users move between My bangs and engine bangs without arrowing through every item.
 
