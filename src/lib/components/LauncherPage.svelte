@@ -2763,21 +2763,23 @@
 					onpointerdown={(event) => event.preventDefault()}
 					onclick={() => openTargetActionMenuFromAffordance(target, rootShortcutLabel)}
 				>
-					<span class:compact-action-invisible={Boolean(rootShortcutLabel && !rowActive)}>
-						Open menu
+					<span
+						class:compact-action-invisible={Boolean(rootShortcutLabel && !rowActive)}
+						class="compact-menu-label"
+						aria-hidden="true"
+					>
+						...
 					</span>
 					{#if rootShortcutLabel}
 						<span
 							class:disabled={!rowActive && isItemShortcutLabelDisabled(rootShortcutLabel)}
 							class:inactive-compact-shortcut={!rowActive}
-							class="shortcut-label pseudo-menu-shortcut-badge"
-							>{rootShortcutLabel}</span
+							class="shortcut-label pseudo-menu-shortcut-badge">{rootShortcutLabel}</span
 						>
 					{:else}
 						<span
 							class="shortcut-label pseudo-menu-shortcut-badge compact-action-invisible"
-							aria-hidden="true"
-							>{itemShortcutLabels[0]}</span
+							aria-hidden="true">{itemShortcutLabels[0]}</span
 						>
 					{/if}
 				</button>
@@ -2923,14 +2925,18 @@
 	{/if}
 
 	<section class="launcher-list" aria-label="Launcher actions and insights">
-		{#each secondaryLauncherItems as item (item.id)}
-			{#if item.kind === 'action'}
-				{@const shortcutLabel = getShortcutLabel(item.id)}
-				{@render actionItem(item, shortcutLabel)}
-			{:else}
-				{@render insightItem(item)}
-			{/if}
-		{/each}
+		{#if secondaryLauncherItems.length}
+			<div class="launcher-group-items launcher-standalone-items">
+				{#each secondaryLauncherItems as item (item.id)}
+					{#if item.kind === 'action'}
+						{@const shortcutLabel = getShortcutLabel(item.id)}
+						{@render actionItem(item, shortcutLabel)}
+					{:else}
+						{@render insightItem(item)}
+					{/if}
+				{/each}
+			</div>
+		{/if}
 		{#each visibleLauncherGroups as group (group.id)}
 			{@render launcherGroup(group)}
 		{/each}
@@ -2954,8 +2960,13 @@
 	}
 
 	.launcher-list {
-		--launcher-row-gap: var(--size-2);
 		--launcher-group-gap: var(--size-3);
+		--launcher-list-bg: color-mix(in srgb, var(--nc-surface-1) 84%, var(--nc-surface-2));
+		--launcher-list-border: color-mix(in srgb, var(--nc-border) 72%, transparent);
+		--launcher-list-divider: color-mix(in srgb, var(--nc-border) 58%, transparent);
+		--launcher-row-hover-bg: color-mix(in srgb, var(--nc-primary) 5%, transparent);
+		--launcher-row-active-bg: color-mix(in srgb, var(--nc-primary) 9%, transparent);
+		--launcher-row-active-rail: color-mix(in srgb, var(--nc-primary) 70%, transparent);
 
 		display: grid;
 		gap: var(--launcher-group-gap);
@@ -2964,7 +2975,7 @@
 
 	.target-action-menu {
 		display: grid;
-		gap: var(--size-1);
+		gap: 0;
 		min-width: 0;
 	}
 
@@ -2976,11 +2987,11 @@
 		width: 100%;
 		min-width: 0;
 		margin: 0;
-		padding: 0.35rem 0.55rem;
+		padding: 0.35rem 0.6rem;
 		color: var(--nc-tx-1);
-		background: color-mix(in srgb, var(--nc-surface-2) 74%, transparent);
-		border: 1px solid color-mix(in srgb, var(--nc-primary) 28%, var(--nc-border));
-		border-radius: calc(var(--nc-radius) * 0.75);
+		background: transparent;
+		border: 0;
+		border-radius: 0;
 		font-size: var(--font-size-0);
 		font-weight: 700;
 		line-height: 1.2;
@@ -2996,13 +3007,13 @@
 
 	.target-action-menu-item:hover,
 	.target-action-menu-item:focus {
-		background: color-mix(in srgb, var(--nc-primary) 12%, var(--nc-surface-2));
+		background: var(--launcher-row-hover-bg);
 		box-shadow: none;
 	}
 
 	.staged-action-menu-item {
 		grid-template-columns: 1.45rem minmax(0, 1fr) auto;
-		background: var(--nc-surface-1);
+		background: transparent;
 	}
 
 	.target-action-menu-item .shortcut-label {
@@ -3021,31 +3032,58 @@
 
 	.staged-action-menu-item.armed {
 		color: var(--nc-primary);
-		border-color: color-mix(in srgb, var(--nc-primary) 55%, var(--nc-border));
+		background: var(--launcher-row-active-bg);
+		box-shadow: inset 0.18rem 0 0 var(--launcher-row-active-rail);
 	}
 
 	.staged-action-menu-item:hover,
 	.staged-action-menu-item:focus {
-		background: color-mix(in srgb, var(--nc-primary) 10%, var(--nc-surface-1));
+		background: var(--launcher-row-hover-bg);
 		box-shadow: none;
+	}
+
+	.staged-action-menu-item.armed:hover,
+	.staged-action-menu-item.armed:focus {
+		background: var(--launcher-row-active-bg);
+		box-shadow: inset 0.18rem 0 0 var(--launcher-row-active-rail);
 	}
 
 	.launcher-group {
 		display: grid;
-		gap: var(--launcher-row-gap);
+		gap: var(--size-1);
 	}
 
 	.launcher-group-items {
 		display: grid;
-		gap: var(--launcher-row-gap);
+		gap: 0;
+		overflow: clip;
+		background: var(--launcher-list-bg);
+		border: 1px solid var(--launcher-list-border);
+		border-radius: var(--nc-radius);
 	}
 
 	.launcher-group-items > .launcher-item {
-		border-radius: var(--nc-radius);
+		border-radius: 0;
 	}
 
-	.launcher-group-items > .launcher-item:last-child {
-		border-radius: var(--nc-radius);
+	.launcher-group-items > .insight-item {
+		background: transparent;
+		border: 0;
+		box-shadow: none;
+	}
+
+	.launcher-group-items > .launcher-item + .launcher-item {
+		border-block-start: 1px solid var(--launcher-list-divider);
+	}
+
+	.launcher-group-items > .compact-action-item:hover,
+	.launcher-group-items > .compact-action-item:focus-within {
+		background: var(--launcher-row-hover-bg);
+	}
+
+	.launcher-group-items > .compact-action-item.primary,
+	.launcher-group-items > .compact-action-item.has-staged-menu {
+		background: var(--launcher-row-active-bg);
 	}
 
 	.group-title-value {
@@ -3173,14 +3211,17 @@
 
 	.compact-action-item {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) 7rem;
-		gap: 0.2rem;
-		padding: 0.4rem;
+		grid-template-columns: minmax(0, 1fr) minmax(3.75rem, max-content);
+		gap: 0;
+		padding: 0;
+		background: transparent;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
 	}
 
 	.compact-action-item.has-staged-menu {
 		grid-template-columns: minmax(0, 1fr);
-		padding-inline-end: 0.4rem;
 	}
 
 	.compact-action-item > .compact-action-menu {
@@ -3192,7 +3233,7 @@
 	}
 
 	.compact-group-header {
-		padding-block: 0.25rem;
+		padding-block: 0.15rem;
 		background: transparent;
 		border-color: transparent;
 		color: var(--nc-tx-2);
@@ -3257,11 +3298,12 @@
 	.compact-action-primary,
 	.compact-action-menu-item {
 		margin: 0;
-		padding: 0.2rem 0.4rem;
+		min-height: 2rem;
+		padding: 0.35rem 0.65rem;
 		color: var(--nc-tx-1);
 		background: transparent;
-		border: 1px solid transparent;
-		border-radius: calc(var(--nc-radius) * 0.75);
+		border: 0;
+		border-radius: 0;
 		line-height: 1.2;
 		box-shadow: none;
 	}
@@ -3286,15 +3328,24 @@
 
 	.compact-action-primary.active-action,
 	.compact-action-menu.active-action .compact-action-menu-item {
-		background: color-mix(in srgb, var(--nc-surface-2) 74%, transparent);
-		border-color: color-mix(in srgb, var(--nc-primary) 28%, var(--nc-border));
+		background: transparent;
+		color: var(--nc-tx-1);
 	}
 
 	.compact-action-primary.active-action:hover,
-	.compact-action-primary.active-action:focus,
-	.compact-action-menu.active-action .compact-action-menu-item:hover,
-	.compact-action-menu.active-action .compact-action-menu-item:focus {
-		background: color-mix(in srgb, var(--nc-primary) 12%, var(--nc-surface-2));
+	.compact-action-primary.active-action:focus {
+		background: transparent;
+	}
+
+	.compact-action-menu.full.active-action .compact-action-menu-item:hover,
+	.compact-action-menu.full.active-action .compact-action-menu-item:focus {
+		background: var(--launcher-row-hover-bg);
+	}
+
+	.compact-action-menu.full.active-action .compact-action-menu-item.armed:hover,
+	.compact-action-menu.full.active-action .compact-action-menu-item.armed:focus {
+		background: var(--launcher-row-active-bg);
+		box-shadow: inset 0.18rem 0 0 var(--launcher-row-active-rail);
 	}
 
 	.compact-group-header .compact-action-primary.active-action,
@@ -3304,10 +3355,13 @@
 		color: inherit;
 	}
 
-	.compact-group-header .compact-action-menu.active-action .compact-action-menu-item:hover,
-	.compact-group-header .compact-action-menu.active-action .compact-action-menu-item:focus {
-		background: color-mix(in srgb, var(--nc-surface-2) 42%, transparent);
-		border-color: color-mix(in srgb, var(--nc-primary) 18%, var(--nc-border));
+	.compact-group-header
+		.compact-action-menu.full.active-action
+		.compact-action-menu-item:not(.armed):hover,
+	.compact-group-header
+		.compact-action-menu.full.active-action
+		.compact-action-menu-item:not(.armed):focus {
+		background: var(--launcher-row-hover-bg);
 	}
 
 	.compact-action-primary .item-text {
@@ -3346,11 +3400,13 @@
 		justify-self: end;
 		width: max-content;
 		max-width: 100%;
+		color: var(--nc-tx-2);
 	}
 
 	.compact-action-menu.full {
 		justify-self: stretch;
 		width: 100%;
+		border-block-start: 1px solid var(--launcher-list-divider);
 	}
 
 	.compact-action-menu-item {
@@ -3362,15 +3418,36 @@
 		white-space: nowrap;
 	}
 
+	.compact-action-menu:not(.full) .compact-action-menu-item {
+		justify-items: end;
+		min-height: 100%;
+		padding-inline: 0.4rem 0.65rem;
+		color: var(--nc-tx-2);
+	}
+
+	.compact-action-menu:not(.full) .compact-action-menu-item:hover,
+	.compact-action-menu:not(.full) .compact-action-menu-item:focus {
+		background: transparent;
+	}
+
+	.compact-menu-label {
+		min-width: 1.05rem;
+		font-family: var(--font-mono), monospace;
+		font-size: 0.9rem;
+		font-weight: 700;
+		line-height: 1;
+		text-align: center;
+	}
+
 	.compact-action-menu.full .compact-action-menu-item {
 		grid-template-columns: minmax(0, 1fr) auto;
 		justify-content: stretch;
-		padding-inline-end: 0.25rem;
+		padding-inline: 1.25rem 0.65rem;
 		width: 100%;
 	}
 
-	.compact-action-item.has-staged-menu .compact-action-primary {
-		padding-inline-end: 0.25rem;
+	.compact-action-menu.full .compact-action-menu-item + .compact-action-menu-item {
+		border-block-start: 1px solid var(--launcher-list-divider);
 	}
 
 	.action-item.primary {
@@ -3384,13 +3461,15 @@
 	}
 
 	.compact-action-item.primary {
+		background: var(--launcher-row-active-bg);
+		box-shadow: inset 0.18rem 0 0 var(--launcher-row-active-rail);
 		transform: none;
 	}
 
 	.compact-group-header.primary {
 		background: transparent;
 		border-color: transparent;
-		box-shadow: inset 0.18rem 0 0 color-mix(in srgb, var(--nc-primary) 64%, transparent);
+		box-shadow: inset 0.18rem 0 0 var(--launcher-row-active-rail);
 	}
 
 	.compact-group-header:hover,
@@ -3398,7 +3477,7 @@
 	.compact-group-header.has-staged-menu {
 		background: color-mix(in srgb, var(--nc-primary) 3%, transparent);
 		border-color: transparent;
-		box-shadow: inset 0.18rem 0 0 color-mix(in srgb, var(--nc-primary) 64%, transparent);
+		box-shadow: inset 0.18rem 0 0 var(--launcher-row-active-rail);
 	}
 
 	.compact-group-header.primary,
@@ -3579,7 +3658,6 @@
 
 	@media (max-width: 520px) {
 		.launcher-list {
-			--launcher-row-gap: var(--size-1);
 			--launcher-group-gap: var(--size-2);
 
 			margin-block-start: var(--size-2);
@@ -3589,6 +3667,11 @@
 			gap: var(--size-2);
 			padding: var(--size-1) var(--size-2);
 			min-height: 0;
+		}
+
+		.compact-action-item {
+			gap: 0;
+			padding: 0;
 		}
 
 		.item-heading {
