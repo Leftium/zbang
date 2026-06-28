@@ -18,21 +18,21 @@
 		"@eslint/js": "^10.0.1",
 		"@leftium/nimble.css": "^0.19.0",
 		"@sveltejs/adapter-auto": "^7.0.1",
-		"@sveltejs/kit": "^2.66.0",
+		"@sveltejs/kit": "^2.68.0",
 		"@sveltejs/vite-plugin-svelte": "^7.1.2",
-		"@types/node": "^24.13.2",
-		"eslint": "^10.5.0",
+		"@types/node": "^26.0.1",
+		"eslint": "^10.6.0",
 		"eslint-config-prettier": "^10.1.8",
-		"eslint-plugin-svelte": "^3.19.0",
-		"globals": "^17.6.0",
+		"eslint-plugin-svelte": "^3.20.0",
+		"globals": "^17.7.0",
 		"open-props": "^1.7.23",
-		"prettier": "^3.8.4",
+		"prettier": "^3.9.0",
 		"prettier-plugin-svelte": "^4.1.1",
-		"svelte": "^5.56.3",
-		"svelte-check": "^4.6.0",
+		"svelte": "^5.56.4",
+		"svelte-check": "^4.7.1",
 		"typescript": "^6.0.3",
-		"typescript-eslint": "^8.61.1",
-		"vite": "^8.0.16"
+		"typescript-eslint": "^8.62.0",
+		"vite": "^8.1.0"
 	},
 	"dependencies": {
 		"compromise": "^14.15.1",
@@ -40,6 +40,6 @@
 		"compromise-stats": "^0.1.1",
 		"fuzzysort": "^3.1.0",
 		"svelte-inspect-value": "^0.11.3",
-		"wellcrafted": "^0.42.0"
+		"wellcrafted": "^0.43.0"
 	}
 }
