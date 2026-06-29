@@ -200,7 +200,8 @@
 				<button class="secondary outline" onclick={() => (fullscreen = !fullscreen)}>
 					{fullscreen ? 'Restore' : 'Fullscreen'}
 				</button>
-				<label title="wrap lines"><input type="checkbox" bind:checked={wordwrap} /> <b>wrap</b></label
+				<label title="wrap lines"
+					><input type="checkbox" bind:checked={wordwrap} /> <b>wrap</b></label
 				>
 			</div>
 
@@ -278,7 +279,7 @@
 		white-space: pre;
 		overflow-x: auto;
 		font-family: monospace;
-		font-size: inherit;
+		font-size: max(16px, 1rem);
 		font-weight: normal;
 		font-style: normal;
 		font-kerning: none;
