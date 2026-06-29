@@ -33,10 +33,10 @@ Use these stages to track implementation progress. Status should be updated as w
 
 ### Stage 1: Target And Focus Foundation
 
-Status: Mostly complete; remaining action-menu and parent/out normalization is deferred until nested menus and parent contexts are implemented.
+Status: Mostly complete; runnable actions and passive menu info rows are now distinct. Remaining action-menu and parent/out normalization is deferred until nested menus and parent contexts are implemented.
 
 - [x] Represent item and group headers as launcher targets.
-- [ ] Normalize target actions as primary, secondary, action menu, and parent/out behaviors.
+- [ ] Normalize target entries as runnable primary/secondary/menu actions, passive menu info rows, and parent/out behaviors.
 - [x] Make focus snapshots restorable after shortcut cancellation.
 - [ ] Make focus snapshots restorable after nested context exit.
 - [x] Build a mode-aware valid shortcut map for visible targets and global commands.
@@ -71,7 +71,7 @@ Status: In progress.
 
 ### Stage 4: Armed Feedback And Staged Rendering
 
-Status: In progress; action items and group headers now use compact inline primary/menu affordances instead of relying on target status hints or the older expanded row menu treatment.
+Status: In progress; action items and group headers now use compact inline primary/menu affordances instead of relying on target status hints or the older expanded row menu treatment. The first implementation keeps armed feedback in input chrome and row-local affordances, not in a separate pinned result row.
 
 - [x] Replace the textarea status row with a minimal armed confirmation hint while a shortcut is staged.
 - [x] Replace target staged-action text with focused-row primary/menu affordances.
@@ -81,8 +81,8 @@ Status: In progress; action items and group headers now use compact inline prima
 - [x] Use compact action rows for action items and group headers.
 - [x] Remove the secondary action pill from compact rows.
 - [x] Render compact full-menu rows below the primary row with right-aligned shortcut badges.
-- [ ] Decide whether a separate pinned armed command row is still needed after the status-row approach is tested.
-- [ ] Keep the armed command row out of item shortcut slot indexing.
+- [x] Keep armed feedback in input chrome and row-local affordances for the first implementation.
+- [x] Keep armed feedback out of item shortcut slot indexing.
 - [ ] Decide whether repeat-key and `Backspace` affordances should be shown in the armed feedback, or remain implicit expert behavior.
 - [x] Render staged shortcut text distinctly from committed text with a minimal textarea preview foundation.
 - [x] Render bang-picker search tokens as staged text until a bang is selected.
@@ -91,16 +91,16 @@ Status: In progress; action items and group headers now use compact inline prima
 
 ### Stage 5: Global Commands And Text Transforms
 
-Status: Planned.
+Status: Planned; `F`, `L`, `S`, and `N` are the canonical global command initiators. Any legacy or implementation-local aliases should be treated as compatibility paths or implementation debt, not as the desired shortcut model.
 
 - [ ] Support `U` then `Enter` for parent/up/out, with optional `Uu` fast confirmation.
 - [ ] Support `F` then `Enter` for fullscreen toggle, with optional `Ff` fast confirmation.
 - [ ] Support `L` then `Enter` for line wrap toggle, with optional `Ll` fast confirmation.
-- [ ] Support `N` then `Enter` for Enter-inserts-newline toggle, with optional `Nn` fast confirmation.
 - [ ] Support `S` then `Enter` for search submit, with optional `Ss` fast confirmation.
+- [ ] Support `N` then `Enter` for Enter-inserts-newline toggle, with optional `Nn` fast confirmation.
 - [ ] Support staged `SPACE` then `Enter` for bang insertion in bang-trigger contexts.
 - [ ] Keep `SPACE SPACE` as a fast path for bang insertion where safe.
-- [ ] Decide whether legacy `FF`, `LL`, `NN`, `MM`, or `..` timing-window shortcuts remain as compatibility fast paths.
+- [ ] Decide whether legacy `FF`, `LL`, `MM`, `NN`, or `..` timing-window shortcuts remain as compatibility fast paths.
 - [ ] Scope target shortcuts, global commands, and text transforms by mode, fullscreen state, IME/composition state, input focus state, and mobile keyboard behavior.
 
 ### Stage 6: Nested Menus And Mobile Polish
@@ -128,9 +128,10 @@ Both target kinds should support the same interaction concepts:
 - Primary/default action.
 - Secondary fast action.
 - Action menu.
+- Passive menu information that is visible but not selectable or runnable.
 - Parent/out behavior when inside a nested context.
 
-Suggested eventual shape:
+Suggested eventual shape for runnable actions:
 
 ```ts
 type LauncherTarget = {
@@ -147,7 +148,9 @@ type LauncherAction = {
 };
 ```
 
-The exact implementation can change. The important requirement is that group headers do not need a parallel interaction system.
+Passive menu information should be modeled separately from runnable actions, even if the implementation stores both in one menu-entry union. Info rows can show values such as full bang trigger lists or raw URL templates, but they should not receive shortcut labels, become arrow-selectable menu actions, or run on `Enter`.
+
+The exact implementation can change. The important requirements are that group headers do not need a parallel interaction system, and display-only details do not become fake actions just to fit the menu layout.
 
 ## Interaction Concepts
 
@@ -193,13 +196,15 @@ Examples:
 
 ### Action Menu
 
-The action menu exposes the full `actions[]` list for a target. Compact rows may render `actions[0]` as the always-visible title row and show the remaining actions only when the menu expands.
+The action menu exposes the target's runnable actions and any passive menu information. Compact rows may render `actions[0]` as the always-visible title row and show the remaining actions and info rows only when the menu expands.
 
 Opening a menu should focus the target first. This keeps shortcuts consistent even when the target was not already focused.
 
 Menu-opening shortcuts should still open a menu when a target has only one action. Showing the one-action menu preserves consistent shortcut behavior and makes the available action explicit.
 
 Running an action from a menu should close the menu unless the action explicitly keeps it open.
+
+Passive info rows are visual details only. Menu shortcut labels, arrow selection, `Enter` confirmation, and pointer activation should skip them.
 
 ### Compact Action Rows
 
@@ -215,6 +220,7 @@ The compact row model is:
 - Shortcut badges remain right-aligned across the primary row and expanded menu rows.
 - Armed menu actions show only `Enter`; unarmed menu actions show their shortcut badge for selection.
 - Duplicate outer row shortcut badges are hidden while the compact menu is open.
+- Passive info rows render as values in the expanded menu without shortcut badges or action labels.
 
 The older non-compact item menu presentation has been removed. New action-menu UI should build on compact rows or nested compact groups rather than adding a second menu system.
 
@@ -245,7 +251,7 @@ Shortcut behavior should be chosen by shortcut category rather than forced throu
 Initial categories:
 
 - Target shortcuts address visible launcher targets such as item slots and relative group slots.
-- Global command shortcuts address launcher-level commands such as fullscreen toggle, line wrap toggle, Enter-newline behavior, and search submit.
+- Global command shortcuts address launcher-level commands such as fullscreen toggle, line wrap toggle, search submit, and Enter-newline behavior.
 - Text transform shortcuts convert staged text into committed text, such as `SPACE` to `!` for bang insertion.
 
 Target and global command shortcuts should prefer a staged and confirmed model over timing windows. Text transform shortcuts may keep fast replacement paths when they are more natural than explicit confirmation.
@@ -262,7 +268,7 @@ Validity examples:
 - `Y` should commit as text when there are fewer than 6 visible item slots.
 - `O`, `I`, and `P` are valid only when relative group navigation is active.
 - `U` is valid only when parent/out has a meaningful target or visible feedback.
-- `F`, `L`, `N`, and `S` can be valid for global commands when those commands are available.
+- `F`, `L`, `S`, and `N` can be valid for global commands when those commands are available.
 
 Initial target initiators:
 
@@ -274,8 +280,8 @@ Initial global command initiators:
 
 - `F`: toggle fullscreen.
 - `L`: toggle line wrap.
-- `N`: toggle whether `Enter` inserts a newline in the current fullscreen/restored context.
 - `S`: submit/search.
+- `N`: toggle whether `Enter` inserts a newline in the current fullscreen/restored context.
 
 Global command initiators should prefer mnemonic letters when those letters are not used by target slots in the active context.
 
@@ -288,7 +294,7 @@ Groups: O  I  P    previous, current, next
 
 Parent: U
 
-Global: F  L  N  S    fullscreen, line wrap, newline behavior, search
+Global: F  L  S  N    fullscreen, line wrap, search, newline behavior
 ```
 
 Target shortcuts no longer need a separate menu/action shortcut row. Repeating the same shortcut key upgrades the armed action for the same captured target.
@@ -374,8 +380,8 @@ Examples:
 - `ArrowDown` then `q` when `Q` is a visible target shortcut: stage `q`, focus the `Q` target, and keep the staged shortcut model.
 - `F`: stage `F` and show the armed command row for fullscreen toggle.
 - `L`: stage `L` and show the armed command row for line wrap toggle.
-- `N`: stage `N` and show the armed command row for Enter-newline behavior.
 - `S`: stage `S` and show the armed command row for search submit.
+- `N`: stage `N` and show the armed command row for Enter-newline behavior.
 - `Y` with fewer than 6 item slots: commit `Y` as literal text.
 - `Q` then `Q`: stay staged and open the first item's action menu when a secondary action exists.
 - `Q` then `q`: same as `Q` then `Q`; staged shortcut continuations are case-insensitive.
@@ -431,17 +437,17 @@ Examples:
 - `L`: arm line wrap toggle and show a command row.
 - `L` then `Enter`: toggle line wrap.
 - `Ll`: optional fast confirm for line wrap toggle.
-- `N`: arm Enter-newline behavior and show a command row.
-- `N` then `Enter`: toggle whether `Enter` inserts a newline for the current fullscreen/restored context.
-- `Nn`: optional fast confirm for Enter-newline behavior.
 - `S`: arm search submit and show a command row.
 - `S` then `Enter`: submit the current search.
 - `Ss`: optional fast confirm for search submit.
+- `N`: arm Enter-newline behavior and show a command row.
+- `N` then `Enter`: toggle whether `Enter` inserts a newline for the current fullscreen/restored context.
+- `Nn`: optional fast confirm for Enter-newline behavior.
 - `U`: arm parent/up/out and show a command row.
 - `U` then `Enter`: run parent/up/out.
 - `Uu`: optional fast confirm for parent/up/out.
 
-Fullscreen, line wrap, Enter-newline behavior, and search submit map back to historical double-key shortcuts: `FF`, `LL`, `NN`, and `MM`. Parent/out previously used `PP` in this spec before `P` moved to next-group navigation. The new primary model is staged mnemonic initiator plus `Enter`, with same-letter fast confirmation optional for reversible or frequently used commands. More destructive global commands should require explicit `Enter` confirmation.
+Fullscreen, line wrap, search submit, and Enter-newline behavior map back to historical double-key shortcuts: `FF`, `LL`, `MM`, and `NN`. Parent/out previously used `PP` in this spec before `P` moved to next-group navigation. The new primary model is staged mnemonic initiator plus `Enter`, with same-letter fast confirmation optional for reversible or frequently used commands. More destructive global commands should require explicit `Enter` confirmation.
 
 `MM` was historically a search-submit shortcut, but `S` is the preferred mnemonic initiator now that the old action-menu row is no longer reserved. The historical `..` search-submit shortcut may remain as a punctuation fast path when safe, but it should not be the main documented command because periods are normal text input.
 
@@ -514,8 +520,8 @@ Examples:
 - `SPACE`: show `Enter` inserts `!`.
 - `F`: show `Enter` toggles fullscreen.
 - `L`: show `Enter` toggles line wrap.
-- `N`: show `Enter` toggles Enter-newline behavior.
 - `S`: show `Enter` submits the search.
+- `N`: show `Enter` toggles Enter-newline behavior.
 - `Q`: show `Enter` runs the captured item slot 1 primary action.
 - `Qq`: show `Enter` runs the currently armed menu or secondary action.
 
@@ -573,12 +579,13 @@ Examples:
 
 ## Action Menus As Nested Groups
 
-Action menus should render through the launcher list model as nested groups rather than a separate popover-only system.
+Action menus should eventually render through the launcher list model as nested groups rather than a separate popover-only system. The current compact inline menu model is acceptable for the first implementation; nested groups become useful once menus need deeper parent/out behavior or richer mobile controls.
 
 A menu context should include:
 
 - The parent target that opened the menu.
 - The list of action items from the target's `actions[]`.
+- Any passive info rows attached to the target, kept display-only and excluded from menu target shortcuts.
 - A visible way to understand that the user is inside a nested action context.
 - Parent/out behavior via `U` then `Enter`, with optional `Uu` fast confirmation.
 
@@ -599,7 +606,7 @@ Mobile behavior:
 - Arrow keys must not be required for any core operation.
 - Shortcut labels can show the single letter, such as `Q`, while staged sequences such as `Qq` and `QqQ` remain visible in the armed command row.
 - The UI may add action labels or other affordances to indicate each target's primary and secondary actions, especially where fast actions are not obvious.
-- Fullscreen or other text-priority modes may disable target shortcuts so capital letters commit normally, while keeping small global commands such as `F` then `Enter`, `L` then `Enter`, or `N` then `Enter` when useful.
+- Fullscreen or other text-priority modes may disable target shortcuts so capital letters commit normally, while keeping small global commands such as `F` then `Enter`, `L` then `Enter`, `S` then `Enter`, or `N` then `Enter` when useful.
 
 ## Bang Examples
 
@@ -652,8 +659,8 @@ For a setting option item:
 - Which modes, if any, should disable default wrapping for relative group navigation?
 - Which modes should support single `SPACE` staging for `!`, and which should only support `SPACE SPACE` fast replacement?
 - Which non-search modes, if any, should support `SPACE SPACE` to `!` with a timing window?
-- Should global commands such as fullscreen, line wrap, Enter-newline behavior, and search submit keep repeated-key fast confirmation, or require `Enter` only?
-- Which legacy global fast paths should remain supported: `FF`, `LL`, `NN`, `MM`, or `..`?
+- Should global commands such as fullscreen, line wrap, search submit, and Enter-newline behavior keep repeated-key fast confirmation, or require `Enter` only?
+- Which legacy global fast paths should remain supported: `FF`, `LL`, `MM`, `NN`, or `..`?
 - What is the clearest visible control and label for Caps entry mode?
 - Should hardware Caps Lock automatically imply Caps entry mode, or should it still allow shortcut initiators?
 - Which cursor movement and blur cases should commit a candidate buffer versus cancel it?
@@ -668,15 +675,16 @@ For a setting option item:
 - Edge item shortcut selection, arrow focus, or PageUp/PageDown focus extends the visible item shortcut window without changing the selected item's shortcut key.
 - Relative group repeats keep navigating between groups without leaving staged shortcut mode.
 - `Enter` confirms the currently armed shortcut action.
-- A pinned armed command row describes the current action, confirmation key, next upgrade when present, and cancellation path.
-- The armed command row does not consume item shortcut slots or shift normal item indexing.
+- Armed feedback in input chrome or row-local affordances describes the current action, confirmation key, next upgrade when present, and cancellation path.
+- Armed feedback does not consume item shortcut slots or shift normal item indexing.
 - Nonmatching text resolves staged shortcuts as literal input and restores the previous focus snapshot when possible.
 - Backspace can cancel or downgrade visible shortcut buffers; full cancellation restores the previous focus snapshot when possible.
 - Caps entry mode allows literal uppercase shortcut letters and has a visible escape path.
 - Search-mode `SPACE` can stage `!` insertion in a bang-trigger context, and `SPACE SPACE` remains a fast path that commits `!` promptly.
 - Staged shortcut text is visually distinct, while only committed text is selectable and copyable.
 - Staged `SPACE` has visible inline treatment and an explicit armed command row.
-- Global command shortcuts such as fullscreen, line wrap, Enter-newline behavior, and search submit can use staged confirmation with optional repeated-key fast confirmation.
+- Global command shortcuts such as fullscreen, line wrap, search submit, and Enter-newline behavior use `F`, `L`, `S`, and `N` staged confirmation with optional repeated-key fast confirmation.
+- Passive menu info rows can show details such as full bang trigger codes and URL templates without receiving shortcut labels, arrow selection, or `Enter` execution.
 - Action menus can be represented as nested launcher groups.
 - Parent/out behavior has a dedicated shortcut and exits one nested context.
 - Mobile users can operate launcher groups, items, menus, and actions without arrow keys.
