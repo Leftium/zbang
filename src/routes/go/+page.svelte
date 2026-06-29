@@ -103,11 +103,7 @@
 			channel.onmessage = (event: MessageEvent<{ index?: number }>) => {
 				const index = event.data.index;
 
-				if (
-					typeof index !== 'number' ||
-					index < 1 ||
-					index > expectedCount
-				) {
+				if (typeof index !== 'number' || index < 1 || index > expectedCount) {
 					return;
 				}
 
@@ -133,21 +129,21 @@
 		});
 	}
 
-	function openFanoutTarget(targetUrl: string, index: number) {
-		if (index === 0) {
-			window.location.href = targetUrl;
-			return;
-		}
-
-		window.open(targetUrl, '_blank', 'noopener,noreferrer');
-	}
-
 	function getTargetLabel(targetUrl: string) {
 		try {
 			return new URL(targetUrl).hostname.replace(/^www\./, '');
 		} catch {
 			return targetUrl;
 		}
+	}
+
+	function getTargetLinkAttributes(targetUrl: string, index: number) {
+		return {
+			href: targetUrl,
+			target: index === 0 ? undefined : '_blank',
+			rel: index === 0 ? undefined : 'noopener noreferrer',
+			title: targetUrl
+		};
 	}
 </script>
 
@@ -160,8 +156,8 @@
 		<p class="eyebrow">Opening multiple bangs</p>
 		<h1>Whiz is opening your bang targets</h1>
 		<p>
-			If this page stays open, your browser probably blocked popup tabs. Use the popup-blocked
-			icon in the address bar to allow popups for Whiz, then retry the omnibar search.
+			If this page stays open, your browser probably blocked popup tabs. Use the popup-blocked icon
+			in the address bar to allow popups for Whiz, then retry the omnibar search.
 		</p>
 		{#if errorMessage}
 			<p class="error">{errorMessage}</p>
@@ -169,9 +165,13 @@
 		<ol>
 			{#each fanoutTargets as targetUrl, index (`${index}-${targetUrl}`)}
 				<li>
-					<button type="button" class="target-button" onclick={() => openFanoutTarget(targetUrl, index)}>
-						{index === 0 ? 'Current tab' : `New tab ${index}`}: {getTargetLabel(targetUrl)}
-					</button>
+					<span class="target-row">
+						<span class="target-context">{index === 0 ? 'Current tab' : `New tab ${index}`}:</span>
+						<a {...getTargetLinkAttributes(targetUrl, index)} class="target-link">
+							<span class="target-host">{getTargetLabel(targetUrl)}</span>
+							<span class="target-url">{targetUrl}</span>
+						</a>
+					</span>
 				</li>
 			{/each}
 		</ol>
@@ -269,14 +269,55 @@
 		padding-left: 1.5rem;
 	}
 
-	.target-button {
-		padding: 0;
-		border: 0;
+	.fanout-page li {
+		min-width: 0;
+	}
+
+	.target-row {
+		display: grid;
+		grid-template-columns: max-content minmax(0, 1fr);
+		gap: 0.5rem;
+		align-items: start;
+		min-width: 0;
+	}
+
+	.target-context {
+		color: var(--nc-tx-2);
+		white-space: nowrap;
+	}
+
+	.target-link {
+		display: grid;
+		min-width: 0;
+		max-width: 100%;
 		color: var(--nc-lk-1);
-		background: transparent;
 		font: inherit;
 		text-align: left;
+		text-decoration: none;
+	}
+
+	.target-host,
+	.target-url {
+		display: block;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.target-host {
 		text-decoration: underline;
-		cursor: pointer;
+	}
+
+	.target-url {
+		color: var(--nc-tx-2);
+		font-family: var(--font-mono), monospace;
+		font-size: var(--font-size-0);
+		line-height: 1.25;
+	}
+
+	.target-link:hover .target-host,
+	.target-link:focus .target-host {
+		text-decoration-thickness: 0.12em;
 	}
 </style>
