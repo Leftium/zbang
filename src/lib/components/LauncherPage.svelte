@@ -33,6 +33,8 @@
 		LauncherContext,
 		LauncherGroup,
 		LauncherItem,
+		LauncherItemAction,
+		LauncherMenuInfo,
 		LauncherMode,
 		LauncherModeId,
 		LauncherPlugin
@@ -109,21 +111,8 @@
 		selected?: () => boolean;
 		run: () => void;
 	};
-	type LauncherRunnableAction = {
-		id: string;
-		kind: 'action';
-		label: string;
-		title?: string;
-		run: () => void | Promise<void>;
-	};
-	type LauncherInfoAction = {
-		id: string;
-		kind: 'info';
-		details: readonly {
-			value: string;
-			segments?: BangHighlightSegment[];
-		}[];
-	};
+	type LauncherRunnableAction = LauncherItemAction & { kind: 'action' };
+	type LauncherInfoAction = LauncherMenuInfo & { kind: 'info' };
 	type LauncherAction = LauncherRunnableAction | LauncherInfoAction;
 	type PrimaryLauncherTarget =
 		| {
@@ -158,6 +147,12 @@
 		selectedPrimaryItemId: string | undefined;
 		activeLauncherGroupId: string | undefined;
 		itemShortcutAnchor: ItemShortcutAnchor | undefined;
+	};
+	type ActionSelectionSnapshot = {
+		targetId: string;
+		groupId?: string;
+		groupItemIndex: number;
+		itemSelectionKey?: string;
 	};
 	type ShortcutBinding =
 		| { key: string; kind: 'target'; lane: ShortcutLane; target: PrimaryLauncherTarget }
@@ -378,7 +373,9 @@
 	);
 	const primaryLauncherTarget = $derived(
 		selectablePrimaryTargets.find((target) => target.id === selectedPrimaryItemId) ??
-			selectablePrimaryTargets.find((target) => target.kind === 'item' && target.item.safeForEnter)
+			selectablePrimaryTargets.find(
+				(target) => target.kind === 'item' && getPrimaryAction(target)?.safeForEnter
+			)
 	);
 	const primaryLauncherItem = $derived(
 		primaryLauncherTarget?.kind === 'item' ? primaryLauncherTarget.item : undefined
@@ -1283,13 +1280,13 @@
 		if (binding.kind === 'target') {
 			focusLauncherTarget(binding.target);
 
-			void getArmedTargetAction(binding)?.run();
+			runTargetAction(getArmedTargetAction(binding), binding.target);
 			return;
 		}
 
 		if (binding.kind === 'utility') {
 			if (binding.key === 'V') {
-				void getPrimaryAction(primaryLauncherTarget)?.run();
+				runTargetAction(getPrimaryAction(primaryLauncherTarget), primaryLauncherTarget);
 				return;
 			}
 
@@ -1684,8 +1681,10 @@
 		}
 
 		if (key === '.' || key === 'V') {
-			void getPrimaryAction(pendingShortcutPrimaryTarget ?? primaryLauncherTarget)?.run();
-			armTripleShortcut(key, 'primary', pendingShortcutPrimaryTarget ?? primaryLauncherTarget);
+			const target = pendingShortcutPrimaryTarget ?? primaryLauncherTarget;
+
+			runTargetAction(getPrimaryAction(target), target);
+			armTripleShortcut(key, 'primary', target);
 			return;
 		}
 
@@ -1719,13 +1718,13 @@
 
 		if (target && (lane === 'item-focus' || lane === 'group-focus')) {
 			focusLauncherTarget(target);
-			void getPrimaryAction(target)?.run();
+			runTargetAction(getPrimaryAction(target), target);
 			return;
 		}
 
 		if (target && lane === 'item-menu' && target.kind === 'item') {
 			focusLauncherTarget(target);
-			void getSecondaryAction(target)?.run();
+			runTargetAction(getSecondaryAction(target), target);
 			return;
 		}
 
@@ -2117,15 +2116,102 @@
 		textareaElement?.focus();
 	}
 
+	function runTargetAction(
+		action: LauncherRunnableAction | undefined,
+		target: PrimaryLauncherTarget | undefined
+	) {
+		if (!action) return;
+
+		void runTargetActionAsync(action, target);
+	}
+
+	async function runTargetActionAsync(
+		action: LauncherRunnableAction,
+		target: PrimaryLauncherTarget | undefined
+	) {
+		const selectionSnapshot = captureActionSelectionSnapshot(target);
+
+		try {
+			const result = action.run();
+
+			await tick();
+			restoreActionSelection(selectionSnapshot);
+			await result;
+		} catch (error) {
+			console.error('Failed to run launcher action', error);
+		}
+	}
+
+	function captureActionSelectionSnapshot(
+		target: PrimaryLauncherTarget | undefined
+	): ActionSelectionSnapshot | undefined {
+		if (!target) return undefined;
+
+		const groupId = target.kind === 'group' ? target.group.id : target.groupId;
+		const groupTargets = getActionSelectionGroupTargets(groupId);
+		const groupItemIndex = groupTargets.findIndex((groupTarget) => groupTarget.id === target.id);
+
+		return {
+			targetId: target.id,
+			groupId,
+			groupItemIndex,
+			itemSelectionKey: target.kind === 'item' ? target.item.selectionKey : undefined
+		};
+	}
+
+	function restoreActionSelection(snapshot: ActionSelectionSnapshot | undefined) {
+		if (!snapshot) return;
+		if (selectablePrimaryTargets.some((target) => target.id === snapshot.targetId)) return;
+
+		const groupTargets = getActionSelectionGroupTargets(snapshot.groupId);
+		const adjacentGroupTarget =
+			snapshot.groupItemIndex === -1
+				? undefined
+				: (groupTargets[snapshot.groupItemIndex] ?? groupTargets[snapshot.groupItemIndex - 1]);
+		const movedTarget = snapshot.itemSelectionKey
+			? selectablePrimaryTargets.find(
+					(target) =>
+						target.kind === 'item' && target.item.selectionKey === snapshot.itemSelectionKey
+				)
+			: undefined;
+		const fallbackTarget =
+			adjacentGroupTarget ??
+			movedTarget ??
+			getActionSelectionGroupTargets(activeLauncherGroup?.id)[0] ??
+			selectablePrimaryTargets.find((target) => target.kind === 'item') ??
+			selectablePrimaryTargets[0];
+
+		if (fallbackTarget) {
+			focusLauncherTarget(fallbackTarget);
+			return;
+		}
+
+		selectedPrimaryItemId = undefined;
+	}
+
+	function getActionSelectionGroupTargets(groupId: string | undefined) {
+		if (!groupId) {
+			return visibleLauncherItems.flatMap((item) => createSelectableItemTarget(item));
+		}
+
+		const group = visibleLauncherGroups.find((visibleGroup) => visibleGroup.id === groupId);
+
+		return group
+			? getVisibleGroupItems(group).flatMap((item) => createSelectableItemTarget(item, group.id))
+			: [];
+	}
+
 	function runPrimaryAction() {
-		void getPrimaryAction(primaryLauncherTarget)?.run();
+		runTargetAction(getPrimaryAction(primaryLauncherTarget), primaryLauncherTarget);
 	}
 
 	function runStagedActionMenuAction(action: LauncherRunnableAction) {
-		if (stagedActionMenu) focusLauncherTarget(stagedActionMenu.target);
+		const target = stagedActionMenu?.target;
 
-		void action.run();
+		if (target) focusLauncherTarget(target);
+
 		resetShortcutState();
+		runTargetAction(action, target);
 	}
 
 	function openTargetActionMenuFromAffordance(
@@ -2333,7 +2419,7 @@
 		item: LauncherItem,
 		groupId?: string
 	): PrimaryLauncherTarget[] {
-		if (item.kind !== 'action' || !item.run) return [];
+		if (item.kind !== 'action') return [];
 
 		return [
 			{
@@ -2348,25 +2434,12 @@
 	}
 
 	function getItemActions(item: LauncherItem): LauncherAction[] {
-		const actions: LauncherAction[] = [];
+		if (item.kind !== 'action') return [];
 
-		if (item.run) {
-			actions.push({ id: `${item.id}.primary`, kind: 'action', label: item.title, run: item.run });
-		}
-
-		if (item.secondaryAction) {
-			actions.push({
-				id: `${item.id}.secondary`,
-				kind: 'action',
-				label: item.secondaryAction.label,
-				title: item.secondaryAction.title,
-				run: item.secondaryAction.run
-			});
-		}
-
-		actions.push(...(item.menuInfo ?? []).map((info) => ({ ...info, kind: 'info' as const })));
-
-		return actions;
+		return [
+			...item.actions.map((action) => ({ ...action, kind: 'action' as const })),
+			...(item.menuInfo ?? []).map((info) => ({ ...info, kind: 'info' as const }))
+		];
 	}
 
 	function getGroupPrimaryActionLabel(group: LauncherGroup) {
@@ -2497,8 +2570,14 @@
 							title: getBangSearchTitle(context.bangComposition),
 							description: getBangSearchDescription(context.bangComposition),
 							score: 120,
-							safeForEnter: true,
-							run: () => executeBangSearch(context.bangComposition)
+							actions: [
+								{
+									id: 'bang-compose.execute.primary',
+									label: getBangSearchTitle(context.bangComposition),
+									safeForEnter: true,
+									run: () => executeBangSearch(context.bangComposition)
+								}
+							]
 						}
 					];
 				}
@@ -2551,12 +2630,19 @@
 								title: 'Copy to clipboard',
 								description: 'Copy the current launcher text.',
 								score: 70,
-								run: copyToClipboard,
-								secondaryAction: {
-									label: 'As URL',
-									title: 'Copy share URL',
-									run: copyShareUrlToClipboard
-								}
+								actions: [
+									{
+										id: 'clipboard.copy.primary',
+										label: 'Copy to clipboard',
+										run: copyToClipboard
+									},
+									{
+										id: 'clipboard.copy.share-url',
+										label: 'As URL',
+										title: 'Copy share URL',
+										run: copyShareUrlToClipboard
+									}
+								]
 							}
 						];
 					}
@@ -2569,8 +2655,14 @@
 							title: 'Paste from clipboard',
 							description: 'Use clipboard text as the search query.',
 							score: 80,
-							safeForEnter: true,
-							run: pasteFromClipboard
+							actions: [
+								{
+									id: 'clipboard.paste.primary',
+									label: 'Paste from clipboard',
+									safeForEnter: true,
+									run: pasteFromClipboard
+								}
+							]
 						}
 					];
 				}
@@ -2592,13 +2684,20 @@
 							titleSegments: provider === 'custom' ? getBangCodeLabelSegments(title) : undefined,
 							description: `for "${context.text}".`,
 							score: provider === settings.searchProvider ? 100 : 65,
-							safeForEnter: provider === settings.searchProvider,
-							run: () => search(provider),
-							secondaryAction: {
-								label: 'Set as default',
-								title: `Use ${searchProviderLabels[provider]} for default web searches`,
-								run: () => setSearchProvider(provider)
-							}
+							actions: [
+								{
+									id: `search.${provider}.primary`,
+									label: title,
+									safeForEnter: provider === settings.searchProvider,
+									run: () => search(provider)
+								},
+								{
+									id: `search.${provider}.set-default`,
+									label: 'Set as default',
+									title: `Use ${searchProviderLabels[provider]} for default web searches`,
+									run: () => setSearchProvider(provider)
+								}
+							]
 						};
 					});
 				}
@@ -2757,7 +2856,13 @@
 			descriptionSegments: getSettingDescriptionSegments(option),
 			score: option.score,
 			sortOrder: index,
-			run: option.run
+			actions: [
+				{
+					id: `settings.${group.id}.${option.id}.primary`,
+					label: option.label,
+					run: option.run
+				}
+			]
 		};
 	}
 
@@ -2832,29 +2937,91 @@
 		results: BangFilterResult[],
 		source: 'my' | 'provider'
 	): LauncherItem[] {
-		return results.map(({ item, score, highlights }, index) => ({
-			id: `bangs.${source}.${index}.${item.code[0] ?? item.rank}`,
-			pluginId: 'bangs',
-			kind: 'action' as const,
-			title: item.name,
-			description: getBangItemDescription(item),
-			titleSegments: highlights.name,
-			descriptionSegments: getBangDescriptionSegments(highlights),
-			rank: item.rank,
-			score,
-			sortOrder: index,
-			safeForEnter: mode.id !== 'bangs',
-			secondaryAction: {
-				label: 'Set as default',
-				title: `Use ${item.name} for default web searches`,
-				run: () => setBangAsDefaultSearch(item)
+		return results.map(({ item, score, highlights }, index) => {
+			const itemId = `bangs.${source}.${index}.${item.code[0] ?? item.rank}`;
+
+			return {
+				id: itemId,
+				pluginId: 'bangs',
+				kind: 'action' as const,
+				title: item.name,
+				description: getBangItemDescription(item),
+				titleSegments: highlights.name,
+				descriptionSegments: getBangDescriptionSegments(highlights),
+				selectionKey: getBangSelectionKey(item),
+				rank: item.rank,
+				score,
+				sortOrder: index,
+				actions: getBangItemActions(item, source, itemId),
+				menuInfo: [getBangMenuInfo(item, highlights)]
+			};
+		});
+	}
+
+	function getBangItemActions(
+		item: ZbangRecord,
+		source: 'my' | 'provider',
+		itemId: string
+	): [LauncherItemAction, ...LauncherItemAction[]] {
+		if (mode.id === 'bangs') {
+			return [
+				{
+					id: `${itemId}.membership`,
+					label: getBangMembershipActionLabel(source),
+					run: () => updateBangMembership(item, source)
+				},
+				getBangDefaultSearchAction(item, itemId)
+			];
+		}
+
+		return [
+			{
+				id: `${itemId}.insert`,
+				label: `Insert ${item.name}`,
+				title: getBangInsertActionTitle(item),
+				safeForEnter: true,
+				run: () => insertBang(item.code[0])
 			},
-			menuInfo: [getBangMenuInfo(item, highlights)],
-			run:
-				mode.id === 'bangs'
-					? () => (source === 'my' ? removeMyBang(item) : addMyBang(item))
-					: () => insertBang(item.code[0])
-		}));
+			{
+				id: `${itemId}.membership`,
+				label: getBangMembershipActionLabel(source),
+				run: () => updateBangMembership(item, source)
+			},
+			getBangDefaultSearchAction(item, itemId)
+		];
+	}
+
+	function getBangDefaultSearchAction(item: ZbangRecord, itemId: string): LauncherItemAction {
+		return {
+			id: `${itemId}.set-default`,
+			label: 'Set as default',
+			title: `Use ${item.name} for default web searches`,
+			run: () => setBangAsDefaultSearch(item)
+		};
+	}
+
+	function getBangMembershipActionLabel(source: 'my' | 'provider') {
+		return source === 'my' ? 'Remove from My Bangs' : 'Add to My Bangs';
+	}
+
+	function updateBangMembership(item: ZbangRecord, source: 'my' | 'provider') {
+		return source === 'my' ? removeMyBang(item) : addMyBang(item);
+	}
+
+	function getBangInsertActionTitle(item: ZbangRecord) {
+		const code = item.code[0] ? normalizeBangCode(item.code[0]) : '';
+
+		return ['Insert', item.name, 'bang', code].filter(Boolean).join(' ');
+	}
+
+	function getBangSelectionKey(item: ZbangRecord) {
+		return [
+			'bang',
+			item.rank,
+			item.name,
+			item.urls.s,
+			item.code.map(normalizeBangCode).join('|')
+		].join(':');
 	}
 
 	function createBangLauncherItemsFromBangs(items: ZbangRecord[], source: 'my' | 'provider') {
@@ -2907,8 +3074,14 @@
 			description: mode.description,
 			score,
 			sortOrder,
-			safeForEnter: shortcutIndex === 0,
-			run: () => goto(resolve(mode.path)),
+			actions: [
+				{
+					id: `mode-list.${mode.id}.primary`,
+					label: mode.label,
+					safeForEnter: shortcutIndex === 0,
+					run: () => goto(resolve(mode.path))
+				}
+			],
 			...overrides
 		};
 	}
@@ -3200,7 +3373,7 @@
 			class:active-action={rowActive}
 			class="item-run compact-action-primary"
 			disabled={!primaryAction}
-			onclick={() => primaryAction?.run()}
+			onclick={() => runTargetAction(primaryAction, itemTarget)}
 		>
 			<span class="item-text">
 				<span class="item-heading">
@@ -3260,7 +3433,7 @@
 			class:active-action={rowActive}
 			class="item-run compact-action-primary"
 			disabled={!primaryAction}
-			onclick={() => primaryAction?.run()}
+			onclick={() => runTargetAction(primaryAction, groupTarget)}
 		>
 			<span class="item-text">
 				<span class="item-heading">

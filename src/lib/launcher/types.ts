@@ -1,33 +1,45 @@
 import type { ZbangRecord } from '$lib/bang-data';
 import type { BangHighlightSegment } from '$lib/bang-filter';
 
-export type LauncherItem = {
+export type LauncherItemAction = {
+	id: string;
+	label: string;
+	title?: string;
+	safeForEnter?: boolean;
+	run: () => void | Promise<void>;
+};
+
+export type LauncherMenuInfo = {
+	id: string;
+	details: readonly {
+		value: string;
+		segments?: BangHighlightSegment[];
+	}[];
+};
+
+type LauncherItemBase = {
 	id: string;
 	pluginId: string;
-	kind: 'action' | 'insight';
 	title: string;
 	description?: string;
 	titleSegments?: BangHighlightSegment[];
 	descriptionSegments?: BangHighlightSegment[];
+	selectionKey?: string;
 	selected?: boolean;
 	rank?: number;
 	score: number;
 	sortOrder?: number;
-	safeForEnter?: boolean;
-	run?: () => void | Promise<void>;
-	secondaryAction?: {
-		label: string;
-		title?: string;
-		run: () => void | Promise<void>;
-	};
-	menuInfo?: {
-		id: string;
-		details: readonly {
-			value: string;
-			segments?: BangHighlightSegment[];
-		}[];
-	}[];
 };
+
+export type LauncherItem =
+	| (LauncherItemBase & {
+			kind: 'action';
+			actions: readonly [LauncherItemAction, ...LauncherItemAction[]];
+			menuInfo?: readonly LauncherMenuInfo[];
+	  })
+	| (LauncherItemBase & {
+			kind: 'insight';
+	  });
 
 export type LauncherGroup = {
 	id: string;
