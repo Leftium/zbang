@@ -107,12 +107,22 @@
 		selected?: () => boolean;
 		run: () => void;
 	};
-	type LauncherAction = {
+	type LauncherRunnableAction = {
 		id: string;
+		kind: 'action';
 		label: string;
 		title?: string;
 		run: () => void | Promise<void>;
 	};
+	type LauncherInfoAction = {
+		id: string;
+		kind: 'info';
+		details: readonly {
+			value: string;
+			segments?: BangHighlightSegment[];
+		}[];
+	};
+	type LauncherAction = LauncherRunnableAction | LauncherInfoAction;
 	type PrimaryLauncherTarget =
 		| {
 				id: string;
@@ -875,10 +885,16 @@
 		return undefined;
 	}
 
+	function isRunnableAction(action: LauncherAction | undefined): action is LauncherRunnableAction {
+		return action?.kind === 'action';
+	}
+
 	function getArmedTargetAction(binding: Extract<ShortcutBinding, { kind: 'target' }>) {
 		if (isActionMenuLane(binding.lane)) {
 			const defaultIndex = getDefaultActionMenuIndex(binding.target);
-			return binding.target.actions[stagedShortcut?.menuActionIndex ?? defaultIndex];
+			const action = binding.target.actions[stagedShortcut?.menuActionIndex ?? defaultIndex];
+
+			return isRunnableAction(action) ? action : undefined;
 		}
 
 		return getPrimaryAction(binding.target);
@@ -895,14 +911,26 @@
 			.slice(0, actionCount);
 	}
 
-	function getActionMenuShortcutIndex(rootKey: string, actionCount: number, key: string) {
-		return getActionMenuShortcutLabels(rootKey, actionCount).findIndex((label) =>
-			shortcutKeysMatch(label, key)
+	function getRunnableActionIndexes(actions: LauncherAction[]) {
+		return actions.flatMap((action, index) => (isRunnableAction(action) ? [index] : []));
+	}
+
+	function getActionMenuShortcutIndex(rootKey: string, actions: LauncherAction[], key: string) {
+		const actionIndexes = getRunnableActionIndexes(actions);
+		const shortcutIndex = getActionMenuShortcutLabels(rootKey, actionIndexes.length).findIndex(
+			(label) => shortcutKeysMatch(label, key)
 		);
+
+		return shortcutIndex === -1 ? -1 : actionIndexes[shortcutIndex];
 	}
 
 	function getActionMenuShortcutLabel(menu: StagedActionMenu, actionIndex: number) {
-		return getActionMenuShortcutLabels(menu.rootKey, menu.actions.length)[actionIndex];
+		const actionIndexes = getRunnableActionIndexes(menu.actions);
+		const shortcutIndex = actionIndexes.indexOf(actionIndex);
+
+		return shortcutIndex === -1
+			? undefined
+			: getActionMenuShortcutLabels(menu.rootKey, actionIndexes.length)[shortcutIndex];
 	}
 
 	function isItemShortcutLabel(key: string): key is ItemShortcutLabel {
@@ -1103,7 +1131,7 @@
 			const selectedMenuActionIndex = selectedMenuKey
 				? getActionMenuShortcutIndex(
 						stagedShortcut.binding.key,
-						target.actions.length,
+						target.actions,
 						selectedMenuKey
 					)
 				: -1;
@@ -1191,14 +1219,18 @@
 		if (!stagedShortcut || stagedShortcut.binding.kind !== 'target') return false;
 		if (!isActionMenuLane(stagedShortcut.binding.lane)) return false;
 
-		const actionCount = stagedShortcut.binding.target.actions.length;
-		if (actionCount < 1) return false;
+		const actionIndexes = getRunnableActionIndexes(stagedShortcut.binding.target.actions);
+		if (actionIndexes.length < 1) return false;
 
 		const currentIndex =
 			stagedShortcut.menuActionIndex ?? getDefaultActionMenuIndex(stagedShortcut.binding.target);
+		const currentActionPosition = Math.max(0, actionIndexes.indexOf(currentIndex));
 		stagedShortcut = {
 			...stagedShortcut,
-			menuActionIndex: (currentIndex + direction + actionCount) % actionCount
+			menuActionIndex:
+				actionIndexes[
+					(currentActionPosition + direction + actionIndexes.length) % actionIndexes.length
+				]
 		};
 
 		return true;
@@ -1210,7 +1242,7 @@
 
 		const actionIndex = getActionMenuShortcutIndex(
 			stagedShortcut.binding.key,
-			stagedShortcut.binding.target.actions.length,
+			stagedShortcut.binding.target.actions,
 			key
 		);
 		if (actionIndex === -1) return false;
@@ -1725,11 +1757,15 @@
 	}
 
 	function getPrimaryAction(target: PrimaryLauncherTarget | undefined) {
-		return target?.actions[0];
+		const action = target?.actions[0];
+
+		return isRunnableAction(action) ? action : undefined;
 	}
 
 	function getSecondaryAction(target: PrimaryLauncherTarget | undefined) {
-		return target?.actions[1];
+		const action = target?.actions[1];
+
+		return isRunnableAction(action) ? action : undefined;
 	}
 
 	function captureFocusSnapshot(): FocusSnapshot {
@@ -1952,7 +1988,7 @@
 		void getPrimaryAction(primaryLauncherTarget)?.run();
 	}
 
-	function runStagedActionMenuAction(action: LauncherAction) {
+	function runStagedActionMenuAction(action: LauncherRunnableAction) {
 		if (stagedActionMenu) focusLauncherTarget(stagedActionMenu.target);
 
 		void action.run();
@@ -2134,6 +2170,7 @@
 			actions: [
 				{
 					id: `${group.id}.activate`,
+					kind: 'action',
 					label: getGroupPrimaryActionLabel(group),
 					run: () => activateLauncherGroup(group.id)
 				}
@@ -2163,17 +2200,20 @@
 		const actions: LauncherAction[] = [];
 
 		if (item.run) {
-			actions.push({ id: `${item.id}.primary`, label: item.title, run: item.run });
+			actions.push({ id: `${item.id}.primary`, kind: 'action', label: item.title, run: item.run });
 		}
 
 		if (item.secondaryAction) {
 			actions.push({
 				id: `${item.id}.secondary`,
+				kind: 'action',
 				label: item.secondaryAction.label,
 				title: item.secondaryAction.title,
 				run: item.secondaryAction.run
 			});
 		}
+
+		actions.push(...(item.menuInfo ?? []).map((info) => ({ ...info, kind: 'info' as const })));
 
 		return actions;
 	}
@@ -2646,9 +2686,9 @@
 			pluginId: 'bangs',
 			kind: 'action' as const,
 			title: item.name,
-			description: getBangItemDescription(item, source),
+			description: getBangItemDescription(item),
 			titleSegments: highlights.name,
-			descriptionSegments: mode.id === 'bangs' ? undefined : getBangDescriptionSegments(highlights),
+			descriptionSegments: getBangDescriptionSegments(highlights),
 			rank: item.rank,
 			score,
 			sortOrder: index,
@@ -2658,6 +2698,7 @@
 				title: `Use ${item.name} for default web searches`,
 				run: () => setBangAsDefaultSearch(item)
 			},
+			menuInfo: [getBangMenuInfo(item, highlights)],
 			run:
 				mode.id === 'bangs'
 					? () => (source === 'my' ? removeMyBang(item) : addMyBang(item))
@@ -2680,14 +2721,24 @@
 		);
 	}
 
-	function getBangModeActionLabel(source: 'my' | 'provider') {
-		return source === 'my' ? 'Remove from My bangs' : 'Add to My bangs';
+	function getBangItemDescription(item: ZbangRecord) {
+		return item.code.slice(0, 2).join(' ');
 	}
 
-	function getBangItemDescription(item: ZbangRecord, source: 'my' | 'provider') {
-		const description = `${item.code.join(' ')} | ${formatBangUrl(item.urls.s)}`;
-
-		return mode.id === 'bangs' ? `${getBangModeActionLabel(source)} | ${description}` : description;
+	function getBangMenuInfo(item: ZbangRecord, highlights: BangFilterResult['highlights']) {
+		return {
+			id: `${item.code[0] ?? item.rank}.details`,
+			details: [
+				{
+					value: item.code.join(' '),
+					segments: getBangCodeSegments(highlights.code)
+				},
+				{
+					value: item.urls.s,
+					segments: highlights.url
+				}
+			]
+		};
 	}
 
 	function createModeListItem(
@@ -2921,11 +2972,11 @@
 		return new Intl.NumberFormat().format(count);
 	}
 
-	function formatBangUrl(url: string) {
-		return url.replace(/^https?:\/\//, '').replace(/^www\./, '');
+	function getBangDescriptionSegments({ code }: BangFilterResult['highlights']) {
+		return getBangCodeSegments(code.slice(0, 2));
 	}
 
-	function getBangDescriptionSegments({ code, url }: BangFilterResult['highlights']) {
+	function getBangCodeSegments(code: BangFilterResult['highlights']['code']) {
 		const segments: BangHighlightSegment[] = [];
 
 		for (const [index, codeHighlight] of code.entries()) {
@@ -2933,31 +2984,7 @@
 			segments.push(...codeHighlight.segments);
 		}
 
-		segments.push({ text: ' | ', matched: false });
-		segments.push(...stripUrlPrefixSegments(url));
-
 		return segments;
-	}
-
-	function stripUrlPrefixSegments(segments: BangHighlightSegment[]) {
-		const visibleSegments: BangHighlightSegment[] = [];
-		let charsToStrip = getUrlPrefixLength(segments.map(({ text }) => text).join(''));
-
-		for (const segment of segments) {
-			if (charsToStrip >= segment.text.length) {
-				charsToStrip -= segment.text.length;
-				continue;
-			}
-
-			visibleSegments.push({ ...segment, text: segment.text.slice(charsToStrip) });
-			charsToStrip = 0;
-		}
-
-		return visibleSegments;
-	}
-
-	function getUrlPrefixLength(url: string) {
-		return /^https?:\/\/www\./.exec(url)?.[0].length ?? /^https?:\/\//.exec(url)?.[0].length ?? 0;
 	}
 
 	function formatItemMeta(item: LauncherItem) {
@@ -3150,21 +3177,36 @@
 				{#each menu.actions.slice(1) as action, offset (action.id)}
 					{@const index = offset + 1}
 					{@const shortcutLabel = getActionMenuShortcutLabel(menu, index)}
-					{@const actionArmed = action.id === armedAction?.id}
-					<button
-						class:armed={actionArmed}
-						class="target-action-menu-item staged-action-menu-item compact-action-menu-item"
-						role="menuitem"
-						onpointerdown={(event) => event.preventDefault()}
-						onclick={() => runStagedActionMenuAction(action)}
-					>
-						<span class="staged-action-menu-label">{action.title ?? action.label}</span>
-						<span class="compact-action-shortcuts">
-							{#if actionArmed}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
-							{#if !actionArmed && shortcutLabel}<span class="shortcut-label">{shortcutLabel}</span
-								>{/if}
-						</span>
-					</button>
+					{#if action.kind === 'info'}
+						<div
+							class="target-action-menu-item staged-action-menu-info compact-action-menu-item"
+							role="presentation"
+						>
+							<span class="staged-action-menu-info-details">
+								{#each action.details as detail (detail.value)}
+									<span class="staged-action-menu-info-value"
+										>{@render highlightedText(detail.segments, detail.value)}</span
+									>
+								{/each}
+							</span>
+						</div>
+					{:else}
+						{@const actionArmed = action.id === armedAction?.id}
+						<button
+							class:armed={actionArmed}
+							class="target-action-menu-item staged-action-menu-item compact-action-menu-item"
+							role="menuitem"
+							onpointerdown={(event) => event.preventDefault()}
+							onclick={() => runStagedActionMenuAction(action)}
+						>
+							<span class="staged-action-menu-label">{action.title ?? action.label}</span>
+							<span class="compact-action-shortcuts">
+								{#if actionArmed}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
+								{#if !actionArmed && shortcutLabel}<span class="shortcut-label">{shortcutLabel}</span
+									>{/if}
+							</span>
+						</button>
+					{/if}
 				{/each}
 			{:else if showMenuAffordance}
 				<button
@@ -3427,6 +3469,38 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	.staged-action-menu-info {
+		grid-template-columns: minmax(0, 1fr);
+		color: var(--nc-tx-2);
+		cursor: default;
+		font-weight: 500;
+	}
+
+	.target-action-menu-item.staged-action-menu-info:hover,
+	.target-action-menu-item.staged-action-menu-info:focus {
+		background: transparent;
+	}
+
+	.target-action-menu-item.staged-action-menu-info span:last-child {
+		overflow: visible;
+		text-overflow: clip;
+		white-space: normal;
+	}
+
+	.staged-action-menu-info-details {
+		display: grid;
+		gap: 0.25rem;
+		min-width: 0;
+	}
+
+	.staged-action-menu-info-value {
+		min-width: 0;
+		overflow-wrap: anywhere;
+		font-family: var(--font-mono), monospace;
+		font-size: calc(var(--font-size-0) * 0.82);
+		line-height: 1.35;
 	}
 
 	.enter-shortcut-label {

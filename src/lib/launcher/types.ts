@@ -20,6 +20,13 @@ export type LauncherItem = {
 		title?: string;
 		run: () => void | Promise<void>;
 	};
+	menuInfo?: {
+		id: string;
+		details: readonly {
+			value: string;
+			segments?: BangHighlightSegment[];
+		}[];
+	}[];
 };
 
 export type LauncherGroup = {
