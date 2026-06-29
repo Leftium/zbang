@@ -834,7 +834,12 @@
 		};
 	}
 
-	function openTargetActionMenu(target: PrimaryLauncherTarget, rootKey: string, ts = Date.now()) {
+	function openTargetActionMenu(
+		target: PrimaryLauncherTarget,
+		rootKey: string,
+		ts = Date.now(),
+		buffer = rootKey
+	) {
 		if (!textareaElement) return false;
 
 		const { selectionStart, selectionEnd } = textareaElement;
@@ -843,7 +848,7 @@
 		captureShortcutSnapshot(rootKey);
 
 		stagedShortcut = {
-			buffer: rootKey,
+			buffer,
 			binding: {
 				key: rootKey,
 				kind: 'target',
@@ -854,14 +859,14 @@
 			selectionStart,
 			selectionEnd,
 			menuActionIndex: getDefaultActionMenuIndex(target),
-			menuOpenBufferLength: rootKey.length,
+			menuOpenBufferLength: buffer.length,
 			ts
 		};
 
 		focusLauncherTarget(target);
 
 		requestAnimationFrame(() => {
-			const cursor = selectionStart + rootKey.length;
+			const cursor = selectionStart + buffer.length;
 			textareaElement?.setSelectionRange(cursor, cursor);
 		});
 
@@ -914,7 +919,13 @@
 	}
 
 	function getDefaultActionMenuIndex(target: PrimaryLauncherTarget) {
-		return getSecondaryAction(target) ? 1 : 0;
+		const alternateIndex = target.actions.findIndex(
+			(action, index) => index > 0 && isRunnableAction(action)
+		);
+
+		return alternateIndex === -1
+			? (getRunnableActionIndexes(target.actions)[0] ?? 0)
+			: alternateIndex;
 	}
 
 	function getActionMenuShortcutLabels(rootKey: string, actionCount: number) {
@@ -2121,7 +2132,21 @@
 		target: PrimaryLauncherTarget,
 		rootKey: string | undefined
 	) {
-		openTargetActionMenu(target, rootKey ?? '');
+		openTargetActionMenu(target, rootKey ?? '', Date.now(), '');
+	}
+
+	function toggleTargetActionMenuFromAffordance(
+		target: PrimaryLauncherTarget,
+		rootKey: string | undefined,
+		menu: StagedActionMenu | undefined
+	) {
+		if (menu) {
+			focusLauncherTarget(target);
+			resetShortcutState();
+			return;
+		}
+
+		openTargetActionMenuFromAffordance(target, rootKey);
 	}
 
 	function getStagedActionMenuArmedAction(menu: StagedActionMenu) {
@@ -3164,11 +3189,7 @@
 	{@const itemTarget = getCompactActionTarget(item, focusedTarget, stagedMenu)}
 	{@const rowActive = Boolean(focusedTarget || stagedMenu)}
 	{@const primaryAction = getPrimaryAction(itemTarget)}
-	{@const armedAction = stagedMenu ? getStagedActionMenuArmedAction(stagedMenu) : undefined}
-	{@const primaryMenuShortcutLabel = stagedMenu
-		? getActionMenuShortcutLabel(stagedMenu, 0)
-		: undefined}
-	{@const primaryActionArmed = rowActive && (!stagedMenu || primaryAction?.id === armedAction?.id)}
+	{@const primaryActionArmed = rowActive && !stagedMenu && Boolean(primaryAction)}
 	<div
 		class:has-staged-menu={Boolean(stagedMenu)}
 		class:primary={item.id === primaryLauncherItem?.id}
@@ -3208,13 +3229,11 @@
 			</span>
 			<span class="compact-action-shortcuts">
 				{#if primaryActionArmed}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
-				{#if !primaryActionArmed && primaryMenuShortcutLabel}<span class="shortcut-label"
-						>{primaryMenuShortcutLabel}</span
-					>{/if}
 			</span>
 		</button>
 
-		{@render compactActionMenu(itemTarget, itemShortcutLabel, stagedMenu, rowActive)}
+		{@render compactActionMenuToggle(itemTarget, itemShortcutLabel, stagedMenu, rowActive)}
+		{@render compactActionMenu(itemTarget, stagedMenu, rowActive)}
 	</div>
 {/snippet}
 
@@ -3228,13 +3247,9 @@
 	{@const groupTarget = stagedMenu?.target ?? focusedTarget ?? createSelectableGroupTarget(group)}
 	{@const rowActive = Boolean(focusedTarget || stagedMenu)}
 	{@const primaryAction = getPrimaryAction(groupTarget)}
-	{@const armedAction = stagedMenu ? getStagedActionMenuArmedAction(stagedMenu) : undefined}
-	{@const primaryMenuShortcutLabel = stagedMenu
-		? getActionMenuShortcutLabel(stagedMenu, 0)
-		: undefined}
 	{@const primaryActionEffective = isGroupPrimaryActionEffective(group)}
 	{@const primaryActionArmed =
-		rowActive && primaryActionEffective && (!stagedMenu || primaryAction?.id === armedAction?.id)}
+		rowActive && primaryActionEffective && !stagedMenu && Boolean(primaryAction)}
 	<div
 		class:has-staged-menu={Boolean(stagedMenu)}
 		class:primary={primaryLauncherTarget?.kind === 'group' && primaryLauncherTarget.id === group.id}
@@ -3273,84 +3288,34 @@
 			</span>
 			<span class="compact-action-shortcuts">
 				{#if primaryActionArmed}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
-				{#if !primaryActionArmed && primaryMenuShortcutLabel}<span class="shortcut-label"
-						>{primaryMenuShortcutLabel}</span
-					>{/if}
 			</span>
 		</button>
 
-		{@render compactActionMenu(groupTarget, shortcutLabel, stagedMenu, rowActive)}
+		{@render compactActionMenuToggle(groupTarget, shortcutLabel, stagedMenu, rowActive)}
+		{@render compactActionMenu(groupTarget, stagedMenu, rowActive)}
 	</div>
 {/snippet}
 
-{#snippet compactActionMenu(
+{#snippet compactActionMenuToggle(
 	target: PrimaryLauncherTarget | undefined,
 	rootShortcutLabel: string | undefined,
 	menu: StagedActionMenu | undefined,
 	rowActive = true
 )}
 	{#if target}
-		{@const armedAction = menu ? getStagedActionMenuArmedAction(menu) : undefined}
-		{@const showMenuAffordance = Boolean(
-			rootShortcutLabel || (rowActive && target.actions.length > 1)
-		)}
-		<div
-			class="target-action-menu compact-action-menu"
-			class:active-action={rowActive}
-			class:full={Boolean(menu)}
-			role={menu ? 'menu' : undefined}
-			aria-label={`Actions for ${target.title}`}
-		>
-			{#if menu}
-				{#each menu.actions.slice(1) as action, offset (action.id)}
-					{@const index = offset + 1}
-					{@const shortcutLabel = getActionMenuShortcutLabel(menu, index)}
-					{#if action.kind === 'info'}
-						<div
-							class="target-action-menu-item staged-action-menu-info compact-action-menu-item"
-							role="presentation"
-						>
-							<span class="staged-action-menu-info-details">
-								{#each action.details as detail (detail.value)}
-									<span class="staged-action-menu-info-value"
-										>{@render highlightedText(detail.segments, detail.value)}</span
-									>
-								{/each}
-							</span>
-						</div>
-					{:else}
-						{@const actionArmed = action.id === armedAction?.id}
-						<button
-							class:armed={actionArmed}
-							class="target-action-menu-item staged-action-menu-item compact-action-menu-item"
-							role="menuitem"
-							onpointerdown={(event) => event.preventDefault()}
-							onclick={() => runStagedActionMenuAction(action)}
-						>
-							<span class="staged-action-menu-label">{action.title ?? action.label}</span>
-							<span class="compact-action-shortcuts">
-								{#if actionArmed}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
-								{#if !actionArmed && shortcutLabel}<span class="shortcut-label"
-										>{shortcutLabel}</span
-									>{/if}
-							</span>
-						</button>
-					{/if}
-				{/each}
-			{:else if showMenuAffordance}
+		{@const hasMenuContent = target.actions.length > 1}
+		{@const showShortcutCell = Boolean(rootShortcutLabel || (rowActive && hasMenuContent))}
+		{#if showShortcutCell}
+			{#if hasMenuContent}
 				<button
-					class="target-action-menu-item menu-action compact-action-menu-item"
-					aria-label={`Open menu for ${target.title}`}
+					class:open={Boolean(menu)}
+					class="target-action-menu-item menu-action compact-action-menu-item compact-action-toggle-cell"
+					aria-expanded={Boolean(menu)}
+					aria-label={`${menu ? 'Close' : 'Open'} options for ${target.title}`}
 					onpointerdown={(event) => event.preventDefault()}
-					onclick={() => openTargetActionMenuFromAffordance(target, rootShortcutLabel)}
+					onclick={() => toggleTargetActionMenuFromAffordance(target, rootShortcutLabel, menu)}
 				>
-					<span
-						class:compact-action-invisible={Boolean(rootShortcutLabel && !rowActive)}
-						class="compact-menu-label"
-						aria-hidden="true"
-					>
-						...
-					</span>
+					<span class="compact-menu-toggle-icon" aria-hidden="true"></span>
 					{#if rootShortcutLabel}
 						<span
 							class:disabled={!rowActive && isItemShortcutLabelDisabled(rootShortcutLabel)}
@@ -3364,7 +3329,80 @@
 						>
 					{/if}
 				</button>
+			{:else if rootShortcutLabel}
+				<span
+					class="target-action-menu-item compact-action-menu-item compact-action-toggle-cell compact-action-shortcut-cell"
+					aria-label={`Shortcut ${rootShortcutLabel} for ${target.title}`}
+				>
+					<span class="compact-menu-toggle-icon compact-action-invisible" aria-hidden="true"></span>
+					<span
+						class:disabled={!rowActive && isItemShortcutLabelDisabled(rootShortcutLabel)}
+						class:inactive-compact-shortcut={!rowActive}
+						class="shortcut-label pseudo-menu-shortcut-badge">{rootShortcutLabel}</span
+					>
+				</span>
 			{/if}
+		{/if}
+	{/if}
+{/snippet}
+
+{#snippet compactActionMenu(
+	target: PrimaryLauncherTarget | undefined,
+	menu: StagedActionMenu | undefined,
+	rowActive = true
+)}
+	{#if target && menu}
+		{@const armedAction = getStagedActionMenuArmedAction(menu)}
+		<div
+			class="target-action-menu compact-action-menu full"
+			class:active-action={rowActive}
+			role="menu"
+			aria-label={`Options for ${target.title}`}
+		>
+			{#each menu.actions as action, index (action.id)}
+				{@const shortcutLabel = getActionMenuShortcutLabel(menu, index)}
+				{#if action.kind === 'info'}
+					<div
+						class="target-action-menu-item staged-action-menu-info compact-action-menu-item"
+						role="presentation"
+					>
+						<span class="staged-action-menu-info-details">
+							{#each action.details as detail (detail.value)}
+								<span class="staged-action-menu-info-value"
+									>{@render highlightedText(detail.segments, detail.value)}</span
+								>
+							{/each}
+						</span>
+					</div>
+				{:else}
+					{@const actionArmed = action.id === armedAction?.id}
+					<button
+						class:armed={actionArmed}
+						class="target-action-menu-item staged-action-menu-item compact-action-menu-item"
+						role="menuitem"
+						onpointerdown={(event) => event.preventDefault()}
+						onclick={() => runStagedActionMenuAction(action)}
+					>
+						<span class="staged-action-menu-label">{action.title ?? action.label}</span>
+						<span class="compact-action-enter-slot">
+							{#if actionArmed}<span class="shortcut-label enter-shortcut-label">↵</span
+								>{:else}<span
+									class="shortcut-label enter-shortcut-label compact-action-invisible"
+									aria-hidden="true">↵</span
+								>{/if}
+						</span>
+						<span class="compact-action-menu-shortcut-slot">
+							{#if shortcutLabel}<span
+									class="shortcut-label menu-select-shortcut-label"
+									title={`Select ${action.title ?? action.label}`}>{shortcutLabel}</span
+								>{:else}<span
+									class="shortcut-label menu-select-shortcut-label compact-action-invisible"
+									aria-hidden="true">{itemShortcutLabels[0]}</span
+								>{/if}
+						</span>
+					</button>
+				{/if}
+			{/each}
 		</div>
 	{/if}
 {/snippet}
@@ -3591,6 +3629,14 @@
 		background: transparent;
 	}
 
+	.compact-action-menu-shortcut-slot,
+	.compact-action-enter-slot {
+		display: inline-grid;
+		place-items: center;
+		min-width: 1.45rem;
+		justify-self: end;
+	}
+
 	.target-action-menu-item .shortcut-label {
 		margin-inline: 0;
 	}
@@ -3638,9 +3684,29 @@
 	}
 
 	.staged-action-menu-item.armed {
-		color: var(--nc-primary);
-		background: var(--launcher-row-active-bg);
-		box-shadow: inset 0.18rem 0 0 var(--launcher-row-active-rail);
+		color: var(--nc-tx-1);
+		background: color-mix(in srgb, var(--nc-primary) 20%, transparent);
+		box-shadow:
+			inset 0.22rem 0 0 var(--launcher-row-active-rail),
+			inset 0 0 0 1px color-mix(in srgb, var(--nc-primary) 30%, transparent);
+	}
+
+	.staged-action-menu-item.armed .staged-action-menu-label {
+		color: var(--nc-tx-1);
+	}
+
+	.staged-action-menu-item.armed .enter-shortcut-label {
+		color: var(--nc-tx-1);
+		background: color-mix(in srgb, var(--nc-primary) 24%, var(--nc-surface-2));
+		border-color: color-mix(in srgb, var(--nc-primary) 78%, var(--nc-border));
+		box-shadow:
+			inset 0 1px 0 color-mix(in srgb, white 58%, transparent),
+			0 1px 3px color-mix(in srgb, var(--nc-primary) 28%, transparent);
+	}
+
+	.menu-select-shortcut-label {
+		color: var(--nc-tx-2);
+		background: color-mix(in srgb, var(--nc-surface-2) 72%, transparent);
 	}
 
 	.staged-action-menu-item:hover,
@@ -3651,8 +3717,10 @@
 
 	.staged-action-menu-item.armed:hover,
 	.staged-action-menu-item.armed:focus {
-		background: var(--launcher-row-active-bg);
-		box-shadow: inset 0.18rem 0 0 var(--launcher-row-active-rail);
+		background: color-mix(in srgb, var(--nc-primary) 20%, transparent);
+		box-shadow:
+			inset 0.22rem 0 0 var(--launcher-row-active-rail),
+			inset 0 0 0 1px color-mix(in srgb, var(--nc-primary) 30%, transparent);
 	}
 
 	.launcher-group {
@@ -3818,7 +3886,7 @@
 
 	.compact-action-item {
 		display: grid;
-		grid-template-columns: minmax(0, 1fr) minmax(3.75rem, max-content);
+		grid-template-columns: minmax(0, 1fr) minmax(3.5rem, max-content);
 		gap: 0;
 		padding: 0;
 		background: transparent;
@@ -3827,12 +3895,9 @@
 		box-shadow: none;
 	}
 
-	.compact-action-item.has-staged-menu {
-		grid-template-columns: minmax(0, 1fr);
-	}
-
 	.compact-action-item > .compact-action-menu {
-		grid-column: auto;
+		grid-column: 1 / -1;
+		min-width: 0;
 	}
 
 	.compact-action-item.has-staged-menu > .compact-action-menu {
@@ -3944,8 +4009,10 @@
 
 	.compact-action-menu.full.active-action .compact-action-menu-item.armed:hover,
 	.compact-action-menu.full.active-action .compact-action-menu-item.armed:focus {
-		background: var(--launcher-row-active-bg);
-		box-shadow: inset 0.18rem 0 0 var(--launcher-row-active-rail);
+		background: color-mix(in srgb, var(--nc-primary) 20%, transparent);
+		box-shadow:
+			inset 0.22rem 0 0 var(--launcher-row-active-rail),
+			inset 0 0 0 1px color-mix(in srgb, var(--nc-primary) 30%, transparent);
 	}
 
 	.compact-group-header .compact-action-primary.active-action,
@@ -4018,32 +4085,54 @@
 		white-space: nowrap;
 	}
 
-	.compact-action-menu:not(.full) .compact-action-menu-item {
-		justify-items: end;
+	.compact-action-toggle-cell {
+		grid-template-columns: auto auto;
+		justify-content: center;
+		justify-items: center;
+		align-content: stretch;
+		gap: 0.45rem;
+		min-width: 3.5rem;
 		min-height: 100%;
-		padding-inline: 0.4rem 0.65rem;
+		padding-inline: 0.5rem 0.65rem;
 		color: var(--nc-tx-2);
 	}
 
-	.compact-action-menu:not(.full) .compact-action-menu-item:hover,
-	.compact-action-menu:not(.full) .compact-action-menu-item:focus {
+	.compact-action-toggle-cell:hover,
+	.compact-action-toggle-cell:focus {
 		background: transparent;
 	}
 
-	.compact-menu-label {
-		min-width: 1.05rem;
-		font-family: var(--font-mono), monospace;
-		font-size: 0.9rem;
-		font-weight: 700;
-		line-height: 1;
-		text-align: center;
+	.compact-action-shortcut-cell {
+		cursor: default;
+	}
+
+	.compact-action-shortcut-cell:hover,
+	.compact-action-shortcut-cell:focus {
+		background: transparent;
+	}
+
+	.compact-menu-toggle-icon {
+		width: 0;
+		height: 0;
+		border-block-start: 0.28rem solid transparent;
+		border-block-end: 0.28rem solid transparent;
+		border-inline-start: 0.36rem solid currentColor;
+		transition: transform 140ms ease;
+	}
+
+	.compact-action-toggle-cell.open .compact-menu-toggle-icon {
+		transform: rotate(90deg);
 	}
 
 	.compact-action-menu.full .compact-action-menu-item {
-		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-columns: minmax(0, 1fr) 2rem minmax(3.5rem, max-content);
 		justify-content: stretch;
-		padding-inline: 1.25rem 0.65rem;
+		padding-inline: 0.65rem;
 		width: 100%;
+	}
+
+	.compact-action-menu.full .staged-action-menu-info-details {
+		grid-column: 1 / -1;
 	}
 
 	.compact-action-menu.full .compact-action-menu-item + .compact-action-menu-item {
@@ -4262,10 +4351,6 @@
 			grid-template-columns: 1.45rem minmax(0, 1fr) auto;
 			align-items: start;
 			gap: 0.125rem var(--size-2);
-		}
-
-		.compact-action-item.has-staged-menu {
-			grid-template-columns: minmax(0, 1fr);
 		}
 
 		.compact-action-primary {
