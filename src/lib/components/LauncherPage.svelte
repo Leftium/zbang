@@ -124,13 +124,7 @@
 		  }
 		| { id: string; kind: 'group'; title: string; group: LauncherGroup; actions: LauncherAction[] };
 	type ShortcutLane =
-		| 'item-focus'
-		| 'item-menu'
-		| 'group-focus'
-		| 'group-menu'
-		| 'parent'
-		| 'primary'
-		| 'utility';
+		'item-focus' | 'item-menu' | 'group-focus' | 'group-menu' | 'parent' | 'primary' | 'utility';
 	type PendingTripleShortcut = {
 		key: string;
 		ts: number;
@@ -152,6 +146,7 @@
 		selectionStart: number;
 		selectionEnd: number;
 		menuActionIndex?: number;
+		menuOpenBufferLength?: number;
 		ts: number;
 	};
 	type InputPreviewSegment = {
@@ -160,7 +155,11 @@
 	};
 	type TextRange = { start: number; end: number };
 	type StatusHint = { key: string; label: string };
-	type StagedActionMenu = { target: PrimaryLauncherTarget; actions: LauncherAction[]; rootKey: string };
+	type StagedActionMenu = {
+		target: PrimaryLauncherTarget;
+		actions: LauncherAction[];
+		rootKey: string;
+	};
 	type SettingGroupDefinition = {
 		id: string;
 		title: string;
@@ -721,7 +720,10 @@
 		const stagedStart = Math.max(start, bangTokenRange.start);
 		const stagedEnd = Math.min(end, bangTokenRange.end);
 
-		appendInputPreviewSegment(segments, { kind: 'committed', text: value.slice(start, stagedStart) });
+		appendInputPreviewSegment(segments, {
+			kind: 'committed',
+			text: value.slice(start, stagedStart)
+		});
 		appendInputPreviewSegment(segments, {
 			kind: 'bang-picker-staged',
 			text: value.slice(stagedStart, stagedEnd)
@@ -811,6 +813,7 @@
 			selectionStart,
 			selectionEnd,
 			menuActionIndex: getDefaultActionMenuIndex(target),
+			menuOpenBufferLength: rootKey.length,
 			ts
 		};
 
@@ -874,12 +877,20 @@
 			.slice(0, actionCount);
 	}
 
+	function getActionMenuShortcutIndex(rootKey: string, actionCount: number, key: string) {
+		return getActionMenuShortcutLabels(rootKey, actionCount).findIndex((label) =>
+			shortcutKeysMatch(label, key)
+		);
+	}
+
 	function getActionMenuShortcutLabel(menu: StagedActionMenu, actionIndex: number) {
 		return getActionMenuShortcutLabels(menu.rootKey, menu.actions.length)[actionIndex];
 	}
 
 	function isItemShortcutLabelDisabled(label: string | undefined) {
-		return Boolean(stagedActionMenu && label && (itemShortcutLabels as readonly string[]).includes(label));
+		return Boolean(
+			stagedActionMenu && label && (itemShortcutLabels as readonly string[]).includes(label)
+		);
 	}
 
 	function isActionMenuLane(lane: ShortcutLane) {
@@ -899,7 +910,9 @@
 
 		const shortcutKey = key.toLocaleUpperCase();
 
-		return /^[A-Z]$/.test(shortcutKey) && key === shortcutKey && validShortcutBindings.has(shortcutKey);
+		return (
+			/^[A-Z]$/.test(shortcutKey) && key === shortcutKey && validShortcutBindings.has(shortcutKey)
+		);
 	}
 
 	function stageShortcutInitiator(key: string, ts = Date.now()) {
@@ -908,13 +921,6 @@
 		const shortcutKey = key.toLocaleUpperCase();
 		const binding = validShortcutBindings.get(shortcutKey);
 		if (!binding) return false;
-		if (
-			binding.kind === 'target' &&
-			binding.target.kind === 'item' &&
-			binding.target.id === primaryLauncherTarget?.id
-		) {
-			return openTargetActionMenu(binding.target, shortcutKey, ts);
-		}
 
 		const { selectionStart, selectionEnd } = textareaElement;
 		const focusSnapshot = captureFocusSnapshot();
@@ -959,12 +965,12 @@
 		return true;
 	}
 
-	function cancelStagedShortcut() {
+	function cancelStagedShortcut({ restoreFocus = true } = {}) {
 		if (!stagedShortcut) return false;
 
 		const { selectionStart, focusSnapshot } = stagedShortcut;
 
-		restoreFocusSnapshot(focusSnapshot);
+		if (restoreFocus) restoreFocusSnapshot(focusSnapshot);
 		resetShortcutState();
 
 		requestAnimationFrame(() => textareaElement?.setSelectionRange(selectionStart, selectionStart));
@@ -977,12 +983,45 @@
 		if (!isActionMenuLane(stagedShortcut.binding.lane)) return false;
 
 		const target = stagedShortcut.binding.target;
+		const menuOpenBufferLength =
+			stagedShortcut.menuOpenBufferLength ?? Math.min(2, stagedShortcut.buffer.length);
+		if (stagedShortcut.buffer.length > menuOpenBufferLength) {
+			const buffer = stagedShortcut.buffer.slice(0, -1);
+			const selectedMenuKeys = buffer.slice(menuOpenBufferLength);
+			const selectedMenuKey = selectedMenuKeys[selectedMenuKeys.length - 1];
+			const selectedMenuActionIndex = selectedMenuKey
+				? getActionMenuShortcutIndex(
+						stagedShortcut.binding.key,
+						target.actions.length,
+						selectedMenuKey
+					)
+				: -1;
+			stagedShortcut = {
+				...stagedShortcut,
+				buffer,
+				menuActionIndex:
+					selectedMenuActionIndex === -1
+						? getDefaultActionMenuIndex(target)
+						: selectedMenuActionIndex
+			};
+
+			requestAnimationFrame(() => {
+				const cursor = stagedShortcut
+					? stagedShortcut.selectionStart + stagedShortcut.buffer.length
+					: undefined;
+				if (cursor !== undefined) textareaElement?.setSelectionRange(cursor, cursor);
+			});
+
+			return true;
+		}
+
 		const downgradedBuffer =
 			stagedShortcut.buffer.length > 1 ? stagedShortcut.buffer.slice(0, -1) : stagedShortcut.buffer;
 		stagedShortcut = {
 			...stagedShortcut,
 			buffer: downgradedBuffer,
 			menuActionIndex: undefined,
+			menuOpenBufferLength: undefined,
 			binding: {
 				...stagedShortcut.binding,
 				lane: getTargetFocusLane(target)
@@ -1004,7 +1043,8 @@
 	function appendStagedShortcutBinding(
 		key: string,
 		binding: ShortcutBinding,
-		menuActionIndex?: number
+		menuActionIndex?: number,
+		menuOpenBufferLength?: number
 	) {
 		if (!stagedShortcut) return false;
 
@@ -1013,6 +1053,7 @@
 			buffer: stagedShortcut.buffer + key,
 			binding,
 			menuActionIndex,
+			menuOpenBufferLength,
 			ts: Date.now()
 		};
 
@@ -1042,7 +1083,8 @@
 		const actionCount = stagedShortcut.binding.target.actions.length;
 		if (actionCount < 1) return false;
 
-		const currentIndex = stagedShortcut.menuActionIndex ?? getDefaultActionMenuIndex(stagedShortcut.binding.target);
+		const currentIndex =
+			stagedShortcut.menuActionIndex ?? getDefaultActionMenuIndex(stagedShortcut.binding.target);
 		stagedShortcut = {
 			...stagedShortcut,
 			menuActionIndex: (currentIndex + direction + actionCount) % actionCount
@@ -1051,25 +1093,24 @@
 		return true;
 	}
 
-	function executeStagedActionMenuShortcut(key: string) {
+	function armStagedActionMenuShortcut(key: string) {
 		if (!stagedShortcut || stagedShortcut.binding.kind !== 'target') return false;
 		if (!isActionMenuLane(stagedShortcut.binding.lane)) return false;
 
-		const labels = getActionMenuShortcutLabels(
+		const actionIndex = getActionMenuShortcutIndex(
 			stagedShortcut.binding.key,
-			stagedShortcut.binding.target.actions.length
+			stagedShortcut.binding.target.actions.length,
+			key
 		);
-		const actionIndex = labels.findIndex(
-			(label) => label.toLocaleLowerCase() === key.toLocaleLowerCase()
-		);
-		const action = stagedShortcut.binding.target.actions[actionIndex];
-		if (!action) return false;
+		if (actionIndex === -1) return false;
 
 		focusLauncherTarget(stagedShortcut.binding.target);
-		void action.run();
-		resetShortcutState();
-
-		return true;
+		return appendStagedShortcutBinding(
+			key,
+			stagedShortcut.binding,
+			actionIndex,
+			stagedShortcut.menuOpenBufferLength ?? stagedShortcut.buffer.length
+		);
 	}
 
 	function executeStagedShortcutConfirmation(binding: ShortcutBinding) {
@@ -1099,7 +1140,7 @@
 		if (!stagedShortcut) return false;
 		if (isActionMenuLane(stagedShortcut.binding.lane)) return false;
 		if (ts - stagedShortcut.ts >= shortcutDelay) return false;
-		if (key !== stagedShortcut.binding.key) return false;
+		if (!shortcutKeysMatch(key, stagedShortcut.binding.key)) return false;
 
 		executeStagedShortcutConfirmation(stagedShortcut.binding);
 		resetShortcutState();
@@ -1111,7 +1152,7 @@
 		if (!stagedShortcut || stagedShortcut.binding.kind !== 'target') return false;
 		if (stagedShortcut.binding.lane !== getTargetFocusLane(stagedShortcut.binding.target))
 			return false;
-		if (key.toLocaleLowerCase() !== stagedShortcut.binding.key.toLocaleLowerCase()) return false;
+		if (!shortcutKeysMatch(key, stagedShortcut.binding.key)) return false;
 		if (stagedShortcut.binding.target.kind !== 'item') return false;
 
 		const binding = stagedShortcut.binding;
@@ -1124,14 +1165,15 @@
 				...binding,
 				lane: getTargetMenuLane(target)
 			},
-			getDefaultActionMenuIndex(target)
+			getDefaultActionMenuIndex(target),
+			stagedShortcut.buffer.length + key.length
 		);
 	}
 
 	function toggleStagedActionMenuWithRootKey(key: string) {
 		if (!stagedShortcut || stagedShortcut.binding.kind !== 'target') return false;
 		if (!isActionMenuLane(stagedShortcut.binding.lane)) return false;
-		if (key.toLocaleLowerCase() !== stagedShortcut.binding.key.toLocaleLowerCase()) return false;
+		if (!shortcutKeysMatch(key, stagedShortcut.binding.key)) return false;
 
 		const binding = stagedShortcut.binding;
 		const target = binding.target;
@@ -1174,17 +1216,20 @@
 			});
 		}
 
-		if (binding.kind === 'target' && binding.target.kind === 'item' && binding.target.groupId) {
-			const group = visibleLauncherGroups.find(({ id }) => id === binding.target.groupId);
+		if (binding.kind === 'target' && binding.target.kind === 'item') {
+			const itemTarget = binding.target;
+			const group = itemTarget.groupId
+				? visibleLauncherGroups.find(({ id }) => id === itemTarget.groupId)
+				: undefined;
 			if (group) {
-				const target = createSelectableGroupTarget(group);
-				focusLauncherTarget(target);
+				const groupTarget = createSelectableGroupTarget(group);
+				focusLauncherTarget(groupTarget);
 
 				return appendStagedShortcutBinding(key, {
 					key: parentShortcutLabel,
 					kind: 'target',
 					lane: 'group-focus',
-					target
+					target: groupTarget
 				});
 			}
 		}
@@ -1200,6 +1245,10 @@
 
 	function getShortcutBindingKey(key: string) {
 		return key === ' ' || key === '.' ? key : key.toLocaleUpperCase();
+	}
+
+	function shortcutKeysMatch(left: string, right: string) {
+		return getShortcutBindingKey(left) === getShortcutBindingKey(right);
 	}
 
 	function handleStagedShortcutKeydown(event: KeyboardEvent) {
@@ -1224,9 +1273,13 @@
 		}
 
 		if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-			event.preventDefault();
-			if (moveStagedActionMenuSelection(event.key === 'ArrowDown' ? 1 : -1)) return true;
-			return cancelStagedShortcut();
+			if (moveStagedActionMenuSelection(event.key === 'ArrowDown' ? 1 : -1)) {
+				event.preventDefault();
+				return true;
+			}
+
+			cancelStagedShortcut({ restoreFocus: false });
+			return false;
 		}
 
 		if (event.key.length !== 1 || event.metaKey || event.ctrlKey || event.altKey) {
@@ -1238,7 +1291,7 @@
 
 		if (event.repeat) return true;
 		if (toggleStagedActionMenuWithRootKey(event.key)) return true;
-		if (executeStagedActionMenuShortcut(event.key)) return true;
+		if (armStagedActionMenuShortcut(event.key)) return true;
 		if (handleStagedParentShortcut(event.key)) return true;
 		if (openStagedItemActionMenu(event.key)) return true;
 		if (continueStagedTargetShortcut(event.key)) return true;
@@ -1267,7 +1320,7 @@
 		if (stagedShortcut) {
 			event.preventDefault();
 			if (toggleStagedActionMenuWithRootKey(data)) return true;
-			if (executeStagedActionMenuShortcut(data)) return true;
+			if (armStagedActionMenuShortcut(data)) return true;
 			if (handleStagedParentShortcut(data)) return true;
 			if (openStagedItemActionMenu(data)) return true;
 			if (continueStagedTargetShortcut(data)) return true;
@@ -1768,7 +1821,10 @@
 		resetShortcutState();
 	}
 
-	function openTargetActionMenuFromAffordance(target: PrimaryLauncherTarget, rootKey: string | undefined) {
+	function openTargetActionMenuFromAffordance(
+		target: PrimaryLauncherTarget,
+		rootKey: string | undefined
+	) {
 		openTargetActionMenu(target, rootKey ?? '');
 	}
 
@@ -1826,7 +1882,9 @@
 			? getVisibleGroupItems(group).flatMap((item) => createSelectableItemTarget(item, group.id))[0]
 			: undefined;
 
-		return groupTarget ?? visibleLauncherItems.flatMap((item) => createSelectableItemTarget(item))[0];
+		return (
+			groupTarget ?? visibleLauncherItems.flatMap((item) => createSelectableItemTarget(item))[0]
+		);
 	}
 
 	function getShortcutItemTargets() {
@@ -2740,7 +2798,8 @@
 {#snippet actionItem(item: LauncherItem, shortcutLabel: string | undefined)}
 	{@const itemShortcutLabel = item.pluginId === 'bang-data' ? undefined : shortcutLabel}
 	{@const isFocused = item.id === primaryLauncherItem?.id}
-	{@const focusedTarget = isFocused && primaryLauncherTarget?.kind === 'item' ? primaryLauncherTarget : undefined}
+	{@const focusedTarget =
+		isFocused && primaryLauncherTarget?.kind === 'item' ? primaryLauncherTarget : undefined}
 	{@const stagedMenu = stagedActionMenu?.target.id === item.id ? stagedActionMenu : undefined}
 	{#if item.pluginId === 'bang-data'}
 		{@render notificationItem(item)}
@@ -2759,7 +2818,9 @@
 	{@const rowActive = Boolean(focusedTarget || stagedMenu)}
 	{@const primaryAction = getPrimaryAction(itemTarget)}
 	{@const armedAction = stagedMenu ? getStagedActionMenuArmedAction(stagedMenu) : undefined}
-	{@const primaryMenuShortcutLabel = stagedMenu ? getActionMenuShortcutLabel(stagedMenu, 0) : undefined}
+	{@const primaryMenuShortcutLabel = stagedMenu
+		? getActionMenuShortcutLabel(stagedMenu, 0)
+		: undefined}
 	{@const primaryActionArmed = rowActive && (!stagedMenu || primaryAction?.id === armedAction?.id)}
 	<div
 		class:has-staged-menu={Boolean(stagedMenu)}
@@ -2791,13 +2852,17 @@
 					class:compact-action-hidden={!rowActive || !item.description}
 					class="compact-action-description"
 				>
-					{#if item.description}{@render highlightedText(item.descriptionSegments, item.description)}{/if}
+					{#if item.description}{@render highlightedText(
+							item.descriptionSegments,
+							item.description
+						)}{/if}
 				</span>
 			</span>
 			<span class="compact-action-shortcuts">
 				{#if primaryActionArmed}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
-				{#if primaryActionArmed && primaryMenuShortcutLabel}<span class="shortcut-or-label">or</span>{/if}
-				{#if primaryMenuShortcutLabel}<span class="shortcut-label">{primaryMenuShortcutLabel}</span>{/if}
+				{#if !primaryActionArmed && primaryMenuShortcutLabel}<span class="shortcut-label"
+						>{primaryMenuShortcutLabel}</span
+					>{/if}
 			</span>
 		</button>
 
@@ -2816,9 +2881,12 @@
 	{@const rowActive = Boolean(focusedTarget || stagedMenu)}
 	{@const primaryAction = getPrimaryAction(groupTarget)}
 	{@const armedAction = stagedMenu ? getStagedActionMenuArmedAction(stagedMenu) : undefined}
-	{@const primaryMenuShortcutLabel = stagedMenu ? getActionMenuShortcutLabel(stagedMenu, 0) : undefined}
+	{@const primaryMenuShortcutLabel = stagedMenu
+		? getActionMenuShortcutLabel(stagedMenu, 0)
+		: undefined}
 	{@const primaryActionEffective = isGroupPrimaryActionEffective(group)}
-	{@const primaryActionArmed = rowActive && primaryActionEffective && (!stagedMenu || primaryAction?.id === armedAction?.id)}
+	{@const primaryActionArmed =
+		rowActive && primaryActionEffective && (!stagedMenu || primaryAction?.id === armedAction?.id)}
 	<div
 		class:has-staged-menu={Boolean(stagedMenu)}
 		class:primary={primaryLauncherTarget?.kind === 'group' && primaryLauncherTarget.id === group.id}
@@ -2845,7 +2913,10 @@
 					class:compact-action-invisible={!rowActive && Boolean(group.description)}
 					class="compact-action-description group-description"
 				>
-					{#if group.description}{@render highlightedText(group.descriptionSegments, group.description)}{/if}
+					{#if group.description}{@render highlightedText(
+							group.descriptionSegments,
+							group.description
+						)}{/if}
 				</span>
 				{#if rowActive && mobileCountLabel}
 					<span class="group-mobile-count">{mobileCountLabel}</span>
@@ -2853,8 +2924,9 @@
 			</span>
 			<span class="compact-action-shortcuts">
 				{#if primaryActionArmed}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
-				{#if primaryActionArmed && primaryMenuShortcutLabel}<span class="shortcut-or-label">or</span>{/if}
-				{#if primaryMenuShortcutLabel}<span class="shortcut-label">{primaryMenuShortcutLabel}</span>{/if}
+				{#if !primaryActionArmed && primaryMenuShortcutLabel}<span class="shortcut-label"
+						>{primaryMenuShortcutLabel}</span
+					>{/if}
 			</span>
 		</button>
 
@@ -2870,7 +2942,9 @@
 )}
 	{#if target}
 		{@const armedAction = menu ? getStagedActionMenuArmedAction(menu) : undefined}
-		{@const showMenuAffordance = Boolean(rootShortcutLabel || (rowActive && target.actions.length > 1))}
+		{@const showMenuAffordance = Boolean(
+			rootShortcutLabel || (rowActive && target.actions.length > 1)
+		)}
 		<div
 			class="target-action-menu compact-action-menu"
 			class:active-action={rowActive}
@@ -2882,8 +2956,9 @@
 				{#each menu.actions.slice(1) as action, offset (action.id)}
 					{@const index = offset + 1}
 					{@const shortcutLabel = getActionMenuShortcutLabel(menu, index)}
+					{@const actionArmed = action.id === armedAction?.id}
 					<button
-						class:armed={action.id === armedAction?.id}
+						class:armed={actionArmed}
 						class="target-action-menu-item staged-action-menu-item compact-action-menu-item"
 						role="menuitem"
 						onpointerdown={(event) => event.preventDefault()}
@@ -2891,9 +2966,9 @@
 					>
 						<span class="staged-action-menu-label">{action.title ?? action.label}</span>
 						<span class="compact-action-shortcuts">
-							{#if action.id === armedAction?.id}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
-							{#if action.id === armedAction?.id && shortcutLabel}<span class="shortcut-or-label">or</span>{/if}
-							{#if shortcutLabel}<span class="shortcut-label">{shortcutLabel}</span>{/if}
+							{#if actionArmed}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
+							{#if !actionArmed && shortcutLabel}<span class="shortcut-label">{shortcutLabel}</span
+								>{/if}
 						</span>
 					</button>
 				{/each}
@@ -2944,7 +3019,10 @@
 {/snippet}
 
 {#snippet notificationItem(item: LauncherItem)}
-	<article class:primary={item.id === primaryLauncherItem?.id} class="launcher-item notification-item">
+	<article
+		class:primary={item.id === primaryLauncherItem?.id}
+		class="launcher-item notification-item"
+	>
 		<span class="item-text">
 			<span class="item-heading">
 				<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
@@ -2960,20 +3038,12 @@
 	{@const renderedItems = getRenderedGroupItems(group)}
 	{@const mobileCountLabel = getGroupMobileCountLabel(group)}
 	{@const shortcutLabel = getShortcutLabel(group.id)}
-	{@const isFocusedGroup = primaryLauncherTarget?.kind === 'group' && primaryLauncherTarget.id === group.id}
+	{@const isFocusedGroup =
+		primaryLauncherTarget?.kind === 'group' && primaryLauncherTarget.id === group.id}
 	{@const focusedTarget = isFocusedGroup ? primaryLauncherTarget : undefined}
 	{@const stagedMenu = stagedActionMenu?.target.id === group.id ? stagedActionMenu : undefined}
-	<section
-		class="launcher-group"
-		aria-labelledby={`${group.id}-heading`}
-	>
-		{@render compactGroupHeader(
-			group,
-			shortcutLabel,
-			focusedTarget,
-			stagedMenu,
-			mobileCountLabel
-		)}
+	<section class="launcher-group" aria-labelledby={`${group.id}-heading`}>
+		{@render compactGroupHeader(group, shortcutLabel, focusedTarget, stagedMenu, mobileCountLabel)}
 
 		<div class="launcher-group-items">
 			{#each renderedItems as item (item.id)}
@@ -3456,13 +3526,6 @@
 		align-items: center;
 		justify-content: flex-end;
 		gap: 0.25rem;
-	}
-
-	.shortcut-or-label {
-		color: var(--nc-tx-2);
-		font-size: var(--font-size-0);
-		font-weight: 600;
-		line-height: 1;
 	}
 
 	.compact-action-primary.active-action,

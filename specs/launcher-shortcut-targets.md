@@ -47,8 +47,9 @@ Status: In progress; staged target sequences can now downgrade from upgraded men
 
 - [x] Separate committed text from staged shortcut text for shortcut initiators.
 - [x] Stage only uppercase initiators that match the current valid shortcut map.
+- [x] Match staged shortcut continuations case-insensitively after the uppercase initiator gate.
 - [x] Resolve nonmatching staged text as literal input.
-- [x] Support `Enter` confirmation and `Backspace` cancellation for single-key staged shortcuts.
+- [x] Support `Enter` confirmation and `Backspace`/`Escape` cancellation for single-key staged shortcuts.
 - [x] Support `Backspace` downgrade for multi-key staged shortcuts.
 - [ ] Add Caps entry mode for literal uppercase shortcut letters.
 - [x] Render staged shortcut text distinctly from committed text with a minimal textarea preview foundation.
@@ -211,7 +212,7 @@ The compact row model is:
 - The compact menu affordance lives on the right side of the row.
 - Opening the menu keeps the primary action in the title row and expands remaining menu actions vertically below it.
 - Shortcut badges remain right-aligned across the primary row and expanded menu rows.
-- Armed menu actions show `Enter` plus the menu shortcut alternative, such as `Enter or Q`.
+- Armed menu actions show only `Enter`; unarmed menu actions show their shortcut badge for selection.
 - Duplicate outer row shortcut badges are hidden while the compact menu is open.
 
 The older non-compact item menu presentation has been removed. New action-menu UI should build on compact rows or nested compact groups rather than adding a second menu system.
@@ -309,7 +310,7 @@ The shortcut buffer should be visible while active, but it should not change the
 
 ### Candidate And Armed Behavior
 
-When the user types a currently valid uppercase shortcut initiator, such as `Q`, the launcher should stage that key and arm the matching target or command instead of committing it immediately.
+When the user types a currently valid uppercase shortcut initiator, such as `Q`, the launcher should stage that key and arm the matching target or command instead of committing it immediately. After that initial uppercase gate, shortcut continuation matching is case-insensitive; the raw typed case is only preserved for the visible staged buffer and for literal fallback when the sequence is rejected.
 
 Armed behavior:
 
@@ -332,8 +333,11 @@ Examples:
 - `S`: stage `S` and show the armed command row for search submit.
 - `Y` with fewer than 6 item slots: commit `Y` as literal text.
 - `Q` then `Q`: stay staged and open the first item's action menu when a secondary action exists.
+- `Q` then `q`: same as `Q` then `Q`; staged shortcut continuations are case-insensitive.
 - `Q` then a nonmatching text key: commit both characters as normal text and restore the previous focus snapshot when possible.
 - `Q` then `Backspace`: cancel staged `Q`; committed query remains unchanged and previous focus is restored when possible.
+- `Q` then `Escape`: cancel staged `Q`; committed query remains unchanged and previous focus is restored when possible.
+- `Q` then `ArrowUp` or `ArrowDown`: cancel staged `Q` without committing it and continue normal launcher focus navigation from the currently focused target.
 - `Q` then cursor movement, pointer interaction, blur, or explicit mode change: cancel or commit according to the least surprising behavior for that event. The implementation should avoid leaving an invisible active shortcut buffer.
 
 ### Progressive Target Actions
@@ -356,6 +360,8 @@ Group examples:
 Opening an action menu from a staged target shortcut must not replace the active parent shortcut context. The addressed launcher target remains captured until the staged sequence confirms, downgrades, or cancels.
 
 When a staged target sequence opens that target's action menu, the root shortcut key remains reserved for the captured parent target. The menu-local shortcut map must exclude that root key case-insensitively, so the original staged sequence can close, confirm, or continue without being stolen by menu rows. For example, if `Qq` opens the item 1 menu, menu rows may use `W`, `E`, `R`, `T`, or `Y`, but not `Q` or `q`; pressing `Q` closes the menu and keeps the item staged.
+
+Menu-local shortcut labels select or arm a menu action, but they do not run it. For example, if `Qq` opens a menu and `W` labels the primary row, `Qqw` should stage that row as the `Enter` target; only `Enter` should run the action.
 
 This ordering is an initial default. Modes may change which menu action is armed by default, but the first staged key should remain useful: `Q Enter` should run the captured target's primary action rather than merely re-focusing an already focused target.
 
@@ -400,6 +406,8 @@ Cancellation examples:
 
 - `Q` then `Backspace`: clear staged `Q` and restore the previous focus snapshot when possible.
 - `Qq` then `Backspace`: downgrade to staged `Q` and restore the armed command row for the lower level.
+- `Q` then `Escape`: clear staged `Q` and restore the previous focus snapshot when possible.
+- `Q` then `ArrowUp` or `ArrowDown`: clear staged `Q` without committing it, keep the current focus, and let list navigation move from there.
 - `Q` then unrelated text input: clear the armed buffer, restore prior focus when possible, and process the input as literal text.
 - `Q` then another valid shortcut initiator: clear the armed buffer and begin or process the new shortcut sequence.
 - Pointer interaction, blur, query changes outside the shortcut buffer, or mode changes should clear the armed buffer.
