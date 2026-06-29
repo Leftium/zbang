@@ -131,10 +131,21 @@
 		lane: ShortcutLane;
 		target?: PrimaryLauncherTarget;
 	};
+	type ItemShortcutLabel = (typeof itemShortcutLabels)[number];
+	type ItemShortcutAnchor = {
+		targetId: string;
+		label: ItemShortcutLabel;
+		edge: 'top' | 'bottom';
+	};
+	type ItemShortcutSlot = {
+		label: ItemShortcutLabel;
+		target: PrimaryLauncherTarget;
+	};
 	type ShortcutTargetSlot = PrimaryLauncherTarget | undefined;
 	type FocusSnapshot = {
 		selectedPrimaryItemId: string | undefined;
 		activeLauncherGroupId: string | undefined;
+		itemShortcutAnchor: ItemShortcutAnchor | undefined;
 	};
 	type ShortcutBinding =
 		| { key: string; kind: 'target'; lane: ShortcutLane; target: PrimaryLauncherTarget }
@@ -245,12 +256,14 @@
 	let activeLauncherGroupId = $state<string>();
 	let inputHistory = $state<InputFrame[]>([]);
 	let keyHistory: KeyFrame[] = [];
-	let pendingShortcutItemTargets: PrimaryLauncherTarget[] = [];
+	let pendingShortcutItemSlots: ItemShortcutSlot[] = [];
 	let pendingShortcutGroupTargets: ShortcutTargetSlot[] = [];
 	let pendingShortcutPrimaryTarget: PrimaryLauncherTarget | undefined;
 	let pendingShortcutFocusSnapshot: FocusSnapshot | undefined;
 	let pendingTripleShortcut: PendingTripleShortcut | undefined;
 	let stagedShortcut = $state<StagedShortcut>();
+	let itemShortcutAnchor = $state<ItemShortcutAnchor>();
+	let targetShortcutInitiatorGateOpen = $state(false);
 	let myBangWrite = Promise.resolve();
 	let loadingBangProvider = $state<BangProviderId>();
 	let doubleKeypress = $state<string>();
@@ -334,16 +347,13 @@
 	const stagedActionMenu = $derived(getStagedActionMenu());
 	const selectablePrimaryTargets = $derived(getSelectablePrimaryTargets());
 	const activeLauncherGroup = $derived(getActiveLauncherGroup());
-	const shortcutItemTargets = $derived(
-		getShortcutItemTargets().slice(0, itemShortcutLabels.length)
-	);
+	const allShortcutItemTargets = $derived(getShortcutItemTargets());
+	const shortcutItemSlots = $derived(getShortcutItemSlots());
 	const shortcutGroupTargets = $derived(getShortcutGroupTargets());
 	const validShortcutBindings = $derived(getValidShortcutBindings());
 	const shortcutTargetIds = $derived(
 		new Map([
-			...shortcutItemTargets.map(
-				(target, index) => [target.id, itemShortcutLabels[index]] as const
-			),
+			...shortcutItemSlots.map((slot) => [slot.target.id, slot.label] as const),
 			...shortcutGroupTargets
 				.map((target, index) =>
 					target ? ([target.id, groupShortcutLabels[index]] as const) : undefined
@@ -381,6 +391,14 @@
 
 		focusLauncherTarget(target);
 		bangPickerPrimaryInitialized = true;
+	});
+
+	$effect(() => {
+		const anchor = itemShortcutAnchor;
+		if (!anchor) return;
+		if (allShortcutItemTargets.some((target) => target.id === anchor.targetId)) return;
+
+		itemShortcutAnchor = undefined;
 	});
 
 	$effect(() => {
@@ -887,6 +905,62 @@
 		return getActionMenuShortcutLabels(menu.rootKey, menu.actions.length)[actionIndex];
 	}
 
+	function isItemShortcutLabel(key: string): key is ItemShortcutLabel {
+		return (itemShortcutLabels as readonly string[]).includes(key);
+	}
+
+	function getShortcutItemSlots(): ItemShortcutSlot[] {
+		const anchor = itemShortcutAnchor;
+		if (!anchor) return getDefaultItemShortcutSlots(allShortcutItemTargets);
+
+		const anchorIndex = allShortcutItemTargets.findIndex((target) => target.id === anchor.targetId);
+		const labelIndex = itemShortcutLabels.findIndex((label) => label === anchor.label);
+		if (anchorIndex === -1 || labelIndex === -1) {
+			return getDefaultItemShortcutSlots(allShortcutItemTargets);
+		}
+
+		const shortcutCount = itemShortcutLabels.length;
+		let startOffset = anchor.edge === 'bottom' ? -1 : -(shortcutCount - 2);
+		let endOffset = anchor.edge === 'bottom' ? shortcutCount - 2 : 1;
+
+		if (anchorIndex + startOffset < 0) {
+			const missingAbove = -(anchorIndex + startOffset);
+			startOffset += missingAbove;
+			endOffset += missingAbove;
+		}
+
+		if (anchorIndex + endOffset >= allShortcutItemTargets.length) {
+			const missingBelow = anchorIndex + endOffset - (allShortcutItemTargets.length - 1);
+			startOffset -= missingBelow;
+			endOffset -= missingBelow;
+		}
+
+		startOffset = Math.max(startOffset, -anchorIndex);
+		endOffset = Math.min(endOffset, allShortcutItemTargets.length - 1 - anchorIndex);
+
+		const slots: ItemShortcutSlot[] = [];
+		for (let offset = startOffset; offset <= endOffset; offset += 1) {
+			const target = allShortcutItemTargets[anchorIndex + offset];
+			const label = itemShortcutLabels[getWrappedItemShortcutLabelIndex(labelIndex + offset)];
+
+			if (target && label) slots.push({ label, target });
+		}
+
+		return slots;
+	}
+
+	function getDefaultItemShortcutSlots(targets: PrimaryLauncherTarget[]): ItemShortcutSlot[] {
+		return targets.slice(0, itemShortcutLabels.length).flatMap((target, index) => {
+			const label = itemShortcutLabels[index];
+
+			return label ? [{ label, target }] : [];
+		});
+	}
+
+	function getWrappedItemShortcutLabelIndex(index: number) {
+		return (index + itemShortcutLabels.length) % itemShortcutLabels.length;
+	}
+
 	function isItemShortcutLabelDisabled(label: string | undefined) {
 		return Boolean(
 			stagedActionMenu && label && (itemShortcutLabels as readonly string[]).includes(label)
@@ -905,14 +979,16 @@
 		return target.kind === 'group' ? 'group-menu' : 'item-menu';
 	}
 
-	function isUppercaseShortcutInitiator(key: string | null | undefined) {
+	function isShortcutInitiatorAllowed(key: string | null | undefined) {
 		if (!key || key.length !== 1) return false;
 
 		const shortcutKey = key.toLocaleUpperCase();
+		const binding = validShortcutBindings.get(shortcutKey);
 
-		return (
-			/^[A-Z]$/.test(shortcutKey) && key === shortcutKey && validShortcutBindings.has(shortcutKey)
-		);
+		if (!/^[A-Z]$/.test(shortcutKey) || !binding) return false;
+		if (key === shortcutKey) return true;
+
+		return targetShortcutInitiatorGateOpen && binding.kind === 'target';
 	}
 
 	function getInitialStagedShortcut(
@@ -943,11 +1019,12 @@
 	}
 
 	function stageShortcutInitiator(key: string, ts = Date.now()) {
-		if (!isUppercaseShortcutInitiator(key) || !textareaElement) return false;
+		if (!isShortcutInitiatorAllowed(key) || !textareaElement) return false;
 
 		const shortcutKey = key.toLocaleUpperCase();
 		const binding = validShortcutBindings.get(shortcutKey);
 		if (!binding) return false;
+		targetShortcutInitiatorGateOpen = false;
 
 		const { selectionStart, selectionEnd } = textareaElement;
 		const focusSnapshot = captureFocusSnapshot();
@@ -966,7 +1043,11 @@
 			ts
 		};
 
-		if (initialShortcut.binding.kind === 'target') focusLauncherTarget(initialShortcut.binding.target);
+		if (initialShortcut.binding.kind === 'target' && !isActionMenuLane(initialShortcut.binding.lane)) {
+			focusLauncherTargetFromShortcut(initialShortcut.binding.target, shortcutKey);
+		} else if (initialShortcut.binding.kind === 'target') {
+			focusLauncherTarget(initialShortcut.binding.target);
+		}
 
 		requestAnimationFrame(() => {
 			const cursor = selectionStart + key.length;
@@ -1225,7 +1306,7 @@
 			? getDefaultActionMenuIndex(binding.target)
 			: undefined;
 
-		focusLauncherTarget(binding.target);
+		focusLauncherTargetFromShortcut(binding.target, key);
 
 		return appendStagedShortcutBinding(key, binding, menuActionIndex);
 	}
@@ -1358,7 +1439,10 @@
 			return commitStagedShortcutLiteral(data);
 		}
 
-		if (!isUppercaseShortcutInitiator(data)) return false;
+		if (!isShortcutInitiatorAllowed(data)) {
+			targetShortcutInitiatorGateOpen = false;
+			return false;
+		}
 
 		event.preventDefault();
 		return stageShortcutInitiator(data);
@@ -1413,6 +1497,10 @@
 		}
 
 		if (handlePrimaryNavigation(event)) return;
+
+		if (event.key.length === 1 || !['Shift', 'Control', 'Alt', 'Meta'].includes(event.key)) {
+			targetShortcutInitiatorGateOpen = false;
+		}
 
 		if (event.key === 'Escape') {
 			bangEntry = undefined;
@@ -1552,11 +1640,11 @@
 			return;
 		}
 
-		const itemFocusIndex = itemShortcutLabels.findIndex((label) => label === key);
-		if (itemFocusIndex !== -1) {
-			const target = getSnapshotItemTargets()[itemFocusIndex];
-			if (target) focusLauncherTarget(target);
-			armTripleShortcut(key, 'item-focus', target);
+		const itemSlots = getSnapshotItemSlots();
+		const itemSlot = itemSlots.find((slot) => slot.label === key);
+		if (itemSlot) {
+			focusLauncherTargetFromItemShortcut(itemSlot.target, itemSlot.label, itemSlots);
+			armTripleShortcut(key, 'item-focus', itemSlot.target);
 			return;
 		}
 
@@ -1628,8 +1716,8 @@
 		);
 	}
 
-	function getSnapshotItemTargets() {
-		return pendingShortcutItemTargets.length ? pendingShortcutItemTargets : shortcutItemTargets;
+	function getSnapshotItemSlots() {
+		return pendingShortcutItemSlots.length ? pendingShortcutItemSlots : shortcutItemSlots;
 	}
 
 	function getSnapshotGroupTargets() {
@@ -1645,7 +1733,7 @@
 	}
 
 	function captureFocusSnapshot(): FocusSnapshot {
-		return { selectedPrimaryItemId, activeLauncherGroupId };
+		return { selectedPrimaryItemId, activeLauncherGroupId, itemShortcutAnchor };
 	}
 
 	function restoreFocusSnapshot(snapshot: FocusSnapshot | undefined) {
@@ -1653,13 +1741,14 @@
 
 		selectedPrimaryItemId = snapshot.selectedPrimaryItemId;
 		activeLauncherGroupId = snapshot.activeLauncherGroupId;
+		itemShortcutAnchor = snapshot.itemShortcutAnchor;
 	}
 
 	function captureShortcutSnapshot(shortcutKey: string) {
 		if (!isShortcutInitiator(shortcutKey)) return;
 
 		pendingShortcutFocusSnapshot = captureFocusSnapshot();
-		pendingShortcutItemTargets = shortcutItemTargets;
+		pendingShortcutItemSlots = shortcutItemSlots;
 		pendingShortcutGroupTargets = shortcutGroupTargets;
 		pendingShortcutPrimaryTarget = primaryLauncherTarget;
 	}
@@ -1680,7 +1769,8 @@
 		inputHistory = [];
 		keyHistory = [];
 		stagedShortcut = undefined;
-		pendingShortcutItemTargets = [];
+		targetShortcutInitiatorGateOpen = false;
+		pendingShortcutItemSlots = [];
 		pendingShortcutGroupTargets = [];
 		pendingShortcutPrimaryTarget = undefined;
 		pendingShortcutFocusSnapshot = undefined;
@@ -1700,9 +1790,9 @@
 			bindings.set(label, { key: label, kind: 'utility', lane: 'utility' });
 		}
 
-		shortcutItemTargets.forEach((target, index) => {
-			bindings.set(itemShortcutLabels[index], {
-				key: itemShortcutLabels[index],
+		shortcutItemSlots.forEach(({ label, target }) => {
+			bindings.set(label, {
+				key: label,
 				kind: 'target',
 				lane: 'item-focus',
 				target
@@ -1754,6 +1844,8 @@
 	}
 
 	function handleLauncherCursorChange(event: Event) {
+		targetShortcutInitiatorGateOpen = false;
+
 		if (stagedShortcut) {
 			cancelStagedShortcut();
 			return;
@@ -1769,6 +1861,7 @@
 	}
 
 	function handleLauncherBlur() {
+		targetShortcutInitiatorGateOpen = false;
 		cancelStagedShortcut();
 	}
 
@@ -1779,10 +1872,31 @@
 	}
 
 	function handlePrimaryNavigation(event: KeyboardEvent) {
-		if (fullscreen || enterNewlineRestored || !['ArrowUp', 'ArrowDown'].includes(event.key)) {
+		if (
+			fullscreen ||
+			enterNewlineRestored ||
+			!['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown'].includes(event.key)
+		) {
 			return false;
 		}
 
+		const nextTarget =
+			event.key === 'PageUp'
+				? shortcutItemSlots[0]?.target
+				: event.key === 'PageDown'
+					? shortcutItemSlots[shortcutItemSlots.length - 1]?.target
+					: getAdjacentPrimaryNavigationTarget(event.key === 'ArrowUp' ? 'ArrowUp' : 'ArrowDown');
+
+		if (!nextTarget) return false;
+
+		event.preventDefault();
+		focusLauncherTargetFromNavigation(nextTarget);
+		targetShortcutInitiatorGateOpen = true;
+
+		return true;
+	}
+
+	function getAdjacentPrimaryNavigationTarget(key: 'ArrowUp' | 'ArrowDown') {
 		const currentIndex = primaryLauncherTarget
 			? selectablePrimaryTargets.findIndex((target) => target.id === primaryLauncherTarget.id)
 			: -1;
@@ -1790,17 +1904,11 @@
 			0,
 			Math.min(
 				selectablePrimaryTargets.length - 1,
-				event.key === 'ArrowUp' ? currentIndex - 1 : currentIndex + 1
+				key === 'ArrowUp' ? currentIndex - 1 : currentIndex + 1
 			)
 		);
-		const nextTarget = selectablePrimaryTargets[nextIndex];
 
-		if (!nextTarget) return false;
-
-		event.preventDefault();
-		focusLauncherTarget(nextTarget);
-
-		return true;
+		return selectablePrimaryTargets[nextIndex];
 	}
 
 	function updateBangEntry(textarea: HTMLTextAreaElement) {
@@ -1865,6 +1973,62 @@
 			lane: getTargetMenuLane(menu.target),
 			target: menu.target
 		});
+	}
+
+	function focusLauncherTargetFromNavigation(target: PrimaryLauncherTarget) {
+		if (target.kind !== 'item') {
+			focusLauncherTarget(target);
+			return;
+		}
+
+		const slot = shortcutItemSlots.find((slot) => slot.target.id === target.id);
+		if (!slot) {
+			focusLauncherTarget(target);
+			return;
+		}
+
+		focusLauncherTargetFromItemShortcut(target, slot.label);
+	}
+
+	function focusLauncherTargetFromShortcut(target: PrimaryLauncherTarget, key: string) {
+		const shortcutKey = getShortcutBindingKey(key);
+
+		if (target.kind !== 'item' || !isItemShortcutLabel(shortcutKey)) {
+			focusLauncherTarget(target);
+			return;
+		}
+
+		focusLauncherTargetFromItemShortcut(target, shortcutKey);
+	}
+
+	function focusLauncherTargetFromItemShortcut(
+		target: PrimaryLauncherTarget,
+		label: ItemShortcutLabel,
+		slots = shortcutItemSlots
+	) {
+		updateItemShortcutAnchorForSelection(target, label, slots);
+		focusLauncherTarget(target);
+	}
+
+	function updateItemShortcutAnchorForSelection(
+		target: PrimaryLauncherTarget,
+		label: ItemShortcutLabel,
+		slots: ItemShortcutSlot[]
+	) {
+		const slotIndex = slots.findIndex(
+			(slot) => slot.target.id === target.id && slot.label === label
+		);
+		const targetIndex = allShortcutItemTargets.findIndex((itemTarget) => itemTarget.id === target.id);
+		if (slotIndex === -1 || targetIndex === -1) return;
+
+		if (slotIndex === 0) {
+			if (targetIndex > 0) itemShortcutAnchor = { targetId: target.id, label, edge: 'top' };
+			return;
+		}
+
+		if (slotIndex === slots.length - 1 && targetIndex < allShortcutItemTargets.length - 1) {
+			itemShortcutAnchor = { targetId: target.id, label, edge: 'bottom' };
+		}
 	}
 
 	function focusLauncherTarget(target: PrimaryLauncherTarget) {

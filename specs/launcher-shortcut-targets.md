@@ -46,7 +46,7 @@ Status: Mostly complete; remaining action-menu and parent/out normalization is d
 Status: In progress; staged target sequences can now downgrade from upgraded menu lanes.
 
 - [x] Separate committed text from staged shortcut text for shortcut initiators.
-- [x] Stage only uppercase initiators that match the current valid shortcut map.
+- [x] Stage only uppercase initiators that match the current valid shortcut map, except target shortcuts immediately after explicit keyboard navigation.
 - [x] Match staged shortcut continuations case-insensitively after the uppercase initiator gate.
 - [x] Resolve nonmatching staged text as literal input.
 - [x] Support `Enter` confirmation and `Backspace`/`Escape` cancellation for single-key staged shortcuts.
@@ -67,6 +67,7 @@ Status: In progress.
 - [x] Use the reserved root shortcut key to toggle an open target action menu closed.
 - [x] Keep valid target and parent shortcut keys staged across repeated navigation.
 - [x] Open the focused target's action menu directly from its visible root shortcut affordance.
+- [x] Extend item shortcuts around selected edge items while preserving the selected item's key.
 
 ### Stage 4: Armed Feedback And Staged Rendering
 
@@ -265,7 +266,7 @@ Validity examples:
 
 Initial target initiators:
 
-- `Q` to `Y`: item target slots 1 to 6.
+- `Q` to `Y`: item target slots in the current item shortcut window.
 - `O`, `I`, and `P`: relative group target slots for previous, current, and next group.
 - `U`: parent/up/out command.
 
@@ -292,6 +293,42 @@ Global: F  L  N  S    fullscreen, line wrap, newline behavior, search
 
 Target shortcuts no longer need a separate menu/action shortcut row. Repeating the same shortcut key upgrades the armed action for the same captured target.
 
+Item shortcuts begin as `Q W E R T Y` for the first six item targets in the active item list. When the user selects, arrow-navigates to, or pages to the top or bottom item in the current shortcut window and more items exist beyond that edge, the shortcut window extends around the selected item while preserving the key that selected it. This keeps same-key repeat stable for opening the current item's menu.
+
+Lower-edge example:
+
+```text
+Initial:
+1 Q
+2 W
+3 E
+4 R
+5 T
+6 Y
+
+After selecting 6 with Y:
+5 T
+6 Y  current
+7 Q
+8 W
+9 E
+10 R
+```
+
+From the extended state, `YY` opens item 6's menu, `Q` focuses item 7, and `R` focuses item 10. Selecting the bottom edge again shifts the window around that item while keeping its selected key:
+
+```text
+After selecting 10 with R:
+9 E
+10 R  current
+11 T
+12 Y
+13 Q
+14 W
+```
+
+Upper-edge selection mirrors the behavior: the selected item keeps the key that focused it, the next item below remains available as the way back down, and the remaining shortcuts extend above when more items exist.
+
 Group shortcuts are relative to the current group. The number of visible groups does not change the shortcut set. Previous and next group navigation should wrap by default so compact group sets can be cycled quickly. Modes may disable wrapping when strict list-boundary behavior is more important than cycling speed.
 
 ## Staged Shortcut Sequences
@@ -312,6 +349,8 @@ The shortcut buffer should be visible while active, but it should not change the
 
 When the user types a currently valid uppercase shortcut initiator, such as `Q`, the launcher should stage that key and arm the matching target or command instead of committing it immediately. After that initial uppercase gate, shortcut continuation matching is case-insensitive; the raw typed case is only preserved for the visible staged buffer and for literal fallback when the sequence is rejected.
 
+Arrow and Page key navigation are also explicit launcher navigation, so they should keep the next target shortcut initiator case-insensitive. For example, after `ArrowDown` focuses a labeled item, `q` should stage the visible `Q` target shortcut instead of committing literal text. This exception applies to target shortcuts only; global commands still require their normal uppercase initiator.
+
 Armed behavior:
 
 - Show the staged key in the input.
@@ -328,6 +367,11 @@ Examples:
 
 - `Q`: stage `Q`, focus item slot 1, and show the armed command row for that item's primary action.
 - `Q` when item slot 1 is already the current primary item: stage `Q`, open that item's action menu, and arm the menu default.
+- `Y` on the bottom item in the current item shortcut window: stage `Y`, focus that item, keep `Y` on that item, and extend the remaining item shortcuts below when more items exist.
+- `ArrowDown` to the bottom item in the current item shortcut window: focus that item, keep its visible shortcut on that item, and extend the remaining item shortcuts below when more items exist.
+- `PageDown`: focus the bottom item in the current item shortcut window and trigger the same edge anchoring behavior.
+- `PageUp`: focus the top item in the current item shortcut window and trigger the same edge anchoring behavior.
+- `ArrowDown` then `q` when `Q` is a visible target shortcut: stage `q`, focus the `Q` target, and keep the staged shortcut model.
 - `F`: stage `F` and show the armed command row for fullscreen toggle.
 - `L`: stage `L` and show the armed command row for line wrap toggle.
 - `N`: stage `N` and show the armed command row for Enter-newline behavior.
@@ -351,6 +395,9 @@ Default target action levels:
 - `Q` for the current primary item: open that target's action menu and arm the secondary action when present.
 - `Qq` or `QQ`: open that target's action menu and arm the secondary action when present.
 - `QqQ` or `QQQ`: close that target's action menu and return to the focused item.
+- `Y` on the bottom item shortcut: focus that item and extend the item shortcut window below it while preserving `Y` as the current item's shortcut.
+- `YY` after that focus: open the captured target's action menu.
+- `R` from the extended example above: focus item 10 and extend the item shortcut window below it while preserving `R` as item 10's shortcut.
 
 Group examples:
 
@@ -615,9 +662,10 @@ For a setting option item:
 ## Acceptance Criteria
 
 - Items and groups can both be represented as launcher targets.
-- Uppercase shortcut initiators are staged only when they match a currently valid shortcut in the active mode and context.
+- Shortcut initiators are staged only when they match a currently valid shortcut in the active mode and context; lowercase initiators are allowed only for target shortcuts immediately after explicit keyboard navigation.
 - Item and group shortcuts capture their addressed target when they first arm.
 - Item root repeats toggle the captured target action menu without requiring a timing window.
+- Edge item shortcut selection, arrow focus, or PageUp/PageDown focus extends the visible item shortcut window without changing the selected item's shortcut key.
 - Relative group repeats keep navigating between groups without leaving staged shortcut mode.
 - `Enter` confirms the currently armed shortcut action.
 - A pinned armed command row describes the current action, confirmation key, next upgrade when present, and cancellation path.
