@@ -3,7 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import fuzzysort from 'fuzzysort';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 
 	import {
 		readMyBangs,
@@ -80,6 +80,8 @@
 	const shortcutBadgeFlyDuration = 640;
 	const pseudoMenuBadgeDelay = 320;
 	const pseudoMenuBadgeDuration = 280;
+	const shortcutScrollPadding = 12;
+	const shortcutScrollBottomPadding = 18;
 	const parentShortcutLabel = 'U';
 	const utilityShortcutLabels = ['Z', 'X', 'C', 'V'] as const;
 	const shortcutKeys = new Set([
@@ -289,6 +291,9 @@
 	let bangPickerPrimaryInitialized = false;
 	let hadSettingsFilter = false;
 	let skipNextSettingsFilterReset = false;
+	let shortcutScrollFrame: number | undefined;
+	let shortcutScrollRequestId = 0;
+	const launcherTargetElements = new Map<string, HTMLElement>();
 
 	$effect(() => {
 		const urlQuery = page.url.searchParams.get('q') ?? '';
@@ -386,6 +391,14 @@
 
 	onMount(() => {
 		void loadMyBangs();
+
+		return () => {
+			shortcutScrollRequestId += 1;
+			if (shortcutScrollFrame !== undefined) {
+				cancelAnimationFrame(shortcutScrollFrame);
+				shortcutScrollFrame = undefined;
+			}
+		};
 	});
 
 	$effect(() => {
@@ -1071,7 +1084,10 @@
 			ts
 		};
 
-		if (initialShortcut.binding.kind === 'target' && !isActionMenuLane(initialShortcut.binding.lane)) {
+		if (
+			initialShortcut.binding.kind === 'target' &&
+			!isActionMenuLane(initialShortcut.binding.lane)
+		) {
 			focusLauncherTargetFromShortcut(initialShortcut.binding.target, shortcutKey);
 		} else if (initialShortcut.binding.kind === 'target') {
 			focusLauncherTarget(initialShortcut.binding.target);
@@ -1129,11 +1145,7 @@
 			const selectedMenuKeys = buffer.slice(menuOpenBufferLength);
 			const selectedMenuKey = selectedMenuKeys[selectedMenuKeys.length - 1];
 			const selectedMenuActionIndex = selectedMenuKey
-				? getActionMenuShortcutIndex(
-						stagedShortcut.binding.key,
-						target.actions,
-						selectedMenuKey
-					)
+				? getActionMenuShortcutIndex(stagedShortcut.binding.key, target.actions, selectedMenuKey)
 				: -1;
 			stagedShortcut = {
 				...stagedShortcut,
@@ -1871,6 +1883,116 @@
 		return shortcutTargetIds.get(targetId);
 	}
 
+	function trackLauncherTarget(node: HTMLElement, targetId: string) {
+		let currentTargetId = targetId;
+		launcherTargetElements.set(currentTargetId, node);
+
+		return {
+			update(nextTargetId: string) {
+				if (nextTargetId === currentTargetId) return;
+				if (launcherTargetElements.get(currentTargetId) === node) {
+					launcherTargetElements.delete(currentTargetId);
+				}
+
+				currentTargetId = nextTargetId;
+				launcherTargetElements.set(currentTargetId, node);
+			},
+			destroy() {
+				if (launcherTargetElements.get(currentTargetId) === node) {
+					launcherTargetElements.delete(currentTargetId);
+				}
+			}
+		};
+	}
+
+	function scheduleShortcutViewportScroll(target: PrimaryLauncherTarget | undefined) {
+		if (!target || fullscreen) return;
+
+		const requestId = ++shortcutScrollRequestId;
+		const focusedTargetId = target.id;
+
+		void tick().then(() => {
+			if (requestId !== shortcutScrollRequestId) return;
+
+			if (shortcutScrollFrame !== undefined) cancelAnimationFrame(shortcutScrollFrame);
+			shortcutScrollFrame = requestAnimationFrame(() => {
+				shortcutScrollFrame = undefined;
+				if (requestId !== shortcutScrollRequestId) return;
+				if (focusedTargetId !== selectedPrimaryItemId) return;
+
+				scrollShortcutTargetsIntoView(focusedTargetId);
+			});
+		});
+	}
+
+	function scrollShortcutTargetsIntoView(focusedTargetId: string) {
+		const viewport = getShortcutUsableViewport();
+		const focusedElement = getLauncherTargetElement(focusedTargetId);
+		const shortcutRange = getShortcutElementRange(focusedTargetId);
+		const focusedRange = focusedElement ? getElementViewportRange([focusedElement]) : undefined;
+		if (!shortcutRange && !focusedRange) return;
+
+		const range =
+			shortcutRange && shortcutRange.bottom - shortcutRange.top <= viewport.bottom - viewport.top
+				? shortcutRange
+				: focusedRange;
+		if (!range) return;
+
+		const delta =
+			range.bottom > viewport.bottom
+				? range.bottom - viewport.bottom
+				: range.top < viewport.top
+					? range.top - viewport.top
+					: 0;
+
+		if (delta !== 0) window.scrollBy({ top: delta, behavior: 'auto' });
+	}
+
+	function getShortcutUsableViewport() {
+		const viewport = window.visualViewport;
+		const viewportTop = viewport?.offsetTop ?? 0;
+		const viewportBottom = viewportTop + (viewport?.height ?? window.innerHeight);
+		const inputShellBottom =
+			document.querySelector<HTMLElement>('.launcher-input-shell')?.getBoundingClientRect()
+				.bottom ?? 0;
+		const top = Math.max(viewportTop, inputShellBottom) + shortcutScrollPadding;
+		const bottom = viewportBottom - shortcutScrollBottomPadding;
+
+		return { top, bottom: Math.max(top + 1, bottom) };
+	}
+
+	function getShortcutElementRange(focusedTargetId: string) {
+		const targetIds = new Set([
+			...shortcutItemSlots.map((slot) => slot.target.id),
+			focusedTargetId
+		]);
+		const elements = [...targetIds].flatMap((targetId) => {
+			const element = getLauncherTargetElement(targetId);
+
+			return element ? [element] : [];
+		});
+
+		return getElementViewportRange(elements);
+	}
+
+	function getLauncherTargetElement(targetId: string) {
+		const element = launcherTargetElements.get(targetId);
+
+		return element?.isConnected ? element : undefined;
+	}
+
+	function getElementViewportRange(elements: HTMLElement[]) {
+		const rects = elements
+			.map((element) => element.getBoundingClientRect())
+			.filter((rect) => rect.width > 0 || rect.height > 0);
+		if (!rects.length) return undefined;
+
+		return {
+			top: Math.min(...rects.map((rect) => rect.top)),
+			bottom: Math.max(...rects.map((rect) => rect.bottom))
+		};
+	}
+
 	function getCompactActionTarget(
 		item: LauncherItem,
 		focusedTarget: PrimaryLauncherTarget | undefined,
@@ -2054,7 +2176,9 @@
 		const slotIndex = slots.findIndex(
 			(slot) => slot.target.id === target.id && slot.label === label
 		);
-		const targetIndex = allShortcutItemTargets.findIndex((itemTarget) => itemTarget.id === target.id);
+		const targetIndex = allShortcutItemTargets.findIndex(
+			(itemTarget) => itemTarget.id === target.id
+		);
 		if (slotIndex === -1 || targetIndex === -1) return;
 
 		if (slotIndex === 0) {
@@ -2075,6 +2199,8 @@
 		} else if (target.groupId) {
 			activeLauncherGroupId = target.groupId;
 		}
+
+		scheduleShortcutViewportScroll(target);
 	}
 
 	function getActiveLauncherGroup() {
@@ -3047,6 +3173,7 @@
 		class:has-staged-menu={Boolean(stagedMenu)}
 		class:primary={item.id === primaryLauncherItem?.id}
 		class="launcher-item action-item compact-action-item"
+		use:trackLauncherTarget={item.id}
 	>
 		<button
 			class:active-action={rowActive}
@@ -3112,6 +3239,7 @@
 		class:has-staged-menu={Boolean(stagedMenu)}
 		class:primary={primaryLauncherTarget?.kind === 'group' && primaryLauncherTarget.id === group.id}
 		class="launcher-item action-item compact-action-item compact-group-header"
+		use:trackLauncherTarget={group.id}
 	>
 		<button
 			class:active-action={rowActive}
@@ -3202,7 +3330,8 @@
 							<span class="staged-action-menu-label">{action.title ?? action.label}</span>
 							<span class="compact-action-shortcuts">
 								{#if actionArmed}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
-								{#if !actionArmed && shortcutLabel}<span class="shortcut-label">{shortcutLabel}</span
+								{#if !actionArmed && shortcutLabel}<span class="shortcut-label"
+										>{shortcutLabel}</span
 									>{/if}
 							</span>
 						</button>
@@ -3258,6 +3387,7 @@
 	<article
 		class:primary={item.id === primaryLauncherItem?.id}
 		class="launcher-item notification-item"
+		use:trackLauncherTarget={item.id}
 	>
 		<span class="item-text">
 			<span class="item-heading">
