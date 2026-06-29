@@ -327,6 +327,7 @@ If an uppercase key does not match a currently valid shortcut initiator, it shou
 Examples:
 
 - `Q`: stage `Q`, focus item slot 1, and show the armed command row for that item's primary action.
+- `Q` when item slot 1 is already the current primary item: stage `Q`, open that item's action menu, and arm the menu default.
 - `F`: stage `F` and show the armed command row for fullscreen toggle.
 - `L`: stage `L` and show the armed command row for line wrap toggle.
 - `N`: stage `N` and show the armed command row for Enter-newline behavior.
@@ -335,9 +336,9 @@ Examples:
 - `Q` then `Q`: stay staged and open the first item's action menu when a secondary action exists.
 - `Q` then `q`: same as `Q` then `Q`; staged shortcut continuations are case-insensitive.
 - `Q` then a nonmatching text key: commit both characters as normal text and restore the previous focus snapshot when possible.
-- `Q` then `Backspace`: cancel staged `Q`; committed query remains unchanged and previous focus is restored when possible.
+- `Q` then `Backspace` after focusing a non-current item: cancel staged `Q`; committed query remains unchanged and previous focus is restored when possible.
 - `Q` then `Escape`: cancel staged `Q`; committed query remains unchanged and previous focus is restored when possible.
-- `Q` then `ArrowUp` or `ArrowDown`: cancel staged `Q` without committing it and continue normal launcher focus navigation from the currently focused target.
+- `Q` then `ArrowUp` or `ArrowDown` after focusing a non-current item: cancel staged `Q` without committing it and continue normal launcher focus navigation from the currently focused target.
 - `Q` then cursor movement, pointer interaction, blur, or explicit mode change: cancel or commit according to the least surprising behavior for that event. The implementation should avoid leaving an invisible active shortcut buffer.
 
 ### Progressive Target Actions
@@ -347,6 +348,7 @@ While a shortcut buffer is staged, printable keys that still match a current tar
 Default target action levels:
 
 - `Q`: focus item slot 1 and arm its primary action.
+- `Q` for the current primary item: open that target's action menu and arm the secondary action when present.
 - `Qq` or `QQ`: open that target's action menu and arm the secondary action when present.
 - `QqQ` or `QQQ`: close that target's action menu and return to the focused item.
 
@@ -363,7 +365,7 @@ When a staged target sequence opens that target's action menu, the root shortcut
 
 Menu-local shortcut labels select or arm a menu action, but they do not run it. For example, if `Qq` opens a menu and `W` labels the primary row, `Qqw` should stage that row as the `Enter` target; only `Enter` should run the action.
 
-This ordering is an initial default. Modes may change which menu action is armed by default, but the first staged key should remain useful: `Q Enter` should run the captured target's primary action rather than merely re-focusing an already focused target.
+This ordering is an initial default. Modes may change which menu action is armed by default, but the first staged key should remain useful: `Q Enter` should run the captured target's primary action for non-current targets, while `Q` on the current primary item should open the target's action menu instead of merely re-focusing it.
 
 Shorter staged sequences must remain safe because they may become literal text or be upgraded by later input. Avoid mappings where an early level performs an unsafe action and a later level merely focuses.
 
@@ -405,6 +407,7 @@ Legacy time-window shortcuts should remain available as quick alternatives to th
 Cancellation examples:
 
 - `Q` then `Backspace`: clear staged `Q` and restore the previous focus snapshot when possible.
+- `Q` then `Backspace` when `Q` opened the current primary item's menu: close the menu and downgrade to staged item focus before full cancellation.
 - `Qq` then `Backspace`: downgrade to staged `Q` and restore the armed command row for the lower level.
 - `Q` then `Escape`: clear staged `Q` and restore the previous focus snapshot when possible.
 - `Q` then `ArrowUp` or `ArrowDown`: clear staged `Q` without committing it, keep the current focus, and let list navigation move from there.

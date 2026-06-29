@@ -915,6 +915,33 @@
 		);
 	}
 
+	function getInitialStagedShortcut(
+		binding: ShortcutBinding,
+		shortcutKey: string
+	): {
+		binding: ShortcutBinding;
+		menuActionIndex?: number;
+		menuOpenBufferLength?: number;
+	} {
+		if (
+			binding.kind !== 'target' ||
+			binding.target.kind !== 'item' ||
+			primaryLauncherTarget?.kind !== 'item' ||
+			primaryLauncherTarget.id !== binding.target.id
+		) {
+			return { binding };
+		}
+
+		return {
+			binding: {
+				...binding,
+				lane: getTargetMenuLane(binding.target)
+			},
+			menuActionIndex: getDefaultActionMenuIndex(binding.target),
+			menuOpenBufferLength: shortcutKey.length
+		};
+	}
+
 	function stageShortcutInitiator(key: string, ts = Date.now()) {
 		if (!isUppercaseShortcutInitiator(key) || !textareaElement) return false;
 
@@ -924,19 +951,22 @@
 
 		const { selectionStart, selectionEnd } = textareaElement;
 		const focusSnapshot = captureFocusSnapshot();
+		const initialShortcut = getInitialStagedShortcut(binding, shortcutKey);
 
 		captureShortcutSnapshot(shortcutKey);
 
 		stagedShortcut = {
 			buffer: key,
-			binding,
+			binding: initialShortcut.binding,
 			focusSnapshot,
 			selectionStart,
 			selectionEnd,
+			menuActionIndex: initialShortcut.menuActionIndex,
+			menuOpenBufferLength: initialShortcut.menuOpenBufferLength,
 			ts
 		};
 
-		if (binding.kind === 'target') focusLauncherTarget(binding.target);
+		if (initialShortcut.binding.kind === 'target') focusLauncherTarget(initialShortcut.binding.target);
 
 		requestAnimationFrame(() => {
 			const cursor = selectionStart + key.length;
