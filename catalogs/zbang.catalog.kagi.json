@@ -5,7 +5,7 @@
 	"sources": [
 		{
 			"url": "https://github.com/kagisearch/bangs/raw/refs/heads/main/data/bangs.json",
-			"hash": "5d34afbe313fc5d9f0e0c6c71d80c5ed003f5529497b781cd998e3ddc685729b"
+			"hash": "6bfb0c1d1b99753193b760e8b39d01a4cca82af43d41f9d4368d52772c81960d"
 		},
 		{
 			"url": "https://github.com/kagisearch/bangs/raw/refs/heads/main/data/kagi_bangs.json",
@@ -2196,8 +2196,8 @@
 		},
 		{
 			"popularity": 175,
-			"name": "Who Sampled",
-			"code": ["!whosampled"],
+			"name": "WhoSampled",
+			"code": ["!whosam", "!whosampled"],
 			"tags": ["Multimedia/Music"],
 			"urls": {
 				"s": "https://whosampled.com/search/?q=%s"
@@ -13152,15 +13152,6 @@
 			"tags": ["Multimedia/Books"],
 			"urls": {
 				"s": "https://www.wattpad.com/stories/search/%s"
-			}
-		},
-		{
-			"popularity": 8,
-			"name": "whosampled",
-			"code": ["!sampled"],
-			"tags": ["Multimedia/Music"],
-			"urls": {
-				"s": "https://www.whosampled.com/search/artists/?q=%s"
 			}
 		},
 		{
@@ -26368,6 +26359,24 @@
 		},
 		{
 			"popularity": 1,
+			"name": "Oxlint (ESLint Rule)",
+			"code": ["!oxlinte", "!oxlinteslint", "!oxlintes"],
+			"tags": ["Tech/Languages (javascript)"],
+			"urls": {
+				"s": "https://oxc.rs/docs/guide/usage/linter/rules/eslint/%s"
+			}
+		},
+		{
+			"popularity": 1,
+			"name": "Oxlint (Rule)",
+			"code": ["!oxlint"],
+			"tags": ["Tech/Languages (javascript)"],
+			"urls": {
+				"s": "https://oxc.rs/docs/guide/usage/linter/rules/%s"
+			}
+		},
+		{
+			"popularity": 1,
 			"name": "Pashto Wikipedia",
 			"code": ["!wps", "!pswiki", "!wikips"],
 			"tags": ["Research/Reference"],
@@ -26444,7 +26453,7 @@
 			"code": ["!poddex", "!podindex", "!podcastindex"],
 			"tags": ["Online Services/Search"],
 			"urls": {
-				"s": "https://podcastindex.org/search?%s&type=all"
+				"s": "https://podcastindex.org/search?q=%s&type=all"
 			}
 		},
 		{
@@ -27471,6 +27480,24 @@
 			"tags": ["Research/Reference"],
 			"urls": {
 				"s": "https://pnb.wikipedia.org/w/index.php?search=%s"
+			}
+		},
+		{
+			"popularity": 1,
+			"name": "WhoSampled (Artists)",
+			"code": ["!whosama", "!sampled", "!whosamartists", "!whosamart", "!whosamartist"],
+			"tags": ["Multimedia/Music"],
+			"urls": {
+				"s": "https://www.whosampled.com/search/artists/?q=%s"
+			}
+		},
+		{
+			"popularity": 1,
+			"name": "WhoSampled (Tracks)",
+			"code": ["!whosamt", "!whosamtracks", "!whosamtrack"],
+			"tags": ["Multimedia/Music"],
+			"urls": {
+				"s": "https://www.whosampled.com/search/tracks/?q=%s"
 			}
 		},
 		{
