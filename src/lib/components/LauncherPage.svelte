@@ -275,8 +275,6 @@
 	let loadingBangProvider = $state<BangProviderId>();
 	let doubleKeypress = $state<string>();
 	let tripleKeypress = $state<string>();
-	let isPeriodShortcut = $state(false);
-	let isMobilePeriodShortcut = $state(false);
 	let expandedLauncherGroups = $state<Record<string, boolean>>({});
 	let myBangs = $state<ZbangRecord[]>([]);
 	let bangFanoutTargets = $state<string[]>([]);
@@ -709,6 +707,23 @@
 		textareaElement.setSelectionRange(cursor, cursor);
 
 		requestAnimationFrame(() => textareaElement?.setSelectionRange(cursor, cursor));
+	}
+
+	function cancelBangPickerEntry() {
+		if (!bangEntry) return false;
+
+		const tokenRange = getBangPickerTokenRange();
+		const start = bangEntry.triggerIndex;
+		const end =
+			tokenRange?.end ??
+			Math.min(value.length, bangEntry.triggerIndex + bangEntry.fragment.length + 1);
+
+		value = value.slice(0, start) + value.slice(end);
+		bangEntry = undefined;
+
+		requestAnimationFrame(() => textareaElement?.setSelectionRange(start, start));
+
+		return true;
 	}
 
 	function getInputDisplayValue() {
@@ -1299,6 +1314,14 @@
 		}
 	}
 
+	function confirmBangPickerPrimaryAction() {
+		if (!bangPickerActive) return false;
+
+		runPrimaryAction();
+
+		return true;
+	}
+
 	function fastConfirmStagedShortcut(key: string, ts: number) {
 		if (!stagedShortcut) return false;
 		if (isActionMenuLane(stagedShortcut.binding.lane)) return false;
@@ -1508,6 +1531,11 @@
 
 		if (handleStagedShortcutBeforeInput(event)) return;
 
+		if (inputType === 'insertLineBreak' && confirmBangPickerPrimaryAction()) {
+			event.preventDefault();
+			return;
+		}
+
 		doubleKeypress = undefined;
 		tripleKeypress = undefined;
 
@@ -1531,15 +1559,17 @@
 		}
 
 		inputHistory = [{ data, inputType, ts }, ...inputHistory].slice(0, 2);
-		isPeriodShortcut = inputType === 'insertText' && data === '. ';
-		isMobilePeriodShortcut =
-			inputType === 'insertText' && data === ' ' && inputHistory[1]?.data === '.';
 	}
 
 	function handleLauncherKeydown(event: KeyboardEvent) {
 		const textarea = event.currentTarget as HTMLTextAreaElement;
 
 		if (handleStagedShortcutKeydown(event)) return;
+
+		if (event.key === 'Enter' && confirmBangPickerPrimaryAction()) {
+			event.preventDefault();
+			return;
+		}
 
 		if (handleShortcutKeydown(event)) return;
 
@@ -1555,6 +1585,11 @@
 		}
 
 		if (event.key === 'Escape') {
+			if (cancelBangPickerEntry()) {
+				event.preventDefault();
+				return;
+			}
+
 			bangEntry = undefined;
 			return;
 		}
@@ -1584,17 +1619,9 @@
 	}
 
 	function handleShortcutInput() {
-		const periodShortcutLength = isPeriodShortcut ? 2 : isMobilePeriodShortcut ? 2 : 0;
-
 		if (tripleKeypress && shortcutKeys.has(tripleKeypress)) {
 			removeShortcutTextBeforeCursor(1);
 			executeShortcut(tripleKeypress, 'triple');
-			resetShortcutState();
-			return true;
-		}
-
-		if (periodShortcutLength) {
-			replaceTextBeforeCursorWithBang(periodShortcutLength);
 			resetShortcutState();
 			return true;
 		}
@@ -1833,8 +1860,6 @@
 		pendingShortcutPrimaryTarget = undefined;
 		pendingShortcutFocusSnapshot = undefined;
 		if (!keepPendingTriple) pendingTripleShortcut = undefined;
-		isPeriodShortcut = false;
-		isMobilePeriodShortcut = false;
 	}
 
 	function getValidShortcutBindings() {
