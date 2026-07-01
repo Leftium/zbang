@@ -8,6 +8,7 @@
 - Use Vite content-hashed JSON assets so unchanged catalogs remain browser/CDN cached across deploys.
 - Preserve locally persisted user-owned bangs.
 - Keep normal search and provider-forwarded bangs usable if local catalog loading fails.
+- Reduce the default shipped catalog transfer, parse, and memory cost while keeping long-tail bangs available.
 
 ## Non-Goals
 
@@ -15,19 +16,38 @@
 - No client-side catalog generation in production.
 - No IndexedDB cache for shipped provider catalogs.
 - No stale-catalog reminder UX.
-- No semantic changes to Kagi or DuckDuckGo catalog generation unless required by the refactor.
+- No tag removal or tag schema changes as part of catalog size reduction.
+- No user-facing provider choices beyond Kagi and DuckDuckGo.
 
 ## Generated Catalogs
 
 The filenames intentionally keep the `zbang` prefix because these files are zbang-format catalogs consumed by Whiz, not
 provider-native Kagi or DuckDuckGo bang files.
 
-Final provider catalogs should be generated into a source-controlled top-level catalog directory:
+Provider catalogs should be generated into a source-controlled top-level catalog directory.
+
+Stage 1 shipped one full catalog per provider:
 
 ```text
 catalogs/zbang.catalog.kagi.json
 catalogs/zbang.catalog.duckduckgo.json
 ```
+
+Stage 2 should split each provider catalog into default popular records and on-demand extended records:
+
+```text
+catalogs/zbang.catalog.kagi.popular.json
+catalogs/zbang.catalog.kagi.extended.json
+catalogs/zbang.catalog.duckduckgo.popular.json
+catalogs/zbang.catalog.duckduckgo.extended.json
+```
+
+The split definitions are:
+
+- `popular`: records with `popularity > 0`
+- `extended`: records with `popularity === 0`
+
+For Kagi, split after Kagi-specific popularity boosts are applied so boosted Kagi-native bangs remain in the popular catalog. Do not duplicate popular records in the extended catalog. Runtime "full" catalog behavior is the combination of popular plus extended records in memory.
 
 Add a short README in `catalogs/` explaining that catalog JSON files are generated artifacts and should not be edited by hand.
 
@@ -35,8 +55,16 @@ Resolve catalog asset URLs with relative `new URL(..., import.meta.url)` imports
 
 ```ts
 const CATALOG_URLS = {
-	duckduckgo: new URL('../../catalogs/zbang.catalog.duckduckgo.json', import.meta.url).href,
-	kagi: new URL('../../catalogs/zbang.catalog.kagi.json', import.meta.url).href
+	duckduckgo: {
+		popular: new URL('../../catalogs/zbang.catalog.duckduckgo.popular.json', import.meta.url)
+			.href,
+		extended: new URL('../../catalogs/zbang.catalog.duckduckgo.extended.json', import.meta.url)
+			.href
+	},
+	kagi: {
+		popular: new URL('../../catalogs/zbang.catalog.kagi.popular.json', import.meta.url).href,
+		extended: new URL('../../catalogs/zbang.catalog.kagi.extended.json', import.meta.url).href
+	}
 };
 ```
 
@@ -46,11 +74,11 @@ A nested path like `generated/catalogs/` can be introduced later if the project 
 
 ## Runtime Model
 
-The launcher should load the selected provider catalog on mount.
+The launcher should load the selected provider's popular catalog on mount. Extended catalogs are lazy-loaded and session-only.
 
 Loading flow:
 
-1. Resolve the selected bang provider to its catalog asset URL.
+1. Resolve the selected bang provider and catalog variant to a catalog asset URL.
 2. Fetch the JSON asset lazily from that URL.
 3. Validate the response shape and provider identity.
 4. Use the catalog in memory.
@@ -60,6 +88,19 @@ Loading flow:
 The first implementation should load on mount for simplicity. Further optimization can delay loading until bang functionality is first needed if startup performance requires it.
 
 Known acceptable tradeoff: persisted settings initialize in `onMount`, while the launcher catalog effect can start from the default `kagi` setting. A user with a persisted non-default bang provider may briefly download the default Kagi catalog before the selected provider catalog. This can be optimized later with a settings initialization flag if first-load network behavior becomes important.
+
+Stage 2 runtime behavior:
+
+- `loadShippedBangCatalog(provider)` should keep returning the selected provider's popular catalog by default.
+- `loadShippedBangCatalog(provider, 'popular')` should load only the popular catalog.
+- `loadShippedBangCatalog(provider, 'extended')` should load only the extended catalog.
+- Code that needs full coverage should combine popular plus extended records and rank the combined list.
+- Loaded catalog promises/results should be cached per provider and variant for the current page or service-worker lifetime to avoid repeated fetch and parse work.
+- The bang picker and bang mode should always show separate provider groups for popular and extended bangs.
+- The extended group should be visible before the extended catalog is loaded, but it should contain a load action/status instead of bang records.
+- Selecting the extended load action should load extended bangs only for the current session and should not change settings.
+- Launcher direct bang execution, `/go`, and service-worker `/go` handling should automatically load extended bangs and retry resolution when popular bangs leave bang-looking tokens unresolved.
+- If extended loading fails during execution fallback, normal search and provider-forwarded bang fallback should remain usable.
 
 ## Persistence Model
 
@@ -85,9 +126,10 @@ The CLI should:
 
 1. Download upstream provider source files directly from Node.
 2. Generate provider-native final catalogs using the existing normalization, ranking, and dedupe rules.
-3. Validate generated catalogs before writing them.
-4. Write final JSON files into `catalogs/`.
-5. Print source hashes, record counts, dedupe counts, output byte sizes, and output paths.
+3. Split each generated provider catalog into popular and extended variants.
+4. Validate generated catalogs before writing them.
+5. Write final JSON files into `catalogs/`.
+6. Print source hashes, record counts, dedupe counts, output byte sizes, and output paths.
 
 Suggested package script:
 
@@ -153,9 +195,45 @@ Keep settings for:
 
 Shipped catalog artifacts intentionally omit `generatedAt`; stale catalog age should no longer drive user-facing reminders.
 
+Stage 2 should keep the provider setting user-facing as Kagi or DuckDuckGo only. Popular and extended are implementation variants, not separate providers.
+
+Defer a persistent "always load extended bangs" setting unless actual usage shows it is needed. If added later, model it as a behavior setting such as `Extended bangs: On demand / Always load`, not as additional provider catalog choices.
+
+## Bang Picker UX
+
+The bang picker and bang mode should present provider records as separate groups:
+
+- `My bangs`
+- `Popular Kagi bangs` or `Popular DuckDuckGo bangs`
+- `Extended Kagi bangs` or `Extended DuckDuckGo bangs`
+
+The extended group should always be visible when bang groups are visible.
+
+Before the extended catalog is loaded, the extended group should show one action row:
+
+```text
+Load extended Kagi bangs
+```
+
+While loading, show a status row such as:
+
+```text
+Loading extended Kagi bangs
+```
+
+If loading fails, show a retryable failure row such as:
+
+```text
+Could not load extended Kagi bangs
+```
+
+After the extended catalog loads, the extended group should behave like a normal filtered provider group using only extended records. Popular and extended results should not be merged in the picker; keeping them separate makes the default catalog boundary visible and prevents long-tail results from burying high-confidence popular results.
+
+The extended group load state is session-only. Reloading the app returns to popular-only provider records until the user loads extended bangs again, except for automatic execution fallback.
+
 ## Current Progress
 
-Completed:
+Stage 1 completed:
 
 - Extracted browser-independent catalog generation into `src/lib/bang-catalog.ts`.
 - Added `scripts/generate-catalogs.ts` and `npm run generate:catalogs`.
@@ -172,9 +250,24 @@ Completed:
 - Removed runtime source refresh, source API route, and non-user IndexedDB stores.
 - Removed transitional generated/fetched timestamp fields from catalog generation types.
 
-Remaining:
+Stage 1 remaining:
 
 - Verify in a browser/network trace whether the launcher downloads only the selected provider catalog on first mount.
+
+Stage 2 planned: popular/extended catalog split.
+
+Milestones:
+
+1. Update catalog generation types and CLI output mapping for popular and extended variants.
+2. Split generated catalogs by `popularity > 0` and `popularity === 0` after provider-specific normalization, Kagi boosts, dedupe, and sorting.
+3. Bump `generatorVersion`, regenerate the four catalog files, and remove duplicated full-catalog artifacts if they are no longer used.
+4. Update the shipped catalog loader to support provider plus variant URLs, per-variant caching, and combined full-resolution helpers where needed.
+5. Update launcher bang state to load popular by default and show `My`, `Popular provider`, and `Extended provider` groups.
+6. Add extended group load, loading, error, and retry rows without making extended load persistent.
+7. Update launcher bang execution to retry with extended records when unresolved bang tokens remain.
+8. Update `/go` and service-worker `/go` resolution to use the same popular-first, extended-retry behavior.
+9. Update catalog documentation and size/performance notes after regeneration.
+10. Verify that initial runtime fetches only the selected provider's popular catalog and that extended fetches happen only after explicit picker load or execution fallback.
 
 ## API and Store Cleanup
 
@@ -232,6 +325,8 @@ Local build observations after the shipped-catalog refactor:
 - The launcher JS contains catalog asset URL strings, not the JSON catalog payloads.
 - The Vite manifest associates both catalog JSON assets with the launcher chunk because both URLs are statically imported. Browser/network verification should confirm whether SvelteKit or browser preload behavior fetches both catalogs, or whether only the selected provider catalog is downloaded by the runtime `fetch()` call.
 
+Stage 2 should replace these observations with popular and extended asset measurements. Measure compressed transfer first, then parse time and heap impact.
+
 ## Suggested Sequence
 
 1. Extract catalog generation into browser-independent functions while preserving existing runtime behavior. Done.
@@ -243,3 +338,7 @@ Local build observations after the shipped-catalog refactor:
 7. Remove runtime source refresh, stale reminders, and settings refresh UI. Done.
 8. Remove non-user IndexedDB stores and APIs. Done.
 9. Verify build output and deployed asset cache headers.
+10. Split shipped provider catalogs into popular and extended variants.
+11. Add separate popular and extended bang groups, with manual extended loading in the picker.
+12. Add automatic extended retry for direct bang execution.
+13. Verify network behavior, cache headers, catalog sizes, parse time, and heap impact for the split assets.
