@@ -38,6 +38,12 @@
 	import { getBangExecutionTargetUrls, getSearchUrl } from '$lib/launcher/bang-resolver';
 	import { getCompromiseSignals, unique } from '$lib/launcher/compromise-signals';
 	import { getLauncherMode, launcherModes } from '$lib/launcher/modes';
+	import {
+		createSharedMyBangHash,
+		readSharedMyBangHash,
+		removeSharedMyBangHash,
+		type SharedMyBangDraft
+	} from '$lib/launcher/mybang-share';
 	import { getKeywordScoreBoost, rankItems, scoreInsight } from '$lib/launcher/ranking';
 	import type {
 		BangComposition,
@@ -327,6 +333,8 @@
 	let bangPickerPrimaryInitialized = false;
 	let hadSettingsFilter = false;
 	let skipNextSettingsFilterReset = false;
+	let myBangsLoaded = false;
+	let activeSharedMyBangPayload = '';
 	let shortcutScrollFrame: number | undefined;
 	let shortcutScrollRequestId = 0;
 	const launcherTargetElements = new Map<string, HTMLElement>();
@@ -428,8 +436,10 @@
 
 	onMount(() => {
 		void loadMyBangs();
+		window.addEventListener('hashchange', openSharedMyBangEditorFromHash);
 
 		return () => {
+			window.removeEventListener('hashchange', openSharedMyBangEditorFromHash);
 			shortcutScrollRequestId += 1;
 			if (shortcutScrollFrame !== undefined) {
 				cancelAnimationFrame(shortcutScrollFrame);
@@ -504,6 +514,16 @@
 		url.searchParams.set('q', value.trim());
 
 		return url.toString();
+	}
+
+	function getMyBangShareHref(draft: SharedMyBangDraft) {
+		const hash = createSharedMyBangHash(draft);
+		return hash ? `/bang${hash}` : undefined;
+	}
+
+	function getMyBangShareUrl(draft: SharedMyBangDraft) {
+		const href = getMyBangShareHref(draft);
+		return href ? new URL(resolve(href), window.location.href).toString() : undefined;
 	}
 
 	function search(provider = settings.searchProvider) {
@@ -730,6 +750,8 @@
 
 	async function loadMyBangs() {
 		myBangs = await readMyBangs();
+		myBangsLoaded = true;
+		openSharedMyBangEditorFromHash();
 	}
 
 	function insertBang(code: string) {
@@ -783,6 +805,7 @@
 	}
 
 	async function saveMyBangDraft(draft: MyBangEditorSave) {
+		const savingSharedImport = myBangEditor?.source === 'share';
 		const now = new Date().toISOString();
 		const nextItem = draft.item
 			? updateMyBangFromDraft(draft.item, draft, now)
@@ -793,6 +816,7 @@
 
 		myBangs = nextMyBangs;
 		myBangEditor = undefined;
+		if (savingSharedImport) clearSharedMyBangHash();
 		await persistMyBangs(nextMyBangs);
 	}
 
@@ -811,8 +835,33 @@
 	}
 
 	function closeMyBangEditor() {
+		if (myBangEditor?.source === 'share') clearSharedMyBangHash();
 		myBangEditor = undefined;
 		requestAnimationFrame(focusInput);
+	}
+
+	function openSharedMyBangEditorFromHash() {
+		if (!myBangsLoaded) return;
+
+		const state = readSharedMyBangHash(window.location.hash);
+		if (!state || state.payload === activeSharedMyBangPayload) return;
+
+		activeSharedMyBangPayload = state.payload;
+		resetShortcutState();
+		myBangEditor = {
+			key: `share-${Date.now()}-${createMyBangId()}`,
+			draft: state.draft,
+			showValidation: true,
+			source: 'share'
+		};
+	}
+
+	function clearSharedMyBangHash() {
+		const nextHash = removeSharedMyBangHash(window.location.hash);
+		const nextUrl = `${window.location.pathname}${window.location.search}${nextHash}`;
+
+		activeSharedMyBangPayload = '';
+		window.history.replaceState(window.history.state, '', nextUrl);
 	}
 
 	async function persistMyBangs(items: MyBangRecord[]) {
@@ -2411,6 +2460,13 @@
 		await navigator.clipboard.writeText(getLauncherShareUrl());
 	}
 
+	async function copyMyBangShareUrlToClipboard(draft: SharedMyBangDraft) {
+		const url = getMyBangShareUrl(draft);
+		if (!url) return;
+
+		await navigator.clipboard.writeText(url);
+	}
+
 	async function pasteFromClipboard() {
 		value = await navigator.clipboard.readText();
 		textareaElement?.focus();
@@ -2505,7 +2561,9 @@
 		runTargetAction(getPrimaryAction(primaryLauncherTarget), primaryLauncherTarget);
 	}
 
-	function runStagedActionMenuAction(action: LauncherRunnableAction) {
+	function runStagedActionMenuAction(action: LauncherRunnableAction, event?: MouseEvent) {
+		event?.preventDefault();
+
 		const target = stagedActionMenu?.target;
 
 		if (target) focusLauncherTarget(target);
@@ -3343,6 +3401,7 @@
 			if (source === 'my') {
 				return [
 					getBangEditAction(item, itemId, true),
+					getBangShareAction(item, itemId),
 					getBangMembershipAction(item, source, itemId),
 					getBangDefaultSearchAction(item, itemId)
 				];
@@ -3367,6 +3426,7 @@
 			return [
 				insertAction,
 				getBangEditAction(item, itemId),
+				getBangShareAction(item, itemId),
 				getBangMembershipAction(item, source, itemId),
 				getBangDefaultSearchAction(item, itemId)
 			];
@@ -3390,6 +3450,26 @@
 			title: `Edit ${item.name}`,
 			safeForEnter,
 			run: () => openMyBangEditor(item)
+		};
+	}
+
+	function getBangShareAction(item: ZbangRecord, itemId: string): LauncherItemAction {
+		const draft = getSharedMyBangDraft(item);
+
+		return {
+			id: `${itemId}.share`,
+			label: 'Share',
+			title: `Copy share URL for ${item.name}`,
+			href: getMyBangShareHref(draft),
+			run: () => copyMyBangShareUrlToClipboard(draft)
+		};
+	}
+
+	function getSharedMyBangDraft(item: ZbangRecord): SharedMyBangDraft {
+		return {
+			name: item.name,
+			code: item.code.map(normalizeBangCode),
+			urlTemplate: item.urls.s
 		};
 	}
 
@@ -3999,35 +4079,54 @@
 					</div>
 				{:else}
 					{@const actionArmed = action.id === armedAction?.id}
-					<button
-						class:armed={actionArmed}
-						class="target-action-menu-item staged-action-menu-item compact-action-menu-item"
-						role="menuitem"
-						onpointerdown={(event) => event.preventDefault()}
-						onclick={() => runStagedActionMenuAction(action)}
-					>
-						<span class="staged-action-menu-label">{action.title ?? action.label}</span>
-						<span class="compact-action-enter-slot">
-							{#if actionArmed}<span class="shortcut-label enter-shortcut-label">↵</span
-								>{:else}<span
-									class="shortcut-label enter-shortcut-label compact-action-invisible"
-									aria-hidden="true">↵</span
-								>{/if}
-						</span>
-						<span class="compact-action-menu-shortcut-slot">
-							{#if shortcutLabel}<span
-									class="shortcut-label menu-select-shortcut-label"
-									title={`Select ${action.title ?? action.label}`}>{shortcutLabel}</span
-								>{:else}<span
-									class="shortcut-label menu-select-shortcut-label compact-action-invisible"
-									aria-hidden="true">{itemShortcutLabels[0]}</span
-								>{/if}
-						</span>
-					</button>
+					{#if action.href}
+						<a
+							class:armed={actionArmed}
+							class="target-action-menu-item staged-action-menu-item compact-action-menu-item"
+							href={resolve(action.href)}
+							role="menuitem"
+							onclick={(event) => runStagedActionMenuAction(action, event)}
+						>
+							{@render stagedActionMenuActionContent(action, actionArmed, shortcutLabel)}
+						</a>
+					{:else}
+						<button
+							class:armed={actionArmed}
+							class="target-action-menu-item staged-action-menu-item compact-action-menu-item"
+							role="menuitem"
+							onpointerdown={(event) => event.preventDefault()}
+							onclick={() => runStagedActionMenuAction(action)}
+						>
+							{@render stagedActionMenuActionContent(action, actionArmed, shortcutLabel)}
+						</button>
+					{/if}
 				{/if}
 			{/each}
 		</div>
 	{/if}
+{/snippet}
+
+{#snippet stagedActionMenuActionContent(
+	action: LauncherRunnableAction,
+	actionArmed: boolean,
+	shortcutLabel: string | undefined
+)}
+	<span class="staged-action-menu-label">{action.title ?? action.label}</span>
+	<span class="compact-action-enter-slot">
+		{#if actionArmed}<span class="shortcut-label enter-shortcut-label">↵</span>{:else}<span
+				class="shortcut-label enter-shortcut-label compact-action-invisible"
+				aria-hidden="true">↵</span
+			>{/if}
+	</span>
+	<span class="compact-action-menu-shortcut-slot">
+		{#if shortcutLabel}<span
+				class="shortcut-label menu-select-shortcut-label"
+				title={`Select ${action.title ?? action.label}`}>{shortcutLabel}</span
+			>{:else}<span
+				class="shortcut-label menu-select-shortcut-label compact-action-invisible"
+				aria-hidden="true">{itemShortcutLabels[0]}</span
+			>{/if}
+	</span>
 {/snippet}
 
 {#snippet insightItem(item: LauncherItem)}
@@ -4185,7 +4284,9 @@
 		session={myBangEditor}
 		{myBangs}
 		providerBangs={bangCatalog?.items ?? []}
+		getShareHref={getMyBangShareHref}
 		onSave={saveMyBangDraft}
+		onShare={copyMyBangShareUrlToClipboard}
 		onCancel={closeMyBangEditor}
 		onDelete={deleteMyBang}
 	/>
@@ -4244,6 +4345,7 @@
 		font-weight: 700;
 		line-height: 1.2;
 		text-align: left;
+		text-decoration: none;
 		box-shadow: none;
 	}
 

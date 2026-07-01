@@ -1,20 +1,22 @@
 <script module lang="ts">
 	import type { MyBangRecord as EditorMyBangRecord } from '$lib/bang-data';
+	import type { SharedMyBangDraft } from '$lib/launcher/mybang-share';
 
 	export type MyBangEditorSession = {
 		key: string;
 		item?: EditorMyBangRecord;
+		draft?: SharedMyBangDraft;
+		showValidation?: boolean;
+		source?: 'share';
 	};
 
-	export type MyBangEditorSave = {
+	export type MyBangEditorSave = SharedMyBangDraft & {
 		item?: EditorMyBangRecord;
-		name: string;
-		code: string[];
-		urlTemplate: string;
 	};
 </script>
 
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { tick } from 'svelte';
 
 	import type { BangProviderId, MyBangRecord, ZbangRecord } from '$lib/bang-data';
@@ -27,14 +29,18 @@
 		session,
 		myBangs,
 		providerBangs,
+		getShareHref,
 		onSave,
+		onShare,
 		onCancel,
 		onDelete
 	}: {
 		session: MyBangEditorSession;
 		myBangs: MyBangRecord[];
 		providerBangs: ZbangRecord[];
+		getShareHref: (draft: SharedMyBangDraft) => string | undefined;
 		onSave: (draft: MyBangEditorSave) => void | Promise<void>;
+		onShare: (draft: SharedMyBangDraft) => void | Promise<void>;
 		onCancel: () => void;
 		onDelete: (item: MyBangRecord) => void | Promise<void>;
 	} = $props();
@@ -62,6 +68,8 @@
 	const parsedCodes = $derived(parseBangCodeInput(codesText));
 	const validationErrors = $derived(getValidationErrors());
 	const firstInvalidField = $derived(getFirstInvalidField(validationErrors));
+	const shareDraft = $derived(getShareDraft());
+	const shareHref = $derived(isDraftShareable() ? getShareHref(shareDraft) : undefined);
 	const providerWarnings = $derived(getProviderWarnings(parsedCodes.codes));
 	const urlWarnings = $derived(getUrlWarnings(urlTemplate.trim()));
 	const dirty = $derived(getDraftSnapshot() !== initialSnapshot);
@@ -71,11 +79,15 @@
 		if (session.key === activeSessionKey) return;
 
 		activeSessionKey = session.key;
-		name = session.item?.name ?? '';
-		codesText = session.item ? formatBangCodes(session.item.code) : '';
-		urlTemplate = session.item?.urls.s ?? '';
+		name = session.draft?.name ?? session.item?.name ?? '';
+		codesText = session.draft
+			? formatBangCodes(session.draft.code)
+			: session.item
+				? formatBangCodes(session.item.code)
+				: '';
+		urlTemplate = session.draft?.urlTemplate ?? session.item?.urls.s ?? '';
 		initialSnapshot = getDraftSnapshot();
-		submitAttempted = false;
+		submitAttempted = Boolean(session.showValidation);
 		deleteConfirm = false;
 		saving = false;
 
@@ -115,6 +127,24 @@
 		if (errors.urlTemplate) return 'urlTemplate';
 
 		return undefined;
+	}
+
+	function getShareDraft(): SharedMyBangDraft {
+		return {
+			name: name.trim(),
+			code: parsedCodes.codes,
+			urlTemplate: urlTemplate.trim()
+		};
+	}
+
+	function isDraftShareable() {
+		return (
+			Boolean(name.trim()) &&
+			parsedCodes.codes.length > 0 &&
+			parsedCodes.invalidTokens.length === 0 &&
+			parsedCodes.duplicateCodes.length === 0 &&
+			!getUrlError(urlTemplate.trim())
+		);
 	}
 
 	function getUrlError(value: string) {
@@ -224,6 +254,18 @@
 		} finally {
 			saving = false;
 		}
+	}
+
+	async function shareEditorDraft(event: MouseEvent) {
+		event.preventDefault();
+
+		if (!isDraftShareable()) {
+			submitAttempted = true;
+			focusField(getFirstInvalidField(getValidationErrors()) ?? 'name');
+			return;
+		}
+
+		await onShare(shareDraft);
 	}
 
 	async function requestDelete() {
@@ -346,6 +388,13 @@
 					</button>
 				{/if}
 				<span class="footer-spacer"></span>
+				{#if shareHref}
+					<a class="editor-share-link" href={resolve(shareHref)} onclick={shareEditorDraft}>
+						Share
+					</a>
+				{:else}
+					<button type="button" disabled>Share</button>
+				{/if}
 				<button type="button" onclick={requestCancel}>Cancel</button>
 				<button type="submit" disabled={saving}>Save</button>
 			</footer>
@@ -498,6 +547,28 @@
 
 	button {
 		margin: 0;
+	}
+
+	.editor-share-link {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0;
+		min-height: 2.25rem;
+		padding: 0.35rem 0.75rem;
+		color: var(--buttonText);
+		background: var(--buttonBg);
+		border: 1px solid var(--buttonBorder);
+		border-radius: var(--nc-radius);
+		font-weight: 700;
+		line-height: 1.2;
+		text-decoration: none;
+		box-shadow: var(--buttonShadow);
+	}
+
+	.editor-share-link:hover,
+	.editor-share-link:focus {
+		text-decoration: none;
 	}
 
 	.danger-confirm {

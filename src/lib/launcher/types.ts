@@ -5,6 +5,7 @@ export type LauncherItemAction = {
 	id: string;
 	label: string;
 	title?: string;
+	href?: string;
 	safeForEnter?: boolean;
 	run: () => void | Promise<void>;
 };
