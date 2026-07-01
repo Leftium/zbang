@@ -12,6 +12,7 @@
 		text: string;
 	};
 	type StatusHint = { key: string; label: string };
+	type TokenCount = { count: number; href?: string; title?: string };
 
 	let {
 		textareaElement = $bindable(),
@@ -19,6 +20,7 @@
 		displayValue,
 		previewSegments,
 		statusHint,
+		tokenCount,
 		fullscreen = $bindable(false),
 		wordwrap = $bindable(true),
 		enterNewlineRestored = $bindable(false),
@@ -34,6 +36,7 @@
 		displayValue?: string;
 		previewSegments?: PreviewSegment[];
 		statusHint?: StatusHint;
+		tokenCount?: TokenCount;
 		fullscreen?: boolean;
 		wordwrap?: boolean;
 		enterNewlineRestored?: boolean;
@@ -208,6 +211,21 @@
 			<div class="counts">
 				{#if lineCount > 1}{lineCount}L{/if}
 				{wordCount}w {charCount}c
+				{#if tokenCount}
+					{#if tokenCount.href}
+						<a
+							class="token-count"
+							href={tokenCount.href}
+							target="_blank"
+							rel="noopener noreferrer"
+							title={tokenCount.title ?? 'Open token counter'}>~{tokenCount.count}t</a
+						>
+					{:else}
+						<span class="token-count" title={tokenCount.title ?? 'Estimated tokens'}
+							>~{tokenCount.count}t</span
+						>
+					{/if}
+				{/if}
 			</div>
 
 			<div>
@@ -363,8 +381,22 @@
 	}
 
 	.counts {
+		display: inline-flex;
+		gap: 0.35rem;
 		justify-content: center;
 		white-space: nowrap;
+	}
+
+	.token-count {
+		color: var(--nc-primary);
+		font-weight: var(--font-weight-6);
+		text-decoration: none;
+	}
+
+	a.token-count:hover,
+	a.token-count:focus {
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
 	}
 
 	.status-hint {

@@ -97,6 +97,34 @@
 	const shortcutDelay = 250;
 	const settingsMatchThreshold = 0.4;
 	const bangFanoutAckTimeoutMs = 2500;
+	const tokenCounterUrl = 'https://hcodx.com/tools/gpt-4o-token-counter';
+	const tokenCounterMaxUrlLength = 6000;
+	const aiBangCodes = new Set([
+		'!ai',
+		'!aichat',
+		'!answer',
+		'!as',
+		'!assistant',
+		'!asst',
+		'!cgpt',
+		'!chat',
+		'!chatgpt',
+		'!claude',
+		'!copilot',
+		'!discuss',
+		'!duckai',
+		'!fast',
+		'!fgpt',
+		'!gemini',
+		'!grok',
+		'!llm',
+		'!mistral',
+		'!perplexity',
+		'!phind',
+		'!poe'
+	]);
+	const aiBangPattern =
+		/\b(?:anthropic|chatgpt|claude|copilot|fastgpt|gemini|grok|llama|llm|mistral|openai|perplexity|phind)\b|duck\.?ai|kagi assistant/i;
 	const launcherGroupItemLimits: Record<string, number> = {
 		'bangs.my': 8,
 		'bangs.provider': 8
@@ -171,6 +199,7 @@
 		kind: 'committed' | 'shortcut-staged' | 'bang-picker-staged';
 		text: string;
 	};
+	type TokenCount = { count: number; href?: string; title: string };
 	type TextRange = { start: number; end: number };
 	type StatusHint = { key: string; label: string };
 	type StagedActionMenu = {
@@ -351,6 +380,7 @@
 	const textareaPlaceholder = $derived(getTextareaPlaceholder());
 	const inputDisplayValue = $derived(getInputDisplayValue());
 	const inputPreviewSegments = $derived(getInputPreviewSegments());
+	const inputTokenCount = $derived(getInputTokenCount());
 	const stagedShortcutStatusHint = $derived(getStagedShortcutStatusHint());
 	const stagedActionMenu = $derived(getStagedActionMenu());
 	const selectablePrimaryTargets = $derived(getSelectablePrimaryTargets());
@@ -580,6 +610,92 @@
 		const payload = composition.payloadText ? ` for "${composition.payloadText}"` : '';
 
 		return `${targets}${payload}`;
+	}
+
+	function getInputTokenCount(): TokenCount | undefined {
+		const payloadText = bangComposition.payloadText.trim();
+
+		if (!payloadText || !hasAiBangComposition(bangComposition)) return undefined;
+
+		const href = getTokenCounterHref(payloadText);
+
+		return {
+			count: estimateTokens(payloadText),
+			href,
+			title: href
+				? 'Open GPT-4o token counter in HCODX'
+				: 'Estimated tokens; payload is too long for a token-counter permalink'
+		};
+	}
+
+	function hasAiBangComposition(composition: BangComposition) {
+		return (
+			composition.localTargets.some(
+				({ item, token }) => isAiBangToken(token) || isAiBangRecord(item)
+			) || composition.forwardedTokens.some(isAiBangToken)
+		);
+	}
+
+	function isAiBangRecord(item: ZbangRecord) {
+		const text = [item.name, item.urls.s, item.code.join(' '), item.tags.join(' ')].join(' ');
+
+		return aiBangPattern.test(text) || item.code.some(isAiBangToken);
+	}
+
+	function isAiBangToken(token: string) {
+		const normalized = normalizeBangCode(token);
+
+		return (
+			aiBangCodes.has(normalized) ||
+			/^!(?:chatgpt|claude|deepseek|gemini|gpt-|grok|llama|mistral|openai|perplexity|phind|poe)(?:[\w.-]+)?$/.test(
+				normalized
+			)
+		);
+	}
+
+	function estimateTokens(text: string) {
+		const trimmed = text.trim();
+		if (!trimmed) return 0;
+
+		const chars = [...trimmed].length;
+		const words = trimmed.match(/\S+/g)?.length ?? 0;
+		const cjkChars =
+			trimmed.match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu)
+				?.length ?? 0;
+		const symbolChars = trimmed.match(/[{}[\]();,:.+\-*/=_`"'<>|\\#$%^&~]/g)?.length ?? 0;
+
+		if (cjkChars > chars * 0.4) {
+			return Math.ceil(Math.max(cjkChars * 0.8, chars / 2));
+		}
+
+		return Math.ceil(Math.max(words * 1.15, chars / 4.7) + symbolChars * 0.12);
+	}
+
+	function getTokenCounterHref(text: string) {
+		const state = JSON.stringify({ t: text, m: 'gpt-4o' });
+		const encoded = encodeBase64Utf8(state);
+
+		if (!encoded) return undefined;
+
+		const href = `${tokenCounterUrl}#s=${encoded}`;
+
+		return href.length <= tokenCounterMaxUrlLength ? href : undefined;
+	}
+
+	function encodeBase64Utf8(value: string) {
+		if (typeof TextEncoder === 'undefined' || typeof btoa !== 'function') {
+			return undefined;
+		}
+
+		const bytes = new TextEncoder().encode(value);
+		let binary = '';
+		const chunkSize = 0x8000;
+
+		for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+			binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+		}
+
+		return btoa(binary);
 	}
 
 	async function loadBangCatalog(provider: BangProviderId) {
@@ -3670,6 +3786,7 @@
 			displayValue={inputDisplayValue}
 			previewSegments={inputPreviewSegments}
 			statusHint={stagedShortcutStatusHint}
+			tokenCount={inputTokenCount}
 			bind:fullscreen
 			bind:wordwrap
 			bind:enterNewlineRestored
