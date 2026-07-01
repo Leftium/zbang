@@ -2474,17 +2474,19 @@
 
 	function getDefaultActiveLauncherGroup() {
 		if (!bangPickerActive) return undefined;
+		if (myBangs.length > 0) return undefined;
 
-		const myGroup = visibleLauncherGroups.find((group) => group.id === 'bangs.my');
 		const providerGroup = visibleLauncherGroups.find((group) => group.id === 'bangs.provider');
 
 		if (!providerGroup || getVisibleGroupItems(providerGroup).length === 0) return undefined;
-		if (myGroup && getVisibleGroupItems(myGroup).length > 0) return undefined;
 
 		return providerGroup;
 	}
 
 	function getDefaultBangPickerPrimaryTarget() {
+		const myBangTarget = getInitialMyBangPickerTarget();
+		if (myBangTarget) return myBangTarget;
+
 		const group = getDefaultActiveLauncherGroup() ?? activeLauncherGroup;
 		const groupTarget = group
 			? getVisibleGroupItems(group).flatMap((item) => createSelectableItemTarget(item, group.id))[0]
@@ -2492,6 +2494,19 @@
 
 		return (
 			groupTarget ?? visibleLauncherItems.flatMap((item) => createSelectableItemTarget(item))[0]
+		);
+	}
+
+	function getInitialMyBangPickerTarget() {
+		if (!bangPickerActive || myBangs.length === 0) return undefined;
+
+		const myGroup = visibleLauncherGroups.find((group) => group.id === 'bangs.my');
+		if (!myGroup) return undefined;
+
+		return (
+			getVisibleGroupItems(myGroup).flatMap((item) =>
+				createSelectableItemTarget(item, myGroup.id)
+			)[0] ?? createSelectableGroupTarget(myGroup)
 		);
 	}
 
@@ -3825,9 +3840,6 @@
 					>{token} via {searchProviderLabels[settings.searchProvider]}</span
 				>
 			{/each}
-			{#if bangComposition.payloadText}
-				<span class="composition-chip payload-chip">Query: {bangComposition.payloadText}</span>
-			{/if}
 		</div>
 	{/if}
 
@@ -4118,12 +4130,6 @@
 	.forwarded-chip {
 		color: var(--nc-tx-1);
 		background: var(--nc-surface-2);
-	}
-
-	.payload-chip {
-		max-width: 100%;
-		color: var(--nc-tx-2);
-		background: var(--nc-surface-1);
 	}
 
 	.bang-fanout-message {
