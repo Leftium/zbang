@@ -162,7 +162,8 @@ Examples:
 
 - Arrow keys move focus on desktop.
 - Item focus shortcuts move focus to visible item slots.
-- Group focus shortcuts move focus to group headers.
+- Group focus shortcuts switch groups and move focus to the first visible item in the
+  target group, falling back to the group header when the group has no visible item.
 
 Focus should be visually obvious because later actions apply to the focused or shortcut-addressed target.
 
@@ -407,10 +408,13 @@ Default target action levels:
 
 Group examples:
 
-- `O`: focus the previous group slot and arm its primary action.
-- `I`: focus the current group slot and arm its primary action.
+- `O`: switch to the previous group slot, focus its first visible item, and arm that
+  item's primary action.
+- `I`: switch to the current group slot, focus its first visible item, and arm that
+  item's primary action.
 - `P`, `PP`, `PPP`: keep moving through the next group slot, wrapping as needed.
-- `O` then `Enter`: run the previous group's primary action.
+- `O` then `Enter`: run the previous group's first visible item primary action, or the
+  group primary action when no item is visible.
 
 Opening an action menu from a staged target shortcut must not replace the active parent shortcut context. The addressed launcher target remains captured until the staged sequence confirms, downgrades, or cancels.
 
@@ -557,7 +561,9 @@ The visual design should make Backspace-as-cancel discoverable while the shortcu
 
 Groups should act like targets rather than passive section headers.
 
-Selecting a group should focus the group header and make it the active group for item shortcut assignment when relevant.
+Selecting a group shortcut should make that group active for item shortcut assignment and focus the
+first visible item in the group when possible. Directly selecting a group header should still focus
+the group header.
 
 Focus and active group should usually be the same concept for group targets. Focusing a group makes it active. Focusing an item makes that item's parent group active. A separate active group state should only exist as an implementation detail if needed to preserve focus across nested menus or transient UI updates.
 
@@ -632,9 +638,11 @@ For a custom bang item:
 
 For bang groups:
 
-- `O`, `I`, and `P`: focus previous/current/next group slots.
+- `O`, `I`, and `P`: switch to previous/current/next group slots and focus the first
+  visible item in the target group when possible.
 - Repeated `O` or `P` keeps moving through group slots while the shortcut remains staged.
-- `O` then `Enter`: run the previous group's primary action.
+- `O` then `Enter`: run the previous group's first visible item primary action, or the
+  group primary action when no item is visible.
 
 Bang Management should avoid relying on hidden lists as the main way to switch sources. Group navigation should let users move between My bangs and engine bangs without arrowing through every item.
 
@@ -642,7 +650,8 @@ Bang Management should avoid relying on hidden lists as the main way to switch s
 
 For a settings group:
 
-- Group focus shortcut focuses the setting group header.
+- Group focus shortcut focuses the first visible setting option, falling back to the
+  setting group header when no option is visible.
 - Repeating previous/next group shortcuts keeps moving between setting groups.
 - Group menus can expose actions such as focus first option, expand, collapse, reset, or show matching options.
 

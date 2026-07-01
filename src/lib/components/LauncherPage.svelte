@@ -1224,6 +1224,10 @@
 		return (itemShortcutLabels as readonly string[]).includes(key);
 	}
 
+	function isGroupShortcutLabel(key: string) {
+		return (groupShortcutLabels as readonly string[]).includes(key);
+	}
+
 	function getShortcutItemSlots(): ItemShortcutSlot[] {
 		const anchor = itemShortcutAnchor;
 		if (!anchor) return getDefaultItemShortcutSlots(allShortcutItemTargets);
@@ -1544,8 +1548,15 @@
 
 	function executeStagedShortcutConfirmation(binding: ShortcutBinding) {
 		if (binding.kind === 'target') {
-			focusLauncherTarget(binding.target);
+			if (!isActionMenuLane(binding.lane)) {
+				const target = getShortcutConfirmationTarget(binding.target, binding.lane, binding.key);
 
+				focusLauncherTarget(target);
+				runTargetAction(getPrimaryAction(target), target);
+				return;
+			}
+
+			focusLauncherTarget(binding.target);
 			runTargetAction(getArmedTargetAction(binding), binding.target);
 			return;
 		}
@@ -1709,8 +1720,16 @@
 			return cancelStagedShortcut();
 		}
 
-		if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-			if (moveStagedActionMenuSelection(event.key === 'ArrowDown' ? 1 : -1)) {
+		if (
+			event.key === 'ArrowDown' ||
+			event.key === 'ArrowUp' ||
+			event.key === 'PageDown' ||
+			event.key === 'PageUp'
+		) {
+			if (
+				(event.key === 'ArrowDown' || event.key === 'ArrowUp') &&
+				moveStagedActionMenuSelection(event.key === 'ArrowDown' ? 1 : -1)
+			) {
 				event.preventDefault();
 				return true;
 			}
@@ -1983,7 +2002,7 @@
 		const groupFocusIndex = groupShortcutLabels.findIndex((label) => label === key);
 		if (groupFocusIndex !== -1) {
 			const target = getSnapshotGroupTargets()[groupFocusIndex];
-			if (target) focusLauncherTarget(target);
+			if (target) focusLauncherTargetFromShortcut(target, key);
 			armTripleShortcut(key, 'group-focus', target);
 			return;
 		}
@@ -1995,8 +2014,10 @@
 		const { lane, target } = pendingTripleShortcut;
 
 		if (target && (lane === 'item-focus' || lane === 'group-focus')) {
-			focusLauncherTarget(target);
-			runTargetAction(getPrimaryAction(target), target);
+			const confirmationTarget = getShortcutConfirmationTarget(target, lane, shortcutKey);
+
+			focusLauncherTarget(confirmationTarget);
+			runTargetAction(getPrimaryAction(confirmationTarget), confirmationTarget);
 			return;
 		}
 
@@ -2541,6 +2562,11 @@
 	function focusLauncherTargetFromShortcut(target: PrimaryLauncherTarget, key: string) {
 		const shortcutKey = getShortcutBindingKey(key);
 
+		if (target.kind === 'group' && isGroupShortcutLabel(shortcutKey)) {
+			focusLauncherGroupShortcutTarget(target);
+			return;
+		}
+
 		if (target.kind !== 'item' || !isItemShortcutLabel(shortcutKey)) {
 			focusLauncherTarget(target);
 			return;
@@ -2556,6 +2582,37 @@
 	) {
 		updateItemShortcutAnchorForSelection(target, label, slots);
 		focusLauncherTarget(target);
+	}
+
+	function focusLauncherGroupShortcutTarget(
+		target: Extract<PrimaryLauncherTarget, { kind: 'group' }>
+	) {
+		activeLauncherGroupId = target.group.id;
+		itemShortcutAnchor = undefined;
+
+		focusLauncherTarget(getFirstVisibleGroupItemTarget(target.group) ?? target);
+	}
+
+	function getShortcutConfirmationTarget(
+		target: PrimaryLauncherTarget,
+		lane: ShortcutLane,
+		key: string
+	) {
+		if (
+			lane === 'group-focus' &&
+			target.kind === 'group' &&
+			isGroupShortcutLabel(getShortcutBindingKey(key))
+		) {
+			return getFirstVisibleGroupItemTarget(target.group) ?? target;
+		}
+
+		return target;
+	}
+
+	function getFirstVisibleGroupItemTarget(group: LauncherGroup) {
+		return getVisibleGroupItems(group).flatMap((item) =>
+			createSelectableItemTarget(item, group.id)
+		)[0];
 	}
 
 	function updateItemShortcutAnchorForSelection(
