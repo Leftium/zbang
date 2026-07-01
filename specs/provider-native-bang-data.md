@@ -122,17 +122,17 @@ Kagi relative URLs should become concrete Kagi URLs:
 
 Do not emit `http://bang-provider/...` in final generated data.
 
-Kagi records may still inherit DDG popularity when any Kagi trigger or alias has a compatible DDG match.
+Kagi records may still inherit DDG popularity when the Kagi primary trigger has a compatible DDG match.
 
-Kagi popularity inheritance should use normalized DDG data, but it should not import DDG semantics into Kagi records.
+Kagi popularity inheritance uses DDG data as a ranking signal only; it must not import DDG names, aliases, categories, or URL semantics into Kagi records.
 
-Popularity lookup should consider all Kagi triggers for a record, including the primary trigger and aliases. For each matching DDG trigger, use the best compatible DDG popularity available from normalized DDG data.
+Popularity lookup should consider only the Kagi source record's primary trigger (`t`). Alias-based inheritance was intentionally avoided because DDG-specific aliases can attach unrelated popularity to Kagi-native records. Kagi aliases (`ts`) may still receive code-level ordering hints from matching DDG primary triggers, but those alias hints should not determine the record-level popularity used for popular/extended catalog splitting.
 
-Prefer the highest compatible DDG popularity. Do not prioritize primary-trigger matches over alias matches unless a future source provides explicit alias quality metadata. Kagi continues inheriting DDG popularity in provider-native mode.
+When the Kagi primary trigger has no DDG match, use fallback popularity `1`. When the primary DDG match exists with popularity `0`, preserve `0` unless the record comes from Kagi's Kagi-specific source file (`kagi_bangs.json`) and uses a provider-relative URL. A blanket `DDG popularity 0 -> 1` rule is too broad because every current Kagi extended record is a Kagi source record with a primary DDG popularity of `0`, so that rule would collapse the popular/extended split.
 
-Only inherit a candidate rank when the URL/domain comparison indicates the Kagi and DDG records likely represent the same target or compatible generic search behavior.
+Only inherit DDG popularity when the URL/domain comparison indicates the Kagi and DDG records likely represent the same target or compatible generic search behavior. The source-aware Kagi-native zero-rank floor is the exception: it applies because those provider-relative records define Kagi features rather than DDG target-site equivalents.
 
-Current Kagi-side deduplication already picks the highest DDG-derived rank among Kagi records that normalize to the same URL. Normalizing DDG first adds coverage for cases where the best DDG rank is attached to a DDG sibling/duplicate/alias that the current primary-trigger lookup would otherwise miss.
+Kagi-native boost rules should be source-aware. The safe zero-rank floor applies to `kagi_bangs.json` provider-relative records only. Shared-source records in `bangs.json`, including Kagi-routed `site:` wrappers and search modifiers such as `!ppt`, should not receive this floor unless they are explicitly allowlisted later.
 
 Provider-local deduplication should be URL-identity based for both Kagi and DDG:
 

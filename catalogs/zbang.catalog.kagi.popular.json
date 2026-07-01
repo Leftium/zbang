@@ -1,6 +1,6 @@
 {
 	"provider": "kagi",
-	"generatorVersion": 4,
+	"generatorVersion": 5,
 	"dedupedCount": 61,
 	"sources": [
 		{
@@ -22795,11 +22795,47 @@
 		},
 		{
 			"popularity": 1,
+			"name": "Kagi (past day)",
+			"code": ["!24", "!recent", "!day"],
+			"tags": [],
+			"urls": {
+				"s": "https://kagi.com/search?q=%s&dr=1"
+			}
+		},
+		{
+			"popularity": 1,
+			"name": "Kagi (past month)",
+			"code": ["!month"],
+			"tags": [],
+			"urls": {
+				"s": "https://kagi.com/search?q=%s&dr=3"
+			}
+		},
+		{
+			"popularity": 1,
+			"name": "Kagi (past week)",
+			"code": ["!week"],
+			"tags": [],
+			"urls": {
+				"s": "https://kagi.com/search?q=%s&dr=2"
+			}
+		},
+		{
+			"popularity": 1,
 			"name": "Kagi (past year)",
 			"code": ["!year"],
 			"tags": [],
 			"urls": {
 				"s": "https://kagi.com/search?q=%s&dr=4"
+			}
+		},
+		{
+			"popularity": 1,
+			"name": "Kagi (timer)",
+			"code": ["!tim", "!timer"],
+			"tags": [],
+			"urls": {
+				"s": "https://kagi.com/search?q=timer+%s"
 			}
 		},
 		{
@@ -23115,6 +23151,15 @@
 			"tags": [],
 			"urls": {
 				"s": "https://kagi.com/assistant?profile=ki_deep_research&q=%s"
+			}
+		},
+		{
+			"popularity": 1,
+			"name": "Kagi Assistant - Study",
+			"code": ["!study"],
+			"tags": [],
+			"urls": {
+				"s": "https://kagi.com/assistant?profile=study&q=%s"
 			}
 		},
 		{

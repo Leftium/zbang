@@ -1,6 +1,6 @@
 {
 	"provider": "kagi",
-	"generatorVersion": 4,
+	"generatorVersion": 5,
 	"dedupedCount": 61,
 	"sources": [
 		{
@@ -33463,51 +33463,6 @@
 			"tags": ["Entertainment/Blogs"],
 			"urls": {
 				"s": "https://www.kafto.gr/?s=%s"
-			}
-		},
-		{
-			"popularity": 0,
-			"name": "Kagi (past day)",
-			"code": ["!24", "!recent", "!day"],
-			"tags": [],
-			"urls": {
-				"s": "https://kagi.com/search?q=%s&dr=1"
-			}
-		},
-		{
-			"popularity": 0,
-			"name": "Kagi (past month)",
-			"code": ["!month"],
-			"tags": [],
-			"urls": {
-				"s": "https://kagi.com/search?q=%s&dr=3"
-			}
-		},
-		{
-			"popularity": 0,
-			"name": "Kagi (past week)",
-			"code": ["!week"],
-			"tags": [],
-			"urls": {
-				"s": "https://kagi.com/search?q=%s&dr=2"
-			}
-		},
-		{
-			"popularity": 0,
-			"name": "Kagi (timer)",
-			"code": ["!tim", "!timer"],
-			"tags": [],
-			"urls": {
-				"s": "https://kagi.com/search?q=timer+%s"
-			}
-		},
-		{
-			"popularity": 0,
-			"name": "Kagi Assistant - Study",
-			"code": ["!study"],
-			"tags": [],
-			"urls": {
-				"s": "https://kagi.com/assistant?profile=study&q=%s"
 			}
 		},
 		{

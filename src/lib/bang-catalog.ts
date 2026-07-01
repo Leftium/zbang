@@ -53,6 +53,8 @@ type SourceBangRecord = {
 	u?: string;
 };
 
+type KagiBangSourceId = Extract<BangSourceId, 'kagi-shared' | 'kagi-kagi'>;
+
 type NormalizedBang = CatalogZbangRecord & {
 	codeRanks: Record<string, number>;
 	domains: string[];
@@ -68,7 +70,7 @@ type DuckDuckGoRank = {
 	domain: string;
 };
 
-const GENERATOR_VERSION = 4;
+const GENERATOR_VERSION = 5;
 
 export const BANG_CATALOG_VARIANTS: BangCatalogVariant[] = ['popular', 'extended'];
 
@@ -113,10 +115,10 @@ export function generateKagiCatalog(
 	const duckDuckGoByCode = getDuckDuckGoRankLookup(duckDuckGoSource);
 	const normalized = [
 		...parseSourceRecords(sharedSource).flatMap((record) =>
-			normalizeKagiRecord(record, duckDuckGoByCode)
+			normalizeKagiRecord(record, 'kagi-shared', duckDuckGoByCode)
 		),
 		...parseSourceRecords(kagiSource).flatMap((record) =>
-			normalizeKagiRecord(record, duckDuckGoByCode)
+			normalizeKagiRecord(record, 'kagi-kagi', duckDuckGoByCode)
 		)
 	];
 	const deduped = dedupeNormalizedBangs(normalized);
@@ -239,10 +241,11 @@ function createCatalogItems(items: NormalizedBang[]): CatalogZbangRecord[] {
 
 function normalizeKagiRecord(
 	record: SourceBangRecord,
+	sourceId: KagiBangSourceId,
 	duckDuckGoByCode: Map<string, DuckDuckGoRank>
 ): NormalizedBang[] {
 	return normalizeSourceRecord(record, 'kagi').map((bang) => {
-		const popularity = getKagiRecordPopularity(record, duckDuckGoByCode);
+		const popularity = getKagiRecordPopularity(record, sourceId, duckDuckGoByCode);
 		const codeRanks = Object.fromEntries(
 			bang.code.map((code) => [code, duckDuckGoByCode.get(code)?.popularity ?? 0])
 		);
@@ -253,6 +256,7 @@ function normalizeKagiRecord(
 
 function getKagiRecordPopularity(
 	record: SourceBangRecord,
+	sourceId: KagiBangSourceId,
 	duckDuckGoByCode: Map<string, DuckDuckGoRank>
 ) {
 	const code = record.t ? normalizeBangCode(record.t) : undefined;
@@ -269,6 +273,10 @@ function getKagiRecordPopularity(
 	}
 
 	if (!duckDuckGoRank) {
+		return 1;
+	}
+
+	if (sourceId === 'kagi-kagi' && isProviderNative && duckDuckGoRank.popularity === 0) {
 		return 1;
 	}
 
