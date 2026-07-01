@@ -3517,6 +3517,7 @@
 )}
 	{@const itemTarget = getCompactActionTarget(item, focusedTarget, stagedMenu)}
 	{@const rowActive = Boolean(focusedTarget || stagedMenu)}
+	{@const alwaysShowBangDescription = item.pluginId === 'bangs'}
 	{@const primaryAction = getPrimaryAction(itemTarget)}
 	{@const primaryActionArmed = rowActive && !stagedMenu && Boolean(primaryAction)}
 	<div
@@ -3547,7 +3548,8 @@
 					<strong>{@render highlightedText(item.titleSegments, item.title)}</strong>
 				</span>
 				<span
-					class:compact-action-hidden={!rowActive || !item.description}
+					class:bang-description={item.pluginId === 'bangs'}
+					class:compact-action-hidden={(!alwaysShowBangDescription && !rowActive) || !item.description}
 					class="compact-action-description"
 				>
 					{#if item.description}{@render highlightedText(
@@ -4377,6 +4379,11 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	.compact-action-description.bang-description {
+		color: var(--nc-tx-2);
+		opacity: 0.72;
 	}
 
 	.compact-action-hidden {
