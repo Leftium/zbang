@@ -18,6 +18,7 @@
 		textareaElement = $bindable(),
 		value = $bindable(''),
 		displayValue,
+		countValue,
 		previewSegments,
 		statusHint,
 		tokenCount,
@@ -34,6 +35,7 @@
 		textareaElement?: HTMLTextAreaElement;
 		value?: string;
 		displayValue?: string;
+		countValue?: string;
 		previewSegments?: PreviewSegment[];
 		statusHint?: StatusHint;
 		tokenCount?: TokenCount;
@@ -46,10 +48,11 @@
 	} = $props();
 
 	let textareaValue = $derived(displayValue ?? value);
+	let measuredValue = $derived(countValue ?? value);
 	let hasPreview = $derived(Boolean(previewSegments?.length));
-	let lineCount = $derived(value ? value.split('\n').length : 1);
-	let wordCount = $derived(value.trim() ? value.trim().split(/\s+/).length : 0);
-	let charCount = $derived(value.trim().length);
+	let lineCount = $derived(measuredValue ? measuredValue.split('\n').length : 1);
+	let wordCount = $derived(measuredValue.trim() ? measuredValue.trim().split(/\s+/).length : 0);
+	let charCount = $derived(measuredValue.trim().length);
 	let enterNewline = $derived(fullscreen ? enterNewlineFullscreen : enterNewlineRestored);
 	let growWrapElement = $state<HTMLElement>();
 

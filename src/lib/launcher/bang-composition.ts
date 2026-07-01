@@ -21,17 +21,20 @@ export function parseBangComposition(
 	const localTargets: BangCompositionTarget[] = [];
 	const forwardedTokens: string[] = [];
 	const payloadTokens: string[] = [];
+	const payloadTokensByLine = input.split('\n').map(() => [] as string[]);
 	const activeTokenStart = activeEntry?.triggerIndex;
 	let offset = 0;
 
 	for (const token of input.match(/\S+/g) ?? []) {
 		const index = input.indexOf(token, offset);
 		offset = index + token.length;
+		const lineIndex = input.slice(0, index).split('\n').length - 1;
 
 		if (activeTokenStart !== undefined && index === activeTokenStart) continue;
 
 		if (!/^![^\s!]+$/.test(token)) {
 			payloadTokens.push(token);
+			payloadTokensByLine[lineIndex]?.push(token);
 			continue;
 		}
 
@@ -48,6 +51,7 @@ export function parseBangComposition(
 		localTargets,
 		forwardedTokens,
 		payloadText: payloadTokens.join(' '),
+		payloadCountText: payloadTokensByLine.map((tokens) => tokens.join(' ')).join('\n'),
 		hasTargets: Boolean(localTargets.length || forwardedTokens.length)
 	};
 }

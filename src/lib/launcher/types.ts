@@ -89,6 +89,7 @@ export type BangComposition = {
 	localTargets: BangCompositionTarget[];
 	forwardedTokens: string[];
 	payloadText: string;
+	payloadCountText: string;
 	hasTargets: boolean;
 };
 

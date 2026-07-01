@@ -3784,6 +3784,9 @@
 			bind:textareaElement
 			bind:value
 			displayValue={inputDisplayValue}
+			countValue={bangComposition.hasTargets || Boolean(bangEntry)
+				? bangComposition.payloadCountText
+				: undefined}
 			previewSegments={inputPreviewSegments}
 			statusHint={stagedShortcutStatusHint}
 			tokenCount={inputTokenCount}
