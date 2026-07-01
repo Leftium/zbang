@@ -266,6 +266,11 @@
 		border-radius: var(--nc-radius);
 	}
 
+	.grow-wrap:not(.fullscreen):focus-within {
+		border-color: color-mix(in srgb, var(--nc-primary) 55%, var(--nc-border));
+		box-shadow: 0 0 0 2px color-mix(in srgb, var(--nc-primary) 18%, transparent);
+	}
+
 	.grow-wrap.fullscreen {
 		position: fixed;
 		inset: 0;
@@ -326,8 +331,10 @@
 	}
 
 	textarea.previewing {
-		color: transparent;
+		color: rgb(0 0 0 / 1%);
+		color: color-mix(in srgb, var(--nc-tx-1) 1%, transparent);
 		caret-color: var(--nc-tx-1);
+		-webkit-text-fill-color: transparent;
 	}
 
 	textarea:focus {
