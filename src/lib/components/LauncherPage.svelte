@@ -100,10 +100,13 @@
 	} from '$lib/settings.svelte';
 	import { loadShippedBangCatalog } from '$lib/shipped-bang-catalog';
 
-	const initialUrlQuery = page.url.searchParams.get('q') ?? '';
+	const stagedBangQueryParam = 'bq';
+	const stagedShortcutSequenceParam = 'sk';
+	const initialUrlLauncherState = readUrlLauncherState(page.url.searchParams);
+
 	let {
 		modeId = 'everything',
-		value = $bindable(initialUrlQuery)
+		value = $bindable(initialUrlLauncherState.value)
 	}: { modeId?: LauncherModeId; value?: string } = $props();
 
 	const searchProviderLabels: Record<SearchProvider, string> = {
@@ -138,6 +141,8 @@
 	const pseudoMenuBadgeDuration = 280;
 	const shortcutScrollPadding = 12;
 	const shortcutScrollBottomPadding = 18;
+	const stagedShortcutUrlRetryDelayMs = 50;
+	const stagedShortcutUrlRetryLimit = 40;
 	const parentShortcutLabel = 'U';
 	const utilityShortcutLabels = ['Z', 'X', 'C', 'V'] as const;
 	const shortcutKeys = new Set([
@@ -186,6 +191,12 @@
 	const launcherGroupItemLimits: Record<string, number> = {
 		'bangs.my': 8,
 		'bangs.provider': 8
+	};
+	type UrlLauncherState = {
+		key: string;
+		value: string;
+		bangEntry?: BangEntry;
+		shortcutSequence: string;
 	};
 	type InputFrame = { data: string | null; inputType: string; ts: number };
 	type KeyFrame = { key: string; ts: number };
@@ -395,7 +406,7 @@
 	let bangCatalog = $state<RankedZbangCatalog>();
 	let loadedBangProvider = $state<BangProviderId>();
 	let textareaElement = $state<HTMLTextAreaElement>();
-	let bangEntry = $state<BangEntry>();
+	let bangEntry = $state<BangEntry>(initialUrlLauncherState.bangEntry);
 	let fullscreen = $state(false);
 	let wordwrap = $state(true);
 	let enterNewlineRestored = $state(false);
@@ -429,7 +440,7 @@
 	let bangFanoutTargets = $state<string[]>([]);
 	let bangFanoutError = $state('');
 	let bangFanoutActionLabel = $state('Open');
-	let lastUrlQuery = $state(initialUrlQuery);
+	let lastUrlLauncherStateKey = $state(initialUrlLauncherState.key);
 	let bangPickerPrimaryInitialized = false;
 	let hadSettingsFilter = false;
 	let skipNextSettingsFilterReset = false;
@@ -440,14 +451,11 @@
 	const launcherTargetElements = new Map<string, HTMLElement>();
 
 	$effect(() => {
-		const urlQuery = page.url.searchParams.get('q') ?? '';
+		const urlState = readUrlLauncherState(page.url.searchParams);
 
-		if (urlQuery === lastUrlQuery) return;
+		if (urlState.key === lastUrlLauncherStateKey) return;
 
-		lastUrlQuery = urlQuery;
-		value = urlQuery;
-		bangEntry = undefined;
-		clearBangFanoutMessage();
+		applyUrlLauncherState(urlState);
 	});
 
 	const mode = $derived(getLauncherMode(modeId));
@@ -537,6 +545,7 @@
 
 	onMount(() => {
 		void loadMyBangs();
+		applyUrlLauncherState(readUrlLauncherState(page.url.searchParams));
 		window.addEventListener('hashchange', openSharedMyBangEditorFromHash);
 
 		return () => {
@@ -612,6 +621,107 @@
 
 		hadSettingsFilter = false;
 	});
+
+	function readUrlLauncherState(searchParams: URLSearchParams): UrlLauncherState {
+		const stagedQuery = searchParams.get(stagedBangQueryParam);
+		const value = stagedQuery ?? searchParams.get('q') ?? '';
+		const shortcutSequence = sanitizeUrlShortcutSequence(
+			searchParams.get(stagedShortcutSequenceParam)
+		);
+		const bangEntry = stagedQuery === null ? undefined : getLastBangPickerEntry(value);
+		const source = stagedQuery === null ? 'q' : stagedBangQueryParam;
+
+		return {
+			key: [
+				source,
+				value,
+				bangEntry?.triggerIndex ?? '',
+				bangEntry?.fragment ?? '',
+				shortcutSequence
+			].join('\u0000'),
+			value,
+			bangEntry,
+			shortcutSequence
+		};
+	}
+
+	function sanitizeUrlShortcutSequence(sequence: string | null) {
+		return sequence ? sequence.replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 12) : '';
+	}
+
+	function getLastBangPickerEntry(input: string): BangEntry | undefined {
+		let match: RegExpExecArray | null;
+		let entry: BangEntry | undefined;
+		const pattern = /(^|\s)!([^\s!]*)/g;
+
+		while ((match = pattern.exec(input)) !== null) {
+			entry = {
+				triggerIndex: match.index + (match[1]?.length ?? 0),
+				fragment: match[2] ?? ''
+			};
+		}
+
+		return entry;
+	}
+
+	function applyUrlLauncherState(urlState: UrlLauncherState) {
+		lastUrlLauncherStateKey = urlState.key;
+		value = urlState.value;
+		bangEntry = urlState.bangEntry;
+		resetShortcutState();
+		clearBangFanoutMessage();
+		scheduleUrlLauncherStaging(urlState);
+	}
+
+	function scheduleUrlLauncherStaging(urlState: UrlLauncherState, shortcutAttempt = 0) {
+		if (!urlState.bangEntry && !urlState.shortcutSequence) return;
+
+		requestAnimationFrame(() => {
+			if (urlState.key !== lastUrlLauncherStateKey) return;
+			if (!textareaElement) return;
+
+			const cursor = urlState.bangEntry
+				? urlState.bangEntry.triggerIndex + urlState.bangEntry.fragment.length + 1
+				: urlState.value.length;
+
+			textareaElement.focus();
+			textareaElement.setSelectionRange(cursor, cursor);
+			if (urlState.bangEntry) updateBangEntry(textareaElement);
+			if (!urlState.shortcutSequence) return;
+			if (stageUrlShortcutSequence(urlState.shortcutSequence)) return;
+			if (shortcutAttempt >= stagedShortcutUrlRetryLimit) return;
+
+			window.setTimeout(
+				() => scheduleUrlLauncherStaging(urlState, shortcutAttempt + 1),
+				stagedShortcutUrlRetryDelayMs
+			);
+		});
+	}
+
+	function stageUrlShortcutSequence(sequence: string) {
+		const [firstKey, ...continuationKeys] = [...sequence];
+		if (!firstKey || !textareaElement) return false;
+
+		resetShortcutState();
+		if (!stageShortcutInitiator(firstKey)) return false;
+
+		for (const key of continuationKeys) {
+			if (
+				toggleStagedActionMenuWithRootKey(key) ||
+				armStagedActionMenuShortcut(key) ||
+				handleStagedParentShortcut(key) ||
+				openStagedItemActionMenu(key) ||
+				continueStagedTargetShortcut(key)
+			) {
+				continue;
+			}
+
+			cancelStagedShortcut();
+			return false;
+		}
+
+		return true;
+	}
 
 	function setBangAsDefaultSearch(item: ZbangRecord) {
 		const code = item.code[0] ? normalizeBangCode(item.code[0]) : '';
