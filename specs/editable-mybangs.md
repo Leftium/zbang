@@ -21,6 +21,29 @@ This feature should complete the existing Bang Management promise that users can
 - `specs/omnibar-bang-execution.md`: MyBangs are private, local, execution-critical state and take precedence over provider catalog bangs.
 - `specs/provider-native-bang-data.md` and `specs/shipped-catalog-assets.md`: provider catalog records remain generated artifacts and should not be edited directly.
 
+## Implementation Status
+
+Specified in `ca3ed98 docs: specify editable MyBangs` and implemented in
+`9363e42 feat: add editable MyBangs`.
+
+Implemented:
+
+- Added shared bang-code helpers for normalize, display, parse, and overlap behavior.
+- Added local MyBang IDs, origin metadata, source display metadata, timestamps, and lazy migration for older stored records.
+- Added the MyBang editor with validation, provider-shadow warnings, dirty-cancel confirmation, save, and delete confirmation.
+- Added `/bang` entry points: unfiltered `New custom bang`, MyBang `Edit`, provider `Add and edit copy`, and secondary `Edit` for MyBangs in search and bang-picker contexts.
+- Preserved MyBang precedence and provider suppression by normalized code overlap.
+- Kept edited MyBangs execution-compatible for the launcher, `/go`, and the service-worker resolver.
+
+Verification so far:
+
+- `npm run check` passed with 0 errors and 0 warnings after implementation.
+
+Remaining verification:
+
+- Real-browser smoke test of `/bang`: create a scratch MyBang, edit a provider clone's codes, confirm provider suppression and reappearance, and delete from the editor.
+- Real-browser smoke test of `/go?q=...` and service-worker behavior after installing or updating the app with persisted MyBangs.
+
 ## Goals
 
 - Let users edit MyBang name, codes, and search URL template.
@@ -299,7 +322,10 @@ type MyBangRecord = ZbangRecord & {
 	id: string;
 	origin: 'catalog' | 'custom';
 	sourceProvider?: BangProviderId;
-	sourceKey?: string;
+	sourceName?: string;
+	sourceCodes?: string[];
+	sourceDomain?: string;
+	sourceUrlTemplate?: string;
 	createdAt: string;
 	updatedAt: string;
 };
@@ -308,8 +334,12 @@ type MyBangRecord = ZbangRecord & {
 Implementation may migrate existing stored `ZbangRecord` values lazily:
 
 - On read, records without `id` receive stable IDs before the next write.
-- Catalog-derived records may set `origin: 'catalog'` only when source metadata is known.
+- Catalog-derived records set `origin: 'catalog'` when created through provider-clone flows.
 - Older records with unknown source should use `origin: 'custom'` or omit source metadata rather than guessing.
+
+V1 intentionally does not add an opaque `sourceKey`. Source metadata is
+display-oriented; provider suppression and execution precedence are based only on
+normalized code overlap.
 
 The resolver and service worker should continue receiving the execution-compatible fields:
 

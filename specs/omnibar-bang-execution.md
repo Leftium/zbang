@@ -17,8 +17,8 @@ https://whiz.example.com/go?q=%s
 - Server-side bang processing is not required for omnibar support.
 - Unduck supports default-search integration with a static client-side app: it reads `?q=...`, resolves a bundled bang catalog in browser JavaScript, then calls `window.location.replace(...)`.
 - Server-side redirects can be faster because the browser can receive an immediate HTTP redirect instead of loading app JavaScript, initializing state, reading browser storage, and then navigating.
-- Server-side redirects are not a good primary design for Whiz while custom bangs remain private, local, and stored in browser-only storage.
-- Cookies are a last-resort bridge for small resolver snapshots, not the preferred durable storage for private custom bangs.
+- Server-side redirects are not a good primary design for Whiz while MyBangs remain private, local, and stored in browser-only storage.
+- Cookies are a last-resort bridge for small resolver snapshots, not the preferred durable storage for private MyBangs.
 - Epicenter workspace/cloud sync may eventually enable authenticated server-side resolution, but it should not block the first omnibar implementation.
 
 ## Implementation Status
@@ -30,7 +30,7 @@ Implemented in `3d0fa1c feat: support omnibar bang execution`:
 - Added the same default-search setup UI to `/settings`.
 - Added OpenSearch discovery via `/opensearch.xml` and `<link rel="search" ...>` in `app.html`.
 - Extracted shared search and bang URL resolution helpers for launcher and `/go` usage.
-- Preserved local custom bang precedence over provider catalog bangs.
+- Preserved local MyBang precedence over provider catalog bangs.
 - Preserved configured fallback search provider and custom search template handling.
 - Kept `/` and `/?q=...` launcher prefill/share behavior unchanged.
 - Kept `/go` as a normal client page, with no service-worker dependency.
@@ -41,29 +41,44 @@ Updated in `6a4b6c0 copy: rename default search setup to Whiz`:
 - Renamed user-facing browser setup and OpenSearch copy to Whiz.
 - Documented making Whiz the default search engine as an optional setup step.
 
-Implemented after `51ecd3c docs: update omnibar spec for Whiz`:
+Implemented in `2ca8cb1 feat: add service worker go redirect`, after
+`51ecd3c docs: update omnibar spec for Whiz`:
 
 - Added an IndexedDB mirror for execution-critical settings.
 - Kept `localStorage` as the current app settings source of truth during the transition.
 - Updated `/go` to read mirrored execution settings with a `localStorage` fallback.
 - Added a service worker that intercepts only navigations to `/go?q=...`.
-- Added service-worker resolution for normal searches, custom bangs, and provider catalog bangs.
+- Added service-worker resolution for normal searches, MyBangs, and provider catalog bangs.
 - Falls through to the normal `/go` page when mirrored settings do not exist yet.
 - Kept minimal `console.warn` logging for unexpected service-worker resolution failures.
 - Preserved normal `/go` page fallback when the service worker is unavailable or cannot resolve.
 
+Implemented in `0c68e36 feat: support omnibar multi-bang fanout`, with fixes in
+`75df75b fix: wait for all omnibar bang popups` and
+`aa1254e fix: render omnibar fanout targets as links`:
+
+- Added best-effort multi-target fanout from the `/go` page.
+- Kept the service-worker redirect path single-target only; if resolver output has multiple target URLs, the worker falls through to the normal `/go` page.
+- Added same-origin `/go/open` relay pages so secondary targets can acknowledge opening before redirecting to external URLs.
+- Rendered resolved fanout targets as links when popup opening is blocked or cannot be confirmed.
+
+Implemented in `9363e42 feat: add editable MyBangs`:
+
+- Scratch and catalog-derived MyBangs remain stored in IndexedDB and continue to project to execution-compatible bang records.
+- Edited MyBang codes, names, and URL templates are honored by both the `/go` page and the service-worker fast path.
+- Provider suppression for omnibar execution uses normalized code overlap, matching the `/bang` management UI.
+
 Not yet implemented:
 
-- Multi-target or multi-tab omnibar fanout behavior.
 - Server-side authenticated resolver backed by synced private config.
 
 ## Goals
 
 - Support setting Whiz as a browser default search engine.
-- Preserve local custom bangs as a required part of omnibar execution.
+- Preserve local MyBangs as a required part of omnibar execution.
 - Preserve the user's configured fallback search engine.
-- Keep custom bang configuration private and user-specific.
-- Target one automatic destination for the first implementation.
+- Keep MyBang configuration private and user-specific.
+- Target one automatic destination for direct redirects while allowing best-effort page-mediated fanout for multiple local targets.
 - Keep the service-worker fast path optional, with the `/go` page as the compatibility fallback.
 - Keep the resolver logic shared with the launcher where practical.
 
@@ -72,8 +87,8 @@ Not yet implemented:
 - Do not require accounts, cloud sync, or Epicenter for the first implementation.
 - Do not require cookies for the first implementation.
 - Do not require a service worker for the first implementation.
-- Do not make server-side resolution authoritative for private local bangs.
-- Do not attempt reliable multi-tab fanout in the first implementation.
+- Do not make server-side resolution authoritative for private local MyBangs.
+- Do not promise reliable multi-tab fanout; current page-mediated fanout is best-effort.
 - Do not change `/` share/prefill semantics just to support omnibar execution.
 
 ## Execution Model
@@ -89,38 +104,50 @@ The route resolves the query and navigates with `location.replace(targetUrl)`.
 Resolution should use:
 
 - `myBangs` before provider catalog bangs.
-- The selected bang provider catalog as fallback for non-custom bangs.
+- The selected bang provider catalog as fallback for bang tokens not handled by MyBangs.
 - The configured search provider for normal search and unknown forwarded bangs.
 - The configured custom search template when the selected search provider is custom.
 
 If no query is present, `/go` shows a setup/help page rather than redirecting.
 
-If the query has no bang tokens, `/go` skips custom bang and provider catalog loading and immediately redirects to the configured fallback search URL. If reading custom bangs from IndexedDB fails, `/go` treats the custom bang list as empty and continues with provider catalog or fallback search resolution.
+If the query has no bang tokens, `/go` skips MyBang and provider catalog loading
+and immediately redirects to the configured fallback search URL. If reading
+MyBangs from IndexedDB fails, `/go` treats the MyBang list as empty and continues
+with provider catalog or fallback search resolution.
 
 The normal `/go` page remains the required implementation. The service worker is an optimization, and the page route does not depend on service-worker installation or activation.
 
-## Single-Target Scope
+## Direct-Redirect Scope
 
-The first supported omnibar behavior should produce one final navigation.
+The first supported omnibar behavior produced one final navigation, and the
+service-worker fast path still keeps that direct-redirect constraint.
 
-If a query contains multiple local bang targets, the implementation should pick one deterministic target rather than opening multiple tabs. The initial target selection should favor the same ordering already used by Whiz's bang composition model:
+If a query contains multiple local bang targets and the service worker is handling
+the navigation, the worker should fall through to the normal `/go` page instead
+of attempting multi-tab fanout from a fetch handler.
+
+When only one target is available, target selection should favor the same
+ordering already used by Whiz's bang composition model:
 
 1. User-owned bangs before provider bangs.
 2. The first matching bang token in the query.
 3. The first URL target for that bang.
 
-The resolver may still return a structured result that includes all parsed targets so multi-target behavior can be explored later without changing the parser again.
+The resolver returns a structured result that includes all parsed targets so the
+page route can handle fanout while the worker preserves single-redirect behavior.
 
-## Multiple-Bang Follow-Up
+## Multiple-Bang Fanout
 
-After single-bang omnibar execution works, test whether multiple bang targets can be opened in new tabs when the Whiz origin has previously been granted popup permission by the browser.
+After single-bang omnibar execution shipped, local testing confirmed that multiple
+bang targets can be opened in new tabs when the Whiz origin has previously been
+granted popup permission by the browser.
 
 Local test findings:
 
 - Multiple omnibar-triggered tabs can open when popup permission is allowed.
 - `window.open(url, '_blank', 'noopener,noreferrer')` can open a tab while returning `null`, so the return value is not reliable success detection.
 - `window.open(url, '_blank')` returned usable handles and detected popup blocking in local testing, but briefly exposes `window.opener` to arbitrary bang targets until caller code clears it and should not be the preferred deployable design.
-- A safer follow-up is to open same-origin relay pages with `noopener,noreferrer`; each relay page acknowledges that it opened, then redirects itself to the external target.
+- A safer design is to open same-origin relay pages with `noopener,noreferrer`; each relay page acknowledges that it opened, then redirects itself to the external target. This is the current implementation.
 
 Expected constraints:
 
@@ -132,14 +159,22 @@ Expected constraints:
 Possible follow-up designs:
 
 - A fanout page that lists all resolved targets and offers one explicit user gesture to open them.
-- A best-effort multi-open mode that only runs after detecting or documenting the required browser permission.
+- More explicit popup-permission detection or onboarding before retrying multi-open.
 - A browser extension if reliable multi-tab execution becomes a hard requirement.
 
 ## Storage Requirements
 
-Current custom bangs are stored in IndexedDB. App settings still use `localStorage` as the app-facing source of truth, while execution-critical settings are mirrored into IndexedDB for service-worker access.
+Current MyBangs, including scratch bangs and catalog-derived editable copies, are
+stored in IndexedDB. App settings still use `localStorage` as the app-facing
+source of truth, while execution-critical settings are mirrored into IndexedDB
+for service-worker access.
 
-A service worker cannot read `localStorage`, so settings needed by `/go` are mirrored into IndexedDB. This is a transition step rather than a full settings migration, because the app settings UI and startup path still rely on synchronous `localStorage` reads and writes. If the mirror does not exist yet, the service worker falls through to the normal `/go` page so the page can use the existing `localStorage` settings fallback.
+A service worker cannot read `localStorage`, but it can read IndexedDB. Settings
+needed by `/go` are mirrored into IndexedDB for the worker. This is a transition
+step rather than a full settings migration, because the app settings UI and
+startup path still rely on synchronous `localStorage` reads and writes. If the
+mirror does not exist yet, the service worker falls through to the normal `/go`
+page so the page can use the existing `localStorage` settings fallback.
 
 Execution-critical persisted state:
 
@@ -153,7 +188,7 @@ The launcher may keep its Svelte state model during this transition, but executi
 
 ## Service-Worker Fast Path
 
-The first implementation did not require a service worker. A normal `/go` page is simpler, works before any service worker is installed, and can support local custom bangs by reading browser storage directly.
+The first implementation did not require a service worker. A normal `/go` page is simpler, works before any service worker is installed, and can support local MyBangs by reading browser storage directly.
 
 The tradeoff is that client-side `/go` costs at least a document request and app/page JavaScript execution before redirecting:
 
@@ -167,7 +202,7 @@ The service-worker performance upgrade intercepts navigations to `/go?q=...` and
 omnibar -> /go?q=... -> service worker -> IndexedDB/cache lookup -> Response.redirect(target)
 ```
 
-This keeps private custom bangs local while avoiding a full app-page load for repeat visits after service-worker installation. The worker intentionally handles only the `q` parameter route shape.
+This keeps private MyBangs local while avoiding a full app-page load for repeat visits after service-worker installation. The worker intentionally handles only the `q` parameter route shape.
 
 The page route must remain authoritative and must continue to work for browsers or sessions where the service worker is not installed, not active, disabled, or unable to resolve the query.
 
@@ -242,17 +277,17 @@ Server-side resolution is appropriate later if Epicenter or another sync layer p
 - Authenticated user/session lookup from omnibar requests.
 - A fast materialized resolver snapshot per user or workspace.
 - Access to the user's selected bang provider and search provider.
-- Access to private custom bangs without putting full config in cookies.
+- Access to private MyBangs without putting full config in cookies.
 
 Until then, server-side redirects can only safely resolve public/default behavior.
 
 ## Privacy Notes
 
-Custom bangs should be considered private and unique per user. Avoid placing full custom bang records in URLs, public server logs, or non-HttpOnly cookies. If cookies are ever used as a bridge, prefer a small resolver-only snapshot and document the size, privacy, and header-overhead tradeoffs.
+MyBangs should be considered private and unique per user. Avoid placing full MyBang records in URLs, public server logs, or non-HttpOnly cookies. If cookies are ever used as a bridge, prefer a small resolver-only snapshot and document the size, privacy, and header-overhead tradeoffs.
 
 ## Remaining Implementation Plan
 
-1. Test popup-permission behavior for multiple bang targets and document the result before committing to multi-tab support.
+1. Smoke test `/go?q=...` with persisted editable MyBangs after service-worker install and update.
 2. Measure `/go?q=...` latency with and without an active service worker.
 3. Consider a full settings migration from `localStorage` to IndexedDB only after async settings initialization is designed.
 4. Keep the `/go` page route authoritative as the compatibility fallback for first visit, disabled service workers, stale workers, and resolver failures.
