@@ -12,7 +12,7 @@ export {
 
 const DB_NAME: string = 'whiz';
 const LEGACY_DB_NAME: string = 'zbang';
-const DB_VERSION = 6;
+const DB_VERSION = 7;
 const OLD_SOURCE_STORE = 'bangSources';
 const OLD_CATALOG_STORE = 'bangCatalogs';
 const MY_BANG_STORE = 'myBangs';
@@ -21,6 +21,7 @@ const EXECUTION_SETTINGS_STORE = 'executionSettings';
 const EXECUTION_SETTINGS_KEY = 'current';
 const SEARCH_HISTORY_STORE = 'searchHistory';
 const HISTORY_SETTINGS_STORE = 'historySettings';
+const JOURNAL_ENTRY_STORE = 'journalEntries';
 let legacyMigration: Promise<void> | undefined;
 
 export type MyBangRecord = ZbangRecord & {
@@ -225,6 +226,16 @@ function openIndexedBangDb(name: string): Promise<IDBDatabase> {
 			if (!db.objectStoreNames.contains(HISTORY_SETTINGS_STORE)) {
 				db.createObjectStore(HISTORY_SETTINGS_STORE, { keyPath: 'id' });
 			}
+
+			if (!db.objectStoreNames.contains(JOURNAL_ENTRY_STORE)) {
+				const store = db.createObjectStore(JOURNAL_ENTRY_STORE, { keyPath: 'id' });
+
+				createJournalEntryIndexes(store);
+			} else {
+				const store = transaction?.objectStore(JOURNAL_ENTRY_STORE);
+
+				if (store) createJournalEntryIndexes(store);
+			}
 		};
 
 		request.onsuccess = () => resolve(request.result);
@@ -298,6 +309,16 @@ function createSearchHistoryIndexes(store: IDBObjectStore) {
 
 	if (!store.indexNames.contains('normalizedQuery')) {
 		store.createIndex('normalizedQuery', 'normalizedQuery');
+	}
+}
+
+function createJournalEntryIndexes(store: IDBObjectStore) {
+	if (!store.indexNames.contains('entryDate')) {
+		store.createIndex('entryDate', 'entryDate');
+	}
+
+	if (!store.indexNames.contains('updatedAt')) {
+		store.createIndex('updatedAt', 'updatedAt');
 	}
 }
 

@@ -23,10 +23,29 @@
 	} from '$lib/bang-filter';
 	import ExpandingTextarea from '$lib/components/ExpandingTextarea.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import JournalEntryEditor, {
+		type JournalEntryEditorSave,
+		type JournalEntryEditorSession
+	} from '$lib/components/JournalEntryEditor.svelte';
 	import MyBangEditor, {
 		type MyBangEditorSave,
 		type MyBangEditorSession
 	} from '$lib/components/MyBangEditor.svelte';
+	import {
+		createJournalEntry,
+		deleteJournalEntry,
+		getJournalEntryExcerpt,
+		getJournalEntryTitle,
+		getLocalJournalDate,
+		listJournalEntries,
+		updateJournalEntry,
+		type JournalEntry
+	} from '$lib/journal';
+	import {
+		buildJournalSummaryGroups,
+		type JournalSummaryGroup,
+		type JournalSummarySignal
+	} from '$lib/journal-summary';
 	import {
 		displayBangCode,
 		formatBangCodes,
@@ -133,6 +152,8 @@
 	const settingsMatchThreshold = 0.4;
 	const historyMatchThreshold = 0.35;
 	const historyGroupCollapsedLimit = 8;
+	const journalMatchThreshold = 0.32;
+	const journalSummaryCollapsedLimit = 5;
 	const bangFanoutAckTimeoutMs = 2500;
 	const tokenCounterUrl = 'https://hcodx.com/tools/gpt-4o-token-counter';
 	const tokenCounterMaxUrlLength = 6000;
@@ -272,6 +293,27 @@
 		titleResult: Fuzzysort.Result | null;
 		descriptionResult: Fuzzysort.Result | null;
 	};
+	type ScoredJournalGroup = {
+		group: JournalSummaryGroup;
+		score: number;
+		sortOrder: number;
+		titleResult: Fuzzysort.Result | null;
+		descriptionResult: Fuzzysort.Result | null;
+	};
+	type ScoredJournalEntry = {
+		entry: JournalEntry;
+		score: number;
+		sortOrder: number;
+		titleResult: Fuzzysort.Result | null;
+		descriptionResult: Fuzzysort.Result | null;
+	};
+	type ScoredJournalSignal = {
+		signal: JournalSummarySignal;
+		score: number;
+		sortOrder: number;
+		titleResult: Fuzzysort.Result | null;
+		descriptionResult: Fuzzysort.Result | null;
+	};
 	const settingGroups: readonly SettingGroupDefinition[] = [
 		{
 			id: 'color-scheme',
@@ -379,7 +421,11 @@
 	let searchHistoryEvents = $state<SearchHistoryEvent[]>([]);
 	let searchHistoryLoaded = $state(false);
 	let searchHistoryError = $state('');
+	let journalEntries = $state<JournalEntry[]>([]);
+	let journalEntriesLoaded = $state(false);
+	let journalEntriesError = $state('');
 	let myBangEditor = $state<MyBangEditorSession>();
+	let journalEntryEditor = $state<JournalEntryEditorSession>();
 	let bangFanoutTargets = $state<string[]>([]);
 	let bangFanoutError = $state('');
 	let bangFanoutActionLabel = $state('Open');
@@ -427,6 +473,9 @@
 		bangComposition,
 		nlp: compromiseSignals
 	});
+	const journalSummaryGroups = $derived(
+		buildJournalSummaryGroups(searchHistoryEvents, journalEntries)
+	);
 	const plugins = $derived(createPlugins());
 	const launcherItems = $derived(
 		rankItems(plugins.flatMap((plugin) => plugin.getItems?.(launcherContext) ?? []))
@@ -488,7 +537,6 @@
 
 	onMount(() => {
 		void loadMyBangs();
-		if (mode.id === 'history') void loadSearchHistory();
 		window.addEventListener('hashchange', openSharedMyBangEditorFromHash);
 
 		return () => {
@@ -499,6 +547,16 @@
 				shortcutScrollFrame = undefined;
 			}
 		};
+	});
+
+	$effect(() => {
+		if ((mode.id === 'history' || mode.id === 'journal') && !searchHistoryLoaded) {
+			void loadSearchHistory();
+		}
+
+		if (mode.id === 'journal' && !journalEntriesLoaded) {
+			void loadJournalEntries();
+		}
 	});
 
 	$effect(() => {
@@ -854,6 +912,19 @@
 			searchHistoryError = error instanceof Error ? error.message : String(error);
 			searchHistoryLoaded = true;
 			console.warn('Failed to load search history', error);
+		}
+	}
+
+	async function loadJournalEntries() {
+		journalEntriesError = '';
+
+		try {
+			journalEntries = await listJournalEntries();
+			journalEntriesLoaded = true;
+		} catch (error) {
+			journalEntriesError = error instanceof Error ? error.message : String(error);
+			journalEntriesLoaded = true;
+			console.warn('Failed to load journal entries', error);
 		}
 	}
 
@@ -2325,7 +2396,7 @@
 	}
 
 	function handleDocumentMouseDown(event: MouseEvent) {
-		if (myBangEditor) return;
+		if (myBangEditor || journalEntryEditor) return;
 		if (!(event.target instanceof HTMLElement)) return;
 
 		const target = event.target;
@@ -2336,7 +2407,7 @@
 	}
 
 	function handleVisibilityChange() {
-		if (myBangEditor) return;
+		if (myBangEditor || journalEntryEditor) return;
 
 		if (document.visibilityState === 'visible') focusInput();
 	}
@@ -2922,7 +2993,8 @@
 					kind: 'action',
 					label: getGroupPrimaryActionLabel(group),
 					run: () => activateLauncherGroup(group.id)
-				}
+				},
+				...(group.actions ?? []).map((action) => ({ ...action, kind: 'action' as const }))
 			]
 		};
 	}
@@ -2955,7 +3027,7 @@
 	}
 
 	function getGroupPrimaryActionLabel(group: LauncherGroup) {
-		return isLauncherGroupExpanded(group) ? 'Collapse group' : 'Activate group';
+		return isLauncherGroupExpanded(group) ? 'Collapse group' : 'Expand group';
 	}
 
 	function isGroupPrimaryActionEffective(group: LauncherGroup) {
@@ -3234,6 +3306,15 @@
 				}
 			},
 			{
+				id: 'journal',
+				getItems(context) {
+					return getJournalStatusItems(context);
+				},
+				getGroups(context) {
+					return getJournalGroups(context);
+				}
+			},
+			{
 				id: 'compromise',
 				getItems(context) {
 					return getCompromiseItems(context);
@@ -3257,6 +3338,9 @@
 		}
 		if (mode.id === 'history') {
 			return 'Filter history...';
+		}
+		if (mode.id === 'journal') {
+			return 'Filter journal...';
 		}
 
 		return 'Filter term... (modes will be filtered and sorted based on this term)';
@@ -3552,8 +3636,15 @@
 	}
 
 	function getScoredHistoryEvents(context: LauncherContext): ScoredHistoryEvent[] {
+		return scoreHistoryEvents(searchHistoryEvents, context);
+	}
+
+	function scoreHistoryEvents(
+		events: SearchHistoryEvent[],
+		context: LauncherContext
+	): ScoredHistoryEvent[] {
 		if (!context.hasValue) {
-			return searchHistoryEvents.map((event, index) => ({
+			return events.map((event, index) => ({
 				event,
 				score: Math.max(1, 100 - index),
 				sortOrder: index,
@@ -3565,13 +3656,13 @@
 		return fuzzysort
 			.go(
 				context.text,
-				searchHistoryEvents.map((event) => ({
+				events.map((event) => ({
 					event,
 					searchText: getHistoryEventSearchText(event)
 				})),
 				{
 					key: 'searchText',
-					limit: searchHistoryEvents.length,
+					limit: events.length,
 					threshold: historyMatchThreshold
 				}
 			)
@@ -3780,6 +3871,477 @@
 		const year = date.getFullYear() === new Date().getFullYear() ? undefined : 'numeric';
 
 		return date.toLocaleDateString([], { month: 'short', day: 'numeric', year });
+	}
+
+	function getJournalStatusItems(context: LauncherContext): LauncherItem[] {
+		if (mode.id !== 'journal') return [];
+
+		if (!searchHistoryLoaded || !journalEntriesLoaded) {
+			return [
+				createJournalInsightItem(
+					'journal.loading',
+					'Loading journal',
+					'Reading saved searches and manual entries on this device.'
+				)
+			];
+		}
+
+		if (searchHistoryError || journalEntriesError) {
+			return [
+				createJournalInsightItem(
+					'journal.error',
+					'Could not load journal',
+					[searchHistoryError, journalEntriesError].filter(Boolean).join(' ')
+				)
+			];
+		}
+
+		if (!searchHistoryEvents.length && !journalEntries.length) {
+			return [
+				createTodayJournalEntryItem(),
+				createJournalInsightItem(
+					'journal.empty',
+					'No journal activity yet',
+					settings.historyRecordingEnabled
+						? 'Executed Whiz searches and manual entries will appear here.'
+						: 'Search history recording is off. Manual entries can still be saved.'
+				)
+			];
+		}
+
+		if (context.hasValue && !getScoredJournalGroups(context).length) {
+			return [
+				createJournalInsightItem(
+					'journal.no-matches',
+					'No matching journal activity',
+					'Try a period, query, target, bang, or journal entry term.'
+				)
+			];
+		}
+
+		return context.hasValue ? [] : [createTodayJournalEntryItem()];
+	}
+
+	function createJournalInsightItem(id: string, title: string, description: string): LauncherItem {
+		return {
+			id,
+			pluginId: 'journal',
+			kind: 'insight',
+			title,
+			description,
+			score: 100
+		};
+	}
+
+	function createTodayJournalEntryItem(): LauncherItem {
+		const entryDate = getLocalJournalDate();
+
+		return {
+			id: 'journal.new-today',
+			pluginId: 'journal',
+			kind: 'action',
+			title: 'New journal entry',
+			description: formatHistoryDateLabel(entryDate),
+			score: 120,
+			actions: [
+				{
+					id: 'journal.new-today.primary',
+					label: 'New journal entry',
+					safeForEnter: true,
+					run: () => openJournalEntryEditor(entryDate)
+				}
+			]
+		};
+	}
+
+	function getJournalGroups(context: LauncherContext): LauncherGroup[] {
+		if (
+			mode.id !== 'journal' ||
+			!searchHistoryLoaded ||
+			!journalEntriesLoaded ||
+			searchHistoryError ||
+			journalEntriesError
+		) {
+			return [];
+		}
+
+		return getScoredJournalGroups(context).map((group) => createJournalGroup(group, context));
+	}
+
+	function getScoredJournalGroups(context: LauncherContext): ScoredJournalGroup[] {
+		if (!context.hasValue) {
+			return journalSummaryGroups.map((group, index) => ({
+				group,
+				score: Math.max(1, 100 - index),
+				sortOrder: index,
+				titleResult: null,
+				descriptionResult: null
+			}));
+		}
+
+		return fuzzysort
+			.go(
+				context.text,
+				journalSummaryGroups.map((group) => ({ group, searchText: group.searchText })),
+				{
+					key: 'searchText',
+					limit: journalSummaryGroups.length,
+					threshold: journalMatchThreshold
+				}
+			)
+			.map((result, index) => {
+				const group = result.obj.group;
+
+				return {
+					group,
+					score: Math.max(1, 100 + Math.round(result.score * 20)),
+					sortOrder: index,
+					titleResult: fuzzysort.single(context.text, group.title),
+					descriptionResult: fuzzysort.single(context.text, group.description)
+				};
+			});
+	}
+
+	function createJournalGroup(
+		scoredGroup: ScoredJournalGroup,
+		context: LauncherContext
+	): LauncherGroup {
+		const group = scoredGroup.group;
+		const items = context.hasValue
+			? getFilteredJournalGroupItems(group, context)
+			: getJournalCollapsedItems(group);
+		const allItems = context.hasValue ? items : getJournalExpandedItems(group, context);
+
+		return {
+			id: group.id,
+			pluginId: 'journal',
+			title: group.title,
+			description: group.description,
+			titleSegments: getFuzzyHighlightSegments(group.title, scoredGroup.titleResult),
+			descriptionSegments: getFuzzyHighlightSegments(
+				group.description,
+				scoredGroup.descriptionResult
+			),
+			items,
+			allItems,
+			actions: [
+				{
+					id: `${group.id}.add-entry`,
+					label: 'Add journal entry',
+					title: `Create manual journal entry for ${group.title}`,
+					run: () => openJournalEntryEditor(group.startDate)
+				}
+			],
+			collapsedItemLimit: items.length,
+			matchedCount: context.hasValue ? items.length : undefined,
+			totalCount: group.events.length + group.entries.length
+		};
+	}
+
+	function getJournalCollapsedItems(group: JournalSummaryGroup) {
+		const summaryItems = getJournalSummaryItems(group);
+		const entryItems = scoreJournalEntries(group.entries, undefined).map(createJournalEntryItem);
+
+		return [...summaryItems, ...entryItems].slice(
+			0,
+			Math.max(journalSummaryCollapsedLimit, entryItems.length)
+		);
+	}
+
+	function getJournalExpandedItems(group: JournalSummaryGroup, context: LauncherContext) {
+		return [
+			...getJournalSummaryItems(group),
+			...scoreJournalEntries(group.entries, undefined).map(createJournalEntryItem),
+			...scoreHistoryEvents(group.events, context).map(createJournalHistoryItem)
+		];
+	}
+
+	function getFilteredJournalGroupItems(group: JournalSummaryGroup, context: LauncherContext) {
+		const items = [
+			...scoreJournalSignals(getJournalSummarySignals(group), context).map((signal) =>
+				createJournalSignalItem(group, signal)
+			),
+			...scoreJournalEntries(group.entries, context).map(createJournalEntryItem),
+			...scoreHistoryEvents(group.events, context).map(createJournalHistoryItem)
+		];
+
+		return items.length ? items : getJournalSummaryItems(group);
+	}
+
+	function getJournalSummaryItems(group: JournalSummaryGroup) {
+		return scoreJournalSignals(getJournalSummarySignals(group), undefined).map((signal) =>
+			createJournalSignalItem(group, signal)
+		);
+	}
+
+	function getJournalSummarySignals(group: JournalSummaryGroup): JournalSummarySignal[] {
+		return [
+			{
+				id: 'summary',
+				title: 'Summary',
+				description: group.description || 'Manual journal activity',
+				searchText: `${group.title} ${group.description}`
+			},
+			...group.signals
+		];
+	}
+
+	function scoreJournalSignals(
+		signals: JournalSummarySignal[],
+		context: LauncherContext | undefined
+	): ScoredJournalSignal[] {
+		if (!context?.hasValue) {
+			return signals.map((signal, index) => ({
+				signal,
+				score: Math.max(1, 100 - index),
+				sortOrder: index,
+				titleResult: null,
+				descriptionResult: null
+			}));
+		}
+
+		return fuzzysort
+			.go(
+				context.text,
+				signals.map((signal) => ({ signal, searchText: signal.searchText })),
+				{
+					key: 'searchText',
+					limit: signals.length,
+					threshold: journalMatchThreshold
+				}
+			)
+			.map((result, index) => {
+				const signal = result.obj.signal;
+
+				return {
+					signal,
+					score: Math.max(1, 100 + Math.round(result.score * 20)),
+					sortOrder: index,
+					titleResult: fuzzysort.single(context.text, signal.title),
+					descriptionResult: fuzzysort.single(context.text, signal.description)
+				};
+			});
+	}
+
+	function createJournalSignalItem(
+		group: JournalSummaryGroup,
+		scoredSignal: ScoredJournalSignal
+	): LauncherItem {
+		const signal = scoredSignal.signal;
+
+		return {
+			id: `${group.id}.signal.${signal.id}`,
+			pluginId: 'journal',
+			kind: 'insight',
+			title: signal.title,
+			description: signal.description,
+			titleSegments: getFuzzyHighlightSegments(signal.title, scoredSignal.titleResult),
+			descriptionSegments: getFuzzyHighlightSegments(
+				signal.description,
+				scoredSignal.descriptionResult
+			),
+			score: scoredSignal.score,
+			sortOrder: scoredSignal.sortOrder
+		};
+	}
+
+	function scoreJournalEntries(
+		entries: JournalEntry[],
+		context: LauncherContext | undefined
+	): ScoredJournalEntry[] {
+		if (!context?.hasValue) {
+			return entries.map((entry, index) => ({
+				entry,
+				score: Math.max(1, 98 - index),
+				sortOrder: index,
+				titleResult: null,
+				descriptionResult: null
+			}));
+		}
+
+		return fuzzysort
+			.go(
+				context.text,
+				entries.map((entry) => ({ entry, searchText: getJournalEntrySearchText(entry) })),
+				{
+					key: 'searchText',
+					limit: entries.length,
+					threshold: journalMatchThreshold
+				}
+			)
+			.map((result, index) => {
+				const entry = result.obj.entry;
+				const title = getJournalEntryTitle(entry);
+				const description = getJournalEntryDescription(entry);
+
+				return {
+					entry,
+					score: Math.max(1, 100 + Math.round(result.score * 20)),
+					sortOrder: index,
+					titleResult: fuzzysort.single(context.text, title),
+					descriptionResult: fuzzysort.single(context.text, description)
+				};
+			});
+	}
+
+	function createJournalEntryItem(scoredEntry: ScoredJournalEntry): LauncherItem {
+		const entry = scoredEntry.entry;
+		const title = getJournalEntryTitle(entry);
+		const description = getJournalEntryDescription(entry);
+
+		return {
+			id: `journal.entry.${entry.id}`,
+			pluginId: 'journal-entry',
+			kind: 'action',
+			title,
+			description,
+			titleSegments: getFuzzyHighlightSegments(title, scoredEntry.titleResult),
+			descriptionSegments: getFuzzyHighlightSegments(description, scoredEntry.descriptionResult),
+			selectionKey: getJournalEntrySelectionKey(entry),
+			score: scoredEntry.score,
+			sortOrder: scoredEntry.sortOrder,
+			actions: getJournalEntryActions(entry),
+			menuInfo: [getJournalEntryMenuInfo(entry)]
+		};
+	}
+
+	function getJournalEntryDescription(entry: JournalEntry) {
+		return ['Manual entry', formatHistoryDateLabel(entry.entryDate), getJournalEntryExcerpt(entry)]
+			.filter(Boolean)
+			.join(' - ');
+	}
+
+	function getJournalEntryActions(
+		entry: JournalEntry
+	): [LauncherItemAction, ...LauncherItemAction[]] {
+		return [
+			{
+				id: `journal.entry.${entry.id}.edit`,
+				label: 'Edit entry',
+				safeForEnter: true,
+				run: () => openJournalEntryEditor(entry.entryDate, entry)
+			},
+			{
+				id: `journal.entry.${entry.id}.delete`,
+				label: 'Delete entry',
+				run: () => deleteManualJournalEntry(entry)
+			}
+		];
+	}
+
+	function getJournalEntryMenuInfo(entry: JournalEntry): LauncherMenuInfo {
+		return {
+			id: `journal.entry.${entry.id}.details`,
+			details: [{ value: entry.entryDate }, { value: entry.bodyMarkdown }]
+		};
+	}
+
+	function getJournalEntrySearchText(entry: JournalEntry) {
+		return [
+			entry.entryDate,
+			formatHistoryDateLabel(entry.entryDate),
+			getJournalEntryTitle(entry),
+			getJournalEntryExcerpt(entry),
+			entry.bodyMarkdown,
+			...(entry.tags ?? [])
+		]
+			.filter(isString)
+			.join(' ');
+	}
+
+	function createJournalHistoryItem(scoredEvent: ScoredHistoryEvent): LauncherItem {
+		const event = scoredEvent.event;
+		const description = getHistoryEventDescription(event);
+
+		return {
+			id: `journal.history.${event.id}`,
+			pluginId: 'journal-history',
+			kind: 'action',
+			title: event.rawQuery,
+			description,
+			titleSegments: getFuzzyHighlightSegments(event.rawQuery, scoredEvent.titleResult),
+			descriptionSegments: getFuzzyHighlightSegments(description, scoredEvent.descriptionResult),
+			selectionKey: `journal:${getHistoryEventSelectionKey(event)}`,
+			score: scoredEvent.score,
+			sortOrder: scoredEvent.sortOrder,
+			actions: getJournalHistoryEventActions(event),
+			menuInfo: [getHistoryEventMenuInfo(event)]
+		};
+	}
+
+	function getJournalHistoryEventActions(
+		event: SearchHistoryEvent
+	): [LauncherItemAction, ...LauncherItemAction[]] {
+		return [
+			{
+				id: `journal.history.${event.id}.open`,
+				label: 'Open original',
+				title: 'Open the stored target URL without recording a new History event',
+				safeForEnter: true,
+				run: () => openSearchHistoryEvent(event)
+			},
+			{
+				id: `journal.history.${event.id}.reuse-query`,
+				label: 'Reuse query',
+				title: 'Place this query in Search mode for editing',
+				run: () => reuseSearchHistoryQuery(event)
+			},
+			{
+				id: `journal.history.${event.id}.remove`,
+				label: 'Remove from History',
+				run: () => removeSearchHistoryEvent(event)
+			}
+		];
+	}
+
+	function openJournalEntryEditor(entryDate: string, entry?: JournalEntry) {
+		journalEntryEditor = {
+			key: `journal-${Date.now()}-${entry?.id ?? entryDate}`,
+			entryDate,
+			entry
+		};
+	}
+
+	function closeJournalEntryEditor() {
+		journalEntryEditor = undefined;
+	}
+
+	async function saveJournalEntryDraft(draft: JournalEntryEditorSave) {
+		const savedEntry = draft.entry
+			? await updateJournalEntry({
+					...draft.entry,
+					entryDate: draft.entryDate,
+					bodyMarkdown: draft.bodyMarkdown
+				})
+			: await createJournalEntry({
+					entryDate: draft.entryDate,
+					bodyMarkdown: draft.bodyMarkdown
+				});
+
+		journalEntries = sortJournalEntries([
+			savedEntry,
+			...journalEntries.filter((entry) => entry.id !== savedEntry.id)
+		]);
+		journalEntryEditor = undefined;
+	}
+
+	async function deleteManualJournalEntry(entry: JournalEntry) {
+		await deleteJournalEntry(entry.id);
+		journalEntries = journalEntries.filter((item) => item.id !== entry.id);
+
+		if (journalEntryEditor?.entry?.id === entry.id) {
+			journalEntryEditor = undefined;
+		}
+	}
+
+	function sortJournalEntries(entries: JournalEntry[]) {
+		return [...entries].sort(
+			(a, b) => b.entryDate.localeCompare(a.entryDate) || b.updatedAt.localeCompare(a.updatedAt)
+		);
+	}
+
+	function getJournalEntrySelectionKey(entry: JournalEntry) {
+		return ['journal-entry', entry.id, entry.entryDate, entry.updatedAt].join(':');
 	}
 
 	function getLocalDateString(date: Date) {
@@ -4320,6 +4882,9 @@
 		if (item.pluginId === 'settings') return '';
 		if (item.pluginId === 'bang-data') return '';
 		if (item.pluginId === 'history') return '';
+		if (item.pluginId === 'journal') return '';
+		if (item.pluginId === 'journal-entry') return '';
+		if (item.pluginId === 'journal-history') return '';
 
 		return [item.pluginId, item.rank ? `rank ${formatCount(item.rank)}` : undefined, item.score]
 			.filter(Boolean)
@@ -4372,6 +4937,8 @@
 	{@const primaryActionArmed = rowActive && !stagedMenu && Boolean(primaryAction)}
 	<div
 		class:has-staged-menu={Boolean(stagedMenu)}
+		class:journal-entry-item={item.pluginId === 'journal-entry'}
+		class:journal-history-item={item.pluginId === 'journal-history'}
 		class:primary={item.id === primaryLauncherItem?.id}
 		class="launcher-item action-item compact-action-item"
 		use:trackLauncherTarget={item.id}
@@ -4771,6 +5338,15 @@
 	/>
 {/if}
 
+{#if journalEntryEditor}
+	<JournalEntryEditor
+		session={journalEntryEditor}
+		onSave={saveJournalEntryDraft}
+		onCancel={closeJournalEntryEditor}
+		onDelete={deleteManualJournalEntry}
+	/>
+{/if}
+
 <style>
 	main {
 		width: min(calc(var(--nc-content-width) + 2 * var(--nc-spacing)), 100%);
@@ -4975,6 +5551,15 @@
 	.launcher-group-items > .compact-action-item.primary,
 	.launcher-group-items > .compact-action-item.has-staged-menu {
 		background: var(--launcher-row-active-bg);
+	}
+
+	.launcher-group-items > .compact-action-item.journal-entry-item {
+		background: color-mix(in srgb, var(--green-2) 32%, var(--launcher-list-bg));
+		box-shadow: inset 0.18rem 0 0 color-mix(in srgb, var(--green-7) 72%, transparent);
+	}
+
+	.launcher-group-items > .compact-action-item.journal-history-item {
+		background: color-mix(in srgb, var(--nc-surface-2) 42%, transparent);
 	}
 
 	.group-title-value {

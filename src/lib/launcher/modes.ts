@@ -48,6 +48,14 @@ export const launcherModes = [
 		path: '/history',
 		pluginIds: ['history'],
 		keywords: ['past searches', 'recent searches', 'search history', 'rerun']
+	},
+	{
+		id: 'journal',
+		label: 'Journal',
+		description: 'Review search activity and manual journal entries.',
+		path: '/journal',
+		pluginIds: ['journal'],
+		keywords: ['daily journal', 'search journal', 'timeline', 'patterns', 'notes']
 	}
 ] as const satisfies readonly LauncherMode[];
 

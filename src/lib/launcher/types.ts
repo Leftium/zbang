@@ -53,6 +53,7 @@ export type LauncherGroup = {
 	descriptionSegments?: BangHighlightSegment[];
 	items: LauncherItem[];
 	allItems?: LauncherItem[];
+	actions?: readonly LauncherItemAction[];
 	collapsedItemLimit?: number;
 	matchedCount?: number;
 	totalCount?: number;
@@ -72,13 +73,13 @@ export type LauncherPlugin = {
 };
 
 export type LauncherModeId =
-	'everything' | 'bangs' | 'compromise' | 'search' | 'settings' | 'history';
+	'everything' | 'bangs' | 'compromise' | 'search' | 'settings' | 'history' | 'journal';
 
 export type LauncherMode = {
 	id: LauncherModeId;
 	label: string;
 	description: string;
-	path: '/' | '/search' | '/bang' | '/nlp' | '/settings' | '/history';
+	path: '/' | '/search' | '/bang' | '/nlp' | '/settings' | '/history' | '/journal';
 	pluginIds: readonly string[];
 	keywords: readonly string[];
 };
