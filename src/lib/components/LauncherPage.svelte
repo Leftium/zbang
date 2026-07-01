@@ -32,7 +32,8 @@
 		formatBangCodes,
 		getBangCodeSet,
 		hasBangCodeOverlap,
-		normalizeBangCode
+		normalizeBangCode,
+		removeBangCodeOverlaps
 	} from '$lib/launcher/bang-code';
 	import { createBangCodeMap, parseBangComposition } from '$lib/launcher/bang-composition';
 	import { getBangExecutionTargetUrls, getSearchUrl } from '$lib/launcher/bang-resolver';
@@ -355,13 +356,11 @@
 	// Keep NLP signals in the shared launcher context so plugins can score and enrich items.
 	const compromiseSignals = $derived(getCompromiseSignals(value));
 	const myBangCodes = $derived(getBangCodeSet(myBangs));
-	const providerBangs = $derived(
-		(bangCatalog?.items ?? []).filter((item) => !hasBangCodeOverlap(item, myBangCodes))
-	);
+	const providerBangs = $derived(removeBangCodeOverlaps(bangCatalog?.items ?? [], myBangCodes));
 	const allBangs = $derived([...myBangs, ...providerBangs]);
 	const preparedMyBangs = $derived(prepareBangs(myBangs));
 	const preparedProviderBangs = $derived(prepareBangs(providerBangs));
-	const providerBangCount = $derived(bangCatalog?.items.length ?? 0);
+	const providerBangCount = $derived(providerBangs.length);
 	const bangCodeMap = $derived(createBangCodeMap(allBangs));
 	const bangComposition = $derived(parseBangComposition(value, bangCodeMap, bangEntry));
 	const bangPickerActive = $derived(Boolean(bangEntry));

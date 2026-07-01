@@ -104,6 +104,10 @@ The route resolves the query and navigates with `location.replace(targetUrl)`.
 Resolution should use:
 
 - `myBangs` before provider catalog bangs.
+- MyBang precedence is per normalized code, not per provider record. If a MyBang
+  claims `!m` and `!map`, a provider bang with `!m`, `!maps`, and `!map` should
+  keep resolving through `!maps`; only provider codes claimed by MyBangs are
+  shadowed.
 - The selected bang provider catalog as fallback for bang tokens not handled by MyBangs.
 - The configured search provider for normal search and unknown forwarded bangs.
 - The configured custom search template when the selected search provider is custom.

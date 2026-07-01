@@ -60,3 +60,19 @@ export function getBangCodeSet(items: ZbangRecord[]) {
 export function hasBangCodeOverlap(item: ZbangRecord, codes: Set<string>) {
 	return item.code.some((code) => codes.has(normalizeBangCode(code)));
 }
+
+export function removeBangCodeOverlap(item: ZbangRecord, codes: Set<string>) {
+	const availableCodes = item.code.map(normalizeBangCode).filter((code) => !codes.has(code));
+
+	if (!availableCodes.length) return undefined;
+	if (availableCodes.length === item.code.length) return item;
+
+	return {
+		...item,
+		code: availableCodes
+	};
+}
+
+export function removeBangCodeOverlaps(items: ZbangRecord[], codes: Set<string>) {
+	return items.flatMap((item) => removeBangCodeOverlap(item, codes) ?? []);
+}
