@@ -1,14 +1,17 @@
 import { createHash } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+	BANG_CATALOG_VARIANTS,
 	BANG_SOURCES,
 	countSourceBangs,
 	generateDuckDuckGoCatalog,
 	generateKagiCatalog,
+	splitZbangCatalog,
 	validateZbangCatalog,
+	type BangCatalogVariant,
 	type BangProviderId,
 	type BangSourceId,
 	type PersistedBangSource,
@@ -17,6 +20,7 @@ import {
 
 type CatalogOutput = {
 	provider: BangProviderId;
+	variant: BangCatalogVariant;
 	filename: string;
 	catalog: ZbangCatalog;
 };
@@ -29,24 +33,37 @@ async function main() {
 		(await Promise.all(BANG_SOURCES.map(downloadSource))).map((source) => [source.id, source])
 	);
 	const duckDuckGoSource = requireSource(sources, 'duckduckgo');
-	const outputs: CatalogOutput[] = [
+	const providerCatalogs = [
 		{
 			provider: 'duckduckgo',
-			filename: 'zbang.catalog.duckduckgo.json',
 			catalog: generateDuckDuckGoCatalog(duckDuckGoSource)
 		},
 		{
 			provider: 'kagi',
-			filename: 'zbang.catalog.kagi.json',
 			catalog: generateKagiCatalog(
 				requireSource(sources, 'kagi-shared'),
 				requireSource(sources, 'kagi-kagi'),
 				duckDuckGoSource
 			)
 		}
-	];
+	] satisfies Array<{ provider: BangProviderId; catalog: ZbangCatalog }>;
+	const outputs: CatalogOutput[] = providerCatalogs.flatMap(({ provider, catalog }) => {
+		const variants = splitZbangCatalog(catalog);
+
+		return BANG_CATALOG_VARIANTS.map((variant) => ({
+			provider,
+			variant,
+			filename: getCatalogFilename(provider, variant),
+			catalog: variants[variant]
+		}));
+	});
 
 	await mkdir(catalogDir, { recursive: true });
+	await Promise.all(
+		(['duckduckgo', 'kagi'] satisfies BangProviderId[]).map((provider) =>
+			rm(resolve(catalogDir, `zbang.catalog.${provider}.json`), { force: true })
+		)
+	);
 
 	for (const output of outputs) {
 		const errors = validateZbangCatalog(output.catalog, output.provider);
@@ -61,7 +78,7 @@ async function main() {
 
 		console.log(
 			[
-				`${output.provider}: ${output.catalog.items.length.toLocaleString()} records`,
+				`${output.provider} ${output.variant}: ${output.catalog.items.length.toLocaleString()} records`,
 				`${output.catalog.dedupedCount?.toLocaleString() ?? 0} deduped`,
 				`${Buffer.byteLength(json).toLocaleString()} bytes`,
 				path
@@ -78,6 +95,10 @@ async function main() {
 			].join(' | ')
 		);
 	}
+}
+
+function getCatalogFilename(provider: BangProviderId, variant: BangCatalogVariant) {
+	return `zbang.catalog.${provider}.${variant}.json`;
 }
 
 async function downloadSource(source: (typeof BANG_SOURCES)[number]): Promise<PersistedBangSource> {

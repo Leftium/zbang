@@ -1,11 +1,13 @@
 import type { ZbangRecord } from '$lib/bang-data';
 import type { BangHighlightSegment } from '$lib/bang-filter';
 
+export type LauncherHref = `/bang#${string}`;
+
 export type LauncherItemAction = {
 	id: string;
 	label: string;
 	title?: string;
-	href?: string;
+	href?: LauncherHref;
 	safeForEnter?: boolean;
 	run: () => void | Promise<void>;
 };

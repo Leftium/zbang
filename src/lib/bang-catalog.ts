@@ -1,5 +1,6 @@
 export type BangSourceId = 'duckduckgo' | 'kagi-shared' | 'kagi-kagi';
 export type BangProviderId = 'duckduckgo' | 'kagi';
+export type BangCatalogVariant = 'popular' | 'extended';
 
 export type BangSourceDefinition = {
 	id: BangSourceId;
@@ -67,7 +68,9 @@ type DuckDuckGoRank = {
 	domain: string;
 };
 
-const GENERATOR_VERSION = 3;
+const GENERATOR_VERSION = 4;
+
+export const BANG_CATALOG_VARIANTS: BangCatalogVariant[] = ['popular', 'extended'];
 
 export const BANG_SOURCES: BangSourceDefinition[] = [
 	{
@@ -129,6 +132,19 @@ export function generateKagiCatalog(
 			getCatalogSource(duckDuckGoSource)
 		],
 		items
+	};
+}
+
+export function splitZbangCatalog(catalog: ZbangCatalog): Record<BangCatalogVariant, ZbangCatalog> {
+	return {
+		popular: {
+			...catalog,
+			items: catalog.items.filter((item) => item.popularity > 0)
+		},
+		extended: {
+			...catalog,
+			items: catalog.items.filter((item) => item.popularity === 0)
+		}
 	};
 }
 

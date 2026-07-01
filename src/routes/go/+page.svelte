@@ -5,10 +5,9 @@
 	import { readExecutionSettings, readMyBangs } from '$lib/bang-data';
 	import DefaultSearchSetup from '$lib/components/DefaultSearchSetup.svelte';
 	import {
-		getBangExecutionItems,
 		getSearchUrl,
 		hasBangToken,
-		resolveBangExecution
+		resolveBangExecutionWithExtendedFallback
 	} from '$lib/launcher/bang-resolver';
 	import {
 		createBangSearchHistoryEvent,
@@ -63,9 +62,23 @@
 				readMyBangs().catch(() => []),
 				loadShippedBangCatalog(executionSettings.bangProvider)
 			]);
-			const providerBangs = catalogResult.error ? [] : catalogResult.data.items;
-			const items = getBangExecutionItems(myBangs, providerBangs);
-			const result = resolveBangExecution(query, items, executionSettings);
+			const popularProviderBangs = catalogResult.error ? [] : catalogResult.data.items;
+			const { result } = await resolveBangExecutionWithExtendedFallback(
+				query,
+				myBangs,
+				popularProviderBangs,
+				executionSettings,
+				{
+					loadExtendedBangs: async () => {
+						const extendedResult = await loadShippedBangCatalog(
+							executionSettings.bangProvider,
+							'extended'
+						);
+
+						return extendedResult.error ? undefined : extendedResult.data.items;
+					}
+				}
+			);
 
 			await recordGoHistoryEvent(
 				createBangSearchHistoryEvent({

@@ -56,10 +56,8 @@ Resolve catalog asset URLs with relative `new URL(..., import.meta.url)` imports
 ```ts
 const CATALOG_URLS = {
 	duckduckgo: {
-		popular: new URL('../../catalogs/zbang.catalog.duckduckgo.popular.json', import.meta.url)
-			.href,
-		extended: new URL('../../catalogs/zbang.catalog.duckduckgo.extended.json', import.meta.url)
-			.href
+		popular: new URL('../../catalogs/zbang.catalog.duckduckgo.popular.json', import.meta.url).href,
+		extended: new URL('../../catalogs/zbang.catalog.duckduckgo.extended.json', import.meta.url).href
 	},
 	kagi: {
 		popular: new URL('../../catalogs/zbang.catalog.kagi.popular.json', import.meta.url).href,
@@ -252,22 +250,23 @@ Stage 1 completed:
 
 Stage 1 remaining:
 
-- Verify in a browser/network trace whether the launcher downloads only the selected provider catalog on first mount.
+- Superseded by Stage 2 popular/extended network verification.
 
-Stage 2 planned: popular/extended catalog split.
+Stage 2 completed:
 
-Milestones:
+- Updated catalog generation types and CLI output mapping for popular and extended variants.
+- Split generated catalogs by `popularity > 0` and `popularity === 0` after provider-specific normalization, Kagi boosts, dedupe, and sorting.
+- Bumped `generatorVersion` to `4`, regenerated the four catalog files, and removed duplicated full-catalog artifacts.
+- Updated the shipped catalog loader to support provider plus variant URLs and per-variant caching.
+- Updated launcher bang state to load popular by default and show `My`, `Popular provider`, and `Extended provider` groups.
+- Added extended group load, loading, error, and retry rows without making extended load persistent.
+- Updated launcher bang execution to retry with extended records when unresolved bang tokens remain.
+- Updated `/go` and service-worker `/go` resolution to use the same popular-first, extended-retry behavior.
+- Verified split definitions, generated asset sizes, type checking, and production build output.
 
-1. Update catalog generation types and CLI output mapping for popular and extended variants.
-2. Split generated catalogs by `popularity > 0` and `popularity === 0` after provider-specific normalization, Kagi boosts, dedupe, and sorting.
-3. Bump `generatorVersion`, regenerate the four catalog files, and remove duplicated full-catalog artifacts if they are no longer used.
-4. Update the shipped catalog loader to support provider plus variant URLs, per-variant caching, and combined full-resolution helpers where needed.
-5. Update launcher bang state to load popular by default and show `My`, `Popular provider`, and `Extended provider` groups.
-6. Add extended group load, loading, error, and retry rows without making extended load persistent.
-7. Update launcher bang execution to retry with extended records when unresolved bang tokens remain.
-8. Update `/go` and service-worker `/go` resolution to use the same popular-first, extended-retry behavior.
-9. Update catalog documentation and size/performance notes after regeneration.
-10. Verify that initial runtime fetches only the selected provider's popular catalog and that extended fetches happen only after explicit picker load or execution fallback.
+Stage 2 remaining:
+
+- Verify in a browser/network trace that initial runtime fetches only the selected provider's popular catalog and that extended fetches happen only after explicit picker load or execution fallback.
 
 ## API and Store Cleanup
 
@@ -317,15 +316,15 @@ Compare before and after the refactor:
 - time until local bang autocomplete is usable
 - behavior when catalog fetch fails
 
-Local build observations after the shipped-catalog refactor:
+Local build observations after the popular/extended split:
 
-- `pnpm build` emits both catalogs as Vite content-hashed JSON assets under `_app/immutable/assets/`.
-- DuckDuckGo catalog asset: about 2.36 MB raw, 436 KB gzip, 327 KB Brotli.
-- Kagi catalog asset: about 2.23 MB raw, 398 KB gzip, 301 KB Brotli.
-- The launcher JS contains catalog asset URL strings, not the JSON catalog payloads.
-- The Vite manifest associates both catalog JSON assets with the launcher chunk because both URLs are statically imported. Browser/network verification should confirm whether SvelteKit or browser preload behavior fetches both catalogs, or whether only the selected provider catalog is downloaded by the runtime `fetch()` call.
-
-Stage 2 should replace these observations with popular and extended asset measurements. Measure compressed transfer first, then parse time and heap impact.
+- `pnpm build` emits all four catalogs as Vite content-hashed JSON assets under `_app/immutable/assets/`.
+- DuckDuckGo popular catalog asset: about 577 KB raw, 104 KB gzip, 80 KB Brotli.
+- DuckDuckGo extended catalog asset: about 1.82 MB raw, 303 KB gzip, 237 KB Brotli.
+- Kagi popular catalog asset: about 612 KB raw, 101 KB gzip, 79 KB Brotli.
+- Kagi extended catalog asset: about 1.66 MB raw, 267 KB gzip, 211 KB Brotli.
+- The launcher and service-worker builds resolve catalog asset URL strings, not the JSON catalog payloads.
+- Browser/network verification should confirm whether SvelteKit or browser preload behavior fetches only the selected provider's popular catalog on mount, and only fetches extended catalogs after explicit picker load or execution fallback.
 
 ## Suggested Sequence
 
@@ -338,7 +337,7 @@ Stage 2 should replace these observations with popular and extended asset measur
 7. Remove runtime source refresh, stale reminders, and settings refresh UI. Done.
 8. Remove non-user IndexedDB stores and APIs. Done.
 9. Verify build output and deployed asset cache headers.
-10. Split shipped provider catalogs into popular and extended variants.
-11. Add separate popular and extended bang groups, with manual extended loading in the picker.
-12. Add automatic extended retry for direct bang execution.
+10. Split shipped provider catalogs into popular and extended variants. Done.
+11. Add separate popular and extended bang groups, with manual extended loading in the picker. Done.
+12. Add automatic extended retry for direct bang execution. Done.
 13. Verify network behavior, cache headers, catalog sizes, parse time, and heap impact for the split assets.

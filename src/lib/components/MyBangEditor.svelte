@@ -21,6 +21,7 @@
 
 	import type { BangProviderId, MyBangRecord, ZbangRecord } from '$lib/bang-data';
 	import { formatBangCodes, normalizeBangCode, parseBangCodeInput } from '$lib/launcher/bang-code';
+	import type { LauncherHref } from '$lib/launcher/types';
 
 	type FieldName = 'name' | 'codes' | 'urlTemplate';
 	type ValidationErrors = Partial<Record<FieldName, string>>;
@@ -38,7 +39,7 @@
 		session: MyBangEditorSession;
 		myBangs: MyBangRecord[];
 		providerBangs: ZbangRecord[];
-		getShareHref: (draft: SharedMyBangDraft) => string | undefined;
+		getShareHref: (draft: SharedMyBangDraft) => LauncherHref | undefined;
 		onSave: (draft: MyBangEditorSave) => void | Promise<void>;
 		onShare: (draft: SharedMyBangDraft) => void | Promise<void>;
 		onCancel: () => void;

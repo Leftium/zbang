@@ -2,10 +2,9 @@
 
 import { readExecutionSettings, readMyBangs } from './lib/bang-data';
 import {
-	getBangExecutionItems,
 	getSearchUrl,
 	hasBangToken,
-	resolveBangExecution
+	resolveBangExecutionWithExtendedFallback
 } from './lib/launcher/bang-resolver';
 import {
 	createBangSearchHistoryEvent,
@@ -201,9 +200,23 @@ async function handleGoRequest(request: Request, query: string): Promise<Respons
 			readMyBangs().catch(() => []),
 			loadShippedBangCatalog(executionSettings.bangProvider)
 		]);
-		const providerBangs = catalogResult.error ? [] : catalogResult.data.items;
-		const items = getBangExecutionItems(myBangs, providerBangs);
-		const result = resolveBangExecution(query, items, executionSettings);
+		const popularProviderBangs = catalogResult.error ? [] : catalogResult.data.items;
+		const { result } = await resolveBangExecutionWithExtendedFallback(
+			query,
+			myBangs,
+			popularProviderBangs,
+			executionSettings,
+			{
+				loadExtendedBangs: async () => {
+					const extendedResult = await loadShippedBangCatalog(
+						executionSettings.bangProvider,
+						'extended'
+					);
+
+					return extendedResult.error ? undefined : extendedResult.data.items;
+				}
+			}
+		);
 
 		if (result.targetUrls.length > 1) {
 			return fetch(request);

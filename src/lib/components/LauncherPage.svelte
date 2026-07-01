@@ -55,7 +55,10 @@
 		removeBangCodeOverlaps
 	} from '$lib/launcher/bang-code';
 	import { createBangCodeMap, parseBangComposition } from '$lib/launcher/bang-composition';
-	import { getBangExecutionTargetUrls, getSearchUrl } from '$lib/launcher/bang-resolver';
+	import {
+		getSearchUrl,
+		resolveBangExecutionWithExtendedFallback
+	} from '$lib/launcher/bang-resolver';
 	import { getCompromiseSignals, unique } from '$lib/launcher/compromise-signals';
 	import { getLauncherMode, launcherModes } from '$lib/launcher/modes';
 	import {
@@ -80,6 +83,7 @@
 		CompromiseSignals,
 		LauncherContext,
 		LauncherGroup,
+		LauncherHref,
 		LauncherItem,
 		LauncherItemAction,
 		LauncherMenuInfo,
@@ -190,7 +194,8 @@
 		/\b(?:anthropic|chatgpt|claude|copilot|fastgpt|gemini|grok|llama|llm|mistral|openai|perplexity|phind)\b|duck\.?ai|kagi assistant/i;
 	const launcherGroupItemLimits: Record<string, number> = {
 		'bangs.my': 8,
-		'bangs.provider': 8
+		'bangs.popular': 8,
+		'bangs.extended': 8
 	};
 	type UrlLauncherState = {
 		key: string;
@@ -271,6 +276,7 @@
 	type TokenCount = { count: number; href?: string; title: string };
 	type TextRange = { start: number; end: number };
 	type StatusHint = { key: string; label: string };
+	type BangLauncherItemSource = 'my' | 'popular' | 'extended';
 	type StagedActionMenu = {
 		target: PrimaryLauncherTarget;
 		actions: LauncherAction[];
@@ -370,7 +376,7 @@
 			options: bangProviders.map((value) => ({
 				id: value,
 				label: bangProviderLabels[value],
-				description: `Use ${bangProviderLabels[value]} for full list and fallback bang execution.`,
+				description: `Use ${bangProviderLabels[value]} for built-in and fallback bang execution.`,
 				aliases: [value, bangProviderLabels[value], 'bang catalog'],
 				selected: () => settings.bangProvider === value,
 				run: () => setBangProvider(value)
@@ -403,10 +409,12 @@
 			]
 		}
 	];
-	let bangCatalog = $state<RankedZbangCatalog>();
-	let loadedBangProvider = $state<BangProviderId>();
+	let popularBangCatalog = $state<RankedZbangCatalog>();
+	let extendedBangCatalog = $state<RankedZbangCatalog>();
+	let loadedPopularBangProvider = $state<BangProviderId>();
+	let loadedExtendedBangProvider = $state<BangProviderId>();
 	let textareaElement = $state<HTMLTextAreaElement>();
-	let bangEntry = $state<BangEntry>(initialUrlLauncherState.bangEntry);
+	let bangEntry = $state<BangEntry | undefined>(initialUrlLauncherState.bangEntry);
 	let fullscreen = $state(false);
 	let wordwrap = $state(true);
 	let enterNewlineRestored = $state(false);
@@ -424,7 +432,10 @@
 	let itemShortcutAnchor = $state<ItemShortcutAnchor>();
 	let targetShortcutInitiatorGateOpen = $state(false);
 	let myBangWrite = Promise.resolve();
-	let loadingBangProvider = $state<BangProviderId>();
+	let loadingPopularBangProvider = $state<BangProviderId>();
+	let loadingExtendedBangProvider = $state<BangProviderId>();
+	let extendedBangLoadError = $state('');
+	let extendedBangLoadErrorProvider = $state<BangProviderId>();
 	let doubleKeypress = $state<string>();
 	let tripleKeypress = $state<string>();
 	let expandedLauncherGroups = $state<Record<string, boolean>>({});
@@ -463,18 +474,32 @@
 	// Keep NLP signals in the shared launcher context so plugins can score and enrich items.
 	const compromiseSignals = $derived(getCompromiseSignals(value));
 	const myBangCodes = $derived(getBangCodeSet(myBangs));
-	const providerBangs = $derived(removeBangCodeOverlaps(bangCatalog?.items ?? [], myBangCodes));
+	const popularProviderBangs = $derived(
+		removeBangCodeOverlaps(popularBangCatalog?.items ?? [], myBangCodes)
+	);
+	const popularProviderBangCodes = $derived(getBangCodeSet([...myBangs, ...popularProviderBangs]));
+	const extendedProviderBangs = $derived(
+		removeBangCodeOverlaps(extendedBangCatalog?.items ?? [], popularProviderBangCodes)
+	);
+	const providerBangs = $derived([...popularProviderBangs, ...extendedProviderBangs]);
 	const allBangs = $derived([...myBangs, ...providerBangs]);
 	const preparedMyBangs = $derived(prepareBangs(myBangs));
-	const preparedProviderBangs = $derived(prepareBangs(providerBangs));
-	const providerBangCount = $derived(providerBangs.length);
+	const preparedPopularProviderBangs = $derived(prepareBangs(popularProviderBangs));
+	const preparedExtendedProviderBangs = $derived(prepareBangs(extendedProviderBangs));
+	const popularProviderBangCount = $derived(popularProviderBangs.length);
+	const extendedProviderBangCount = $derived(extendedProviderBangs.length);
 	const bangCodeMap = $derived(createBangCodeMap(allBangs));
 	const bangComposition = $derived(parseBangComposition(value, bangCodeMap, bangEntry));
 	const bangPickerActive = $derived(Boolean(bangEntry));
 	const bangFilterInput = $derived(bangEntry ? `!${bangEntry.fragment}` : value);
 	const hasBangFilter = $derived(bangEntry ? Boolean(bangEntry.fragment.trim()) : hasValue);
 	const myBangResults = $derived(filterBangs(bangFilterInput, preparedMyBangs));
-	const providerBangResults = $derived(filterBangs(bangFilterInput, preparedProviderBangs));
+	const popularProviderBangResults = $derived(
+		filterBangs(bangFilterInput, preparedPopularProviderBangs)
+	);
+	const extendedProviderBangResults = $derived(
+		filterBangs(bangFilterInput, preparedExtendedProviderBangs)
+	);
 	const launcherContext = $derived({
 		text: value.trim(),
 		hasValue,
@@ -594,8 +619,20 @@
 	$effect(() => {
 		const provider = settings.bangProvider;
 
-		if (loadedBangProvider !== provider && loadingBangProvider !== provider) {
-			void loadBangCatalog(provider);
+		if (loadedPopularBangProvider !== provider && loadingPopularBangProvider !== provider) {
+			void loadPopularBangCatalog(provider);
+		}
+
+		if (loadedExtendedBangProvider && loadedExtendedBangProvider !== provider) {
+			loadedExtendedBangProvider = undefined;
+			extendedBangCatalog = undefined;
+			extendedBangLoadError = '';
+			extendedBangLoadErrorProvider = undefined;
+		}
+
+		if (extendedBangLoadErrorProvider && extendedBangLoadErrorProvider !== provider) {
+			extendedBangLoadError = '';
+			extendedBangLoadErrorProvider = undefined;
 		}
 	});
 
@@ -737,9 +774,9 @@
 		return url.toString();
 	}
 
-	function getMyBangShareHref(draft: SharedMyBangDraft) {
+	function getMyBangShareHref(draft: SharedMyBangDraft): LauncherHref | undefined {
 		const hash = createSharedMyBangHash(draft);
-		return hash ? `/bang${hash}` : undefined;
+		return hash ? (`/bang${hash}` as LauncherHref) : undefined;
 	}
 
 	function getMyBangShareUrl(draft: SharedMyBangDraft) {
@@ -767,8 +804,20 @@
 		clearBangFanoutMessage();
 
 		const executionSettings = getExecutionSettingsSnapshot();
-		const targetUrls = getBangExecutionTargetUrls(composition, executionSettings);
-		const actionLabel = composition.payloadText ? 'Search' : 'Open';
+		const resolution = await resolveBangExecutionWithExtendedFallback(
+			rawQuery,
+			myBangs,
+			popularProviderBangs,
+			executionSettings,
+			{
+				extendedBangs: extendedProviderBangs,
+				extendedLoaded: loadedExtendedBangProvider === executionSettings.bangProvider,
+				loadExtendedBangs: () => loadExtendedBangRecords(executionSettings.bangProvider)
+			}
+		);
+		const resolvedComposition = resolution.result.composition;
+		const targetUrls = resolution.result.targetUrls;
+		const actionLabel = resolvedComposition.payloadText ? 'Search' : 'Open';
 
 		if (!targetUrls.length) return;
 
@@ -778,7 +827,7 @@
 				source: 'launcher',
 				rawQuery,
 				settings: executionSettings,
-				composition,
+				composition: resolvedComposition,
 				targetUrls
 			})
 		);
@@ -988,22 +1037,59 @@
 		return btoa(binary);
 	}
 
-	async function loadBangCatalog(provider: BangProviderId) {
-		loadingBangProvider = provider;
-		const result = await loadShippedBangCatalog(provider);
+	async function loadPopularBangCatalog(provider: BangProviderId) {
+		loadingPopularBangProvider = provider;
+		if (loadedPopularBangProvider !== provider) popularBangCatalog = undefined;
+		const result = await loadShippedBangCatalog(provider, 'popular');
 
-		if (loadingBangProvider === provider) loadingBangProvider = undefined;
+		if (loadingPopularBangProvider === provider) loadingPopularBangProvider = undefined;
 		if (settings.bangProvider !== provider) return;
 
-		loadedBangProvider = provider;
+		loadedPopularBangProvider = provider;
 
 		if (result.error) {
-			bangCatalog = undefined;
-			console.error('Failed to load shipped bang catalog', result.error);
+			popularBangCatalog = undefined;
+			console.error('Failed to load shipped popular bang catalog', result.error);
 			return;
 		}
 
-		bangCatalog = result.data;
+		popularBangCatalog = result.data;
+	}
+
+	async function loadExtendedBangCatalog(provider: BangProviderId) {
+		loadingExtendedBangProvider = provider;
+		extendedBangLoadError = '';
+		extendedBangLoadErrorProvider = undefined;
+		const result = await loadShippedBangCatalog(provider, 'extended');
+
+		if (loadingExtendedBangProvider === provider) loadingExtendedBangProvider = undefined;
+		if (settings.bangProvider !== provider) return undefined;
+
+		if (result.error) {
+			extendedBangCatalog = undefined;
+			extendedBangLoadError = getCatalogLoadErrorMessage(result.error);
+			extendedBangLoadErrorProvider = provider;
+			console.error('Failed to load shipped extended bang catalog', result.error);
+			return undefined;
+		}
+
+		loadedExtendedBangProvider = provider;
+		extendedBangCatalog = result.data;
+		extendedBangLoadError = '';
+		extendedBangLoadErrorProvider = undefined;
+		return result.data;
+	}
+
+	async function loadExtendedBangRecords(provider: BangProviderId) {
+		if (loadedExtendedBangProvider === provider && extendedBangCatalog) {
+			return extendedBangCatalog.items;
+		}
+
+		return (await loadExtendedBangCatalog(provider))?.items;
+	}
+
+	function getCatalogLoadErrorMessage(error: unknown) {
+		return error instanceof Error ? error.message : 'Could not load extended bangs';
 	}
 
 	async function loadMyBangs() {
@@ -3013,11 +3099,11 @@
 		if (!bangPickerActive) return undefined;
 		if (myBangs.length > 0) return undefined;
 
-		const providerGroup = visibleLauncherGroups.find((group) => group.id === 'bangs.provider');
-
-		if (!providerGroup || getVisibleGroupItems(providerGroup).length === 0) return undefined;
-
-		return providerGroup;
+		return visibleLauncherGroups.find(
+			(group) =>
+				(group.id === 'bangs.popular' || group.id === 'bangs.extended') &&
+				getVisibleGroupItems(group).length > 0
+		);
 	}
 
 	function getDefaultBangPickerPrimaryTarget() {
@@ -3154,26 +3240,18 @@
 	}
 
 	function shouldRenderGroup(group: LauncherGroup) {
-		const isEmptyMyBangsGroup =
-			group.id === 'bangs.my' && (mode.id === 'bangs' || bangPickerActive);
-		const isBangPickerProviderGroup =
-			group.id === 'bangs.provider' && bangPickerActive && myBangResults.items.length > 0;
+		const isBangGroup = group.pluginId === 'bangs' && (mode.id === 'bangs' || bangPickerActive);
 		const isMatchedSettingsGroup =
 			group.pluginId === 'settings' &&
 			mode.id === 'settings' &&
 			hasValue &&
 			group.matchedCount !== undefined;
 
-		return (
-			group.items.length > 0 ||
-			isEmptyMyBangsGroup ||
-			isBangPickerProviderGroup ||
-			isMatchedSettingsGroup
-		);
+		return group.items.length > 0 || isBangGroup || isMatchedSettingsGroup;
 	}
 
-	function getBangGroupCollapsedLimit(items: LauncherItem[]) {
-		return mode.id === 'bangs' ? launcherGroupItemLimits['bangs.provider'] : items.length;
+	function getBangGroupCollapsedLimit(items: LauncherItem[], groupId: string) {
+		return mode.id === 'bangs' ? (launcherGroupItemLimits[groupId] ?? 8) : items.length;
 	}
 
 	function getVisibleGroupItems(group: LauncherGroup) {
@@ -3225,7 +3303,7 @@
 		if ((mode.id !== 'bangs' && !bangPickerActive) || hasBangFilter) return false;
 
 		if (group.id === 'bangs.my') return myBangs.length > 0;
-		if (group.id === 'bangs.provider') return true;
+		if (group.id === 'bangs.popular' || group.id === 'bangs.extended') return true;
 
 		return false;
 	}
@@ -3288,7 +3366,9 @@
 						mode.id === 'bangs' && !hasBangFilter
 							? [createNewCustomBangLauncherItem(), ...myItems]
 							: myItems;
-					const providerItems = createBangLauncherItems(providerBangResults.items, 'provider');
+					const popularItems = createBangLauncherItems(popularProviderBangResults.items, 'popular');
+					const extendedItems = getExtendedBangLauncherItems();
+					const providerLabel = bangProviderLabels[settings.bangProvider];
 
 					return [
 						{
@@ -3297,19 +3377,35 @@
 							title: 'My bangs',
 							description: 'Your custom bangs. Used first.',
 							items: visibleMyItems,
-							collapsedItemLimit: getBangGroupCollapsedLimit(visibleMyItems),
+							collapsedItemLimit: getBangGroupCollapsedLimit(visibleMyItems, 'bangs.my'),
 							matchedCount: myBangResults.total,
 							totalCount: myBangs.length
 						},
 						{
-							id: 'bangs.provider',
+							id: 'bangs.popular',
 							pluginId: 'bangs',
-							title: `${bangProviderLabels[settings.bangProvider]} bangs`,
-							description: 'Built-in bangs. Used as fallback.',
-							items: providerItems,
-							collapsedItemLimit: getBangGroupCollapsedLimit(providerItems),
-							matchedCount: providerBangResults.total,
-							totalCount: providerBangCount
+							title: `Popular ${providerLabel} bangs`,
+							description: 'Default built-in bangs. Used as fallback.',
+							items: popularItems,
+							collapsedItemLimit: getBangGroupCollapsedLimit(popularItems, 'bangs.popular'),
+							matchedCount: popularProviderBangResults.total,
+							totalCount: popularProviderBangCount
+						},
+						{
+							id: 'bangs.extended',
+							pluginId: 'bangs',
+							title: `Extended ${providerLabel} bangs`,
+							description: 'Long-tail built-in bangs. Loaded on demand.',
+							items: extendedItems,
+							collapsedItemLimit: getBangGroupCollapsedLimit(extendedItems, 'bangs.extended'),
+							matchedCount:
+								loadedExtendedBangProvider === settings.bangProvider
+									? extendedProviderBangResults.total
+									: undefined,
+							totalCount:
+								loadedExtendedBangProvider === settings.bangProvider
+									? extendedProviderBangCount
+									: undefined
 						}
 					];
 				}
@@ -4498,7 +4594,7 @@
 
 	function createBangLauncherItems(
 		results: BangFilterResult[],
-		source: 'my' | 'provider'
+		source: BangLauncherItemSource
 	): LauncherItem[] {
 		return results.map(({ item, score, highlights }, index) => {
 			const itemId = `bangs.${source}.${index}.${item.code[0] ?? item.rank}`;
@@ -4542,9 +4638,76 @@
 		};
 	}
 
+	function getExtendedBangLauncherItems(): LauncherItem[] {
+		const provider = settings.bangProvider;
+		const providerLabel = bangProviderLabels[provider];
+
+		if (loadedExtendedBangProvider === provider) {
+			return createBangLauncherItems(extendedProviderBangResults.items, 'extended');
+		}
+
+		if (loadingExtendedBangProvider === provider) {
+			return [
+				{
+					id: `bangs.extended.${provider}.loading`,
+					pluginId: 'bangs',
+					kind: 'insight',
+					title: `Loading extended ${providerLabel} bangs`,
+					score: 100
+				}
+			];
+		}
+
+		if (extendedBangLoadError && extendedBangLoadErrorProvider === provider) {
+			return [
+				{
+					id: `bangs.extended.${provider}.error`,
+					pluginId: 'bangs',
+					kind: 'action',
+					title: `Could not load extended ${providerLabel} bangs`,
+					description: extendedBangLoadError,
+					selectionKey: `bangs:extended:${provider}:error`,
+					score: 100,
+					actions: [
+						{
+							id: `bangs.extended.${provider}.retry`,
+							label: 'Retry',
+							safeForEnter: true,
+							run: async () => {
+								await loadExtendedBangCatalog(provider);
+							}
+						}
+					]
+				}
+			];
+		}
+
+		return [
+			{
+				id: `bangs.extended.${provider}.load`,
+				pluginId: 'bangs',
+				kind: 'action',
+				title: `Load extended ${providerLabel} bangs`,
+				description: 'Load long-tail bangs for this session.',
+				selectionKey: `bangs:extended:${provider}:load`,
+				score: 100,
+				actions: [
+					{
+						id: `bangs.extended.${provider}.load.primary`,
+						label: 'Load extended bangs',
+						safeForEnter: true,
+						run: async () => {
+							await loadExtendedBangCatalog(provider);
+						}
+					}
+				]
+			}
+		];
+	}
+
 	function getBangItemActions(
 		item: ZbangRecord,
-		source: 'my' | 'provider',
+		source: BangLauncherItemSource,
 		itemId: string
 	): [LauncherItemAction, ...LauncherItemAction[]] {
 		if (mode.id === 'bangs') {
@@ -4625,7 +4788,7 @@
 
 	function getBangMembershipAction(
 		item: ZbangRecord,
-		source: 'my' | 'provider',
+		source: BangLauncherItemSource,
 		itemId: string
 	): LauncherItemAction {
 		return {
@@ -4653,11 +4816,11 @@
 		};
 	}
 
-	function getBangMembershipActionLabel(source: 'my' | 'provider') {
+	function getBangMembershipActionLabel(source: BangLauncherItemSource) {
 		return source === 'my' ? 'Remove from My Bangs' : 'Add to My Bangs';
 	}
 
-	async function updateBangMembership(item: ZbangRecord, source: 'my' | 'provider') {
+	async function updateBangMembership(item: ZbangRecord, source: BangLauncherItemSource) {
 		if (source === 'my') {
 			await removeMyBang(item);
 			return;
@@ -4682,7 +4845,7 @@
 		].join(':');
 	}
 
-	function createBangLauncherItemsFromBangs(items: ZbangRecord[], source: 'my' | 'provider') {
+	function createBangLauncherItemsFromBangs(items: ZbangRecord[], source: BangLauncherItemSource) {
 		return createBangLauncherItems(
 			items.map((item, index) => ({
 				item,
@@ -5439,7 +5602,7 @@
 	<MyBangEditor
 		session={myBangEditor}
 		{myBangs}
-		providerBangs={bangCatalog?.items ?? []}
+		{providerBangs}
 		getShareHref={getMyBangShareHref}
 		onSave={saveMyBangDraft}
 		onShare={copyMyBangShareUrlToClipboard}

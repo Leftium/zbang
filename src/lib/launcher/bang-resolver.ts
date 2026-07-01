@@ -16,6 +16,19 @@ export type BangExecutionResult = {
 	composition: BangComposition;
 };
 
+export type BangExecutionFallbackOptions = {
+	extendedBangs?: ZbangRecord[];
+	extendedLoaded?: boolean;
+	loadExtendedBangs?: () => Promise<ZbangRecord[] | undefined>;
+};
+
+export type BangExecutionFallbackResult = {
+	result: BangExecutionResult;
+	extendedBangs: ZbangRecord[];
+	loadedExtended: boolean;
+	extendedLoadFailed: boolean;
+};
+
 export function resolveBangExecution(
 	query: string,
 	items: ZbangRecord[],
@@ -40,6 +53,62 @@ export function resolveBangExecution(
 	};
 }
 
+export async function resolveBangExecutionWithExtendedFallback(
+	query: string,
+	myBangs: ZbangRecord[],
+	popularProviderBangs: ZbangRecord[],
+	settings: BangExecutionSettings,
+	options: BangExecutionFallbackOptions = {}
+): Promise<BangExecutionFallbackResult> {
+	const extendedBangs = options.extendedBangs ?? [];
+	const extendedLoaded = options.extendedLoaded ?? extendedBangs.length > 0;
+	const result = resolveBangExecution(
+		query,
+		getBangExecutionItems(myBangs, popularProviderBangs, extendedLoaded ? extendedBangs : []),
+		settings
+	);
+
+	if (extendedLoaded || !result.composition.forwardedTokens.length || !options.loadExtendedBangs) {
+		return {
+			result,
+			extendedBangs,
+			loadedExtended: false,
+			extendedLoadFailed: false
+		};
+	}
+
+	try {
+		const loadedExtendedBangs = await options.loadExtendedBangs();
+
+		if (!loadedExtendedBangs) {
+			return {
+				result,
+				extendedBangs,
+				loadedExtended: false,
+				extendedLoadFailed: true
+			};
+		}
+
+		return {
+			result: resolveBangExecution(
+				query,
+				getBangExecutionItems(myBangs, popularProviderBangs, loadedExtendedBangs),
+				settings
+			),
+			extendedBangs: loadedExtendedBangs,
+			loadedExtended: true,
+			extendedLoadFailed: false
+		};
+	} catch {
+		return {
+			result,
+			extendedBangs,
+			loadedExtended: false,
+			extendedLoadFailed: true
+		};
+	}
+}
+
 export function getBangExecutionTargetUrls(
 	composition: BangComposition,
 	settings: BangExecutionSettings
@@ -61,11 +130,20 @@ export function getBangExecutionTargetUrls(
 	return targetUrls;
 }
 
-export function getBangExecutionItems(myBangs: ZbangRecord[], providerBangs: ZbangRecord[]) {
+export function getBangExecutionItems(
+	myBangs: ZbangRecord[],
+	popularProviderBangs: ZbangRecord[],
+	extendedProviderBangs: ZbangRecord[] = []
+) {
 	const myBangCodes = getBangCodeSet(myBangs);
-	const filteredProviderBangs = removeBangCodeOverlaps(providerBangs, myBangCodes);
+	const filteredPopularProviderBangs = removeBangCodeOverlaps(popularProviderBangs, myBangCodes);
+	const popularBangCodes = getBangCodeSet([...myBangs, ...filteredPopularProviderBangs]);
+	const filteredExtendedProviderBangs = removeBangCodeOverlaps(
+		extendedProviderBangs,
+		popularBangCodes
+	);
 
-	return [...myBangs, ...filteredProviderBangs];
+	return [...myBangs, ...filteredPopularProviderBangs, ...filteredExtendedProviderBangs];
 }
 
 export function getSearchUrl(

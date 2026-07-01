@@ -3,6 +3,7 @@ import type { ExecutionSettings } from './execution-settings';
 import { normalizeBangCode } from './launcher/bang-code';
 
 export {
+	type BangCatalogVariant,
 	type BangProviderId,
 	type CatalogZbangRecord,
 	type RankedZbangCatalog,
