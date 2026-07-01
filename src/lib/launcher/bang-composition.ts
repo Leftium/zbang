@@ -1,4 +1,6 @@
 import type { ZbangRecord } from '$lib/bang-data';
+
+import { normalizeBangCode } from './bang-code';
 import type { BangComposition, BangCompositionTarget, BangEntry } from './types';
 
 export function createBangCodeMap(items: ZbangRecord[]) {
@@ -54,8 +56,4 @@ export function parseBangComposition(
 		payloadCountText: payloadTokensByLine.map((tokens) => tokens.join(' ')).join('\n'),
 		hasTargets: Boolean(localTargets.length || forwardedTokens.length)
 	};
-}
-
-function normalizeBangCode(code: string) {
-	return (code.startsWith('!') ? code : `!${code}`).toLowerCase();
 }

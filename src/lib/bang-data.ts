@@ -1,5 +1,6 @@
-import type { ZbangRecord } from './bang-catalog';
+import type { BangProviderId, ZbangRecord } from './bang-catalog';
 import type { ExecutionSettings } from './execution-settings';
+import { normalizeBangCode } from './launcher/bang-code';
 
 export {
 	type BangProviderId,
@@ -9,8 +10,8 @@ export {
 	type ZbangCatalog
 } from './bang-catalog';
 
-const DB_NAME = 'whiz';
-const LEGACY_DB_NAME = 'zbang';
+const DB_NAME: string = 'whiz';
+const LEGACY_DB_NAME: string = 'zbang';
 const DB_VERSION = 5;
 const OLD_SOURCE_STORE = 'bangSources';
 const OLD_CATALOG_STORE = 'bangCatalogs';
@@ -20,19 +21,44 @@ const EXECUTION_SETTINGS_STORE = 'executionSettings';
 const EXECUTION_SETTINGS_KEY = 'current';
 let legacyMigration: Promise<void> | undefined;
 
-type MyBangCollection = {
-	id: typeof MY_BANG_COLLECTION_KEY;
-	items: StoredZbangRecord[];
+export type MyBangRecord = ZbangRecord & {
+	id: string;
+	origin: 'catalog' | 'custom';
+	sourceProvider?: BangProviderId;
+	sourceName?: string;
+	sourceCodes?: string[];
+	sourceDomain?: string;
+	sourceUrlTemplate?: string;
+	createdAt: string;
+	updatedAt: string;
 };
 
-type StoredZbangRecord = Omit<ZbangRecord, 'popularity'> &
-	Partial<Pick<ZbangRecord, 'popularity'>>;
+type MyBangCollection = {
+	id: typeof MY_BANG_COLLECTION_KEY;
+	items: StoredMyBangRecord[];
+};
+
+type StoredMyBangRecord = Partial<ZbangRecord> &
+	Partial<
+		Pick<
+			MyBangRecord,
+			| 'id'
+			| 'origin'
+			| 'sourceProvider'
+			| 'sourceName'
+			| 'sourceCodes'
+			| 'sourceDomain'
+			| 'sourceUrlTemplate'
+			| 'createdAt'
+			| 'updatedAt'
+		>
+	>;
 
 type ExecutionSettingsRecord = ExecutionSettings & {
 	id: typeof EXECUTION_SETTINGS_KEY;
 };
 
-export async function readMyBangs(): Promise<ZbangRecord[]> {
+export async function readMyBangs(): Promise<MyBangRecord[]> {
 	const db = await openBangDb();
 
 	try {
@@ -41,20 +67,53 @@ export async function readMyBangs(): Promise<ZbangRecord[]> {
 			MY_BANG_STORE,
 			MY_BANG_COLLECTION_KEY
 		);
-		return collection?.items.map(normalizeStoredBang) ?? [];
+		if (!collection) return [];
+
+		let migrated = false;
+		const items = collection.items.map((item) => {
+			const normalized = normalizeStoredBang(item);
+			if (normalized.id !== item.id || normalized.origin !== item.origin || !item.updatedAt) {
+				migrated = true;
+			}
+			return normalized;
+		});
+
+		if (migrated) await putInStore(db, MY_BANG_STORE, { id: MY_BANG_COLLECTION_KEY, items });
+
+		return items;
 	} finally {
 		db.close();
 	}
 }
 
-function normalizeStoredBang(item: StoredZbangRecord): ZbangRecord {
+function normalizeStoredBang(item: StoredMyBangRecord): MyBangRecord {
+	const now = new Date().toISOString();
+	const sourceProvider = normalizeBangProvider(item.sourceProvider);
+	const sourceName = normalizeOptionalString(item.sourceName);
+	const sourceCodes = normalizeOptionalStringArray(item.sourceCodes)?.map(normalizeBangCode);
+	const sourceDomain = normalizeOptionalString(item.sourceDomain);
+	const sourceUrlTemplate = normalizeOptionalString(item.sourceUrlTemplate);
+
 	return {
-		...item,
-		popularity: item.popularity ?? 1
+		rank: item.rank ?? 1,
+		popularity: item.popularity ?? 1,
+		name: item.name ?? 'Untitled bang',
+		code: Array.isArray(item.code) ? item.code.map(normalizeBangCode) : [],
+		tags: Array.isArray(item.tags) ? item.tags : [],
+		urls: { s: item.urls?.s ?? '' },
+		id: item.id ?? createMyBangId(),
+		origin: item.origin === 'catalog' ? 'catalog' : 'custom',
+		...(sourceProvider ? { sourceProvider } : {}),
+		...(sourceName ? { sourceName } : {}),
+		...(sourceCodes ? { sourceCodes } : {}),
+		...(sourceDomain ? { sourceDomain } : {}),
+		...(sourceUrlTemplate ? { sourceUrlTemplate } : {}),
+		createdAt: item.createdAt ?? now,
+		updatedAt: item.updatedAt ?? item.createdAt ?? now
 	};
 }
 
-export async function writeMyBangs(items: ZbangRecord[]): Promise<void> {
+export async function writeMyBangs(items: MyBangRecord[]): Promise<void> {
 	const db = await openBangDb();
 
 	try {
@@ -62,6 +121,31 @@ export async function writeMyBangs(items: ZbangRecord[]): Promise<void> {
 	} finally {
 		db.close();
 	}
+}
+
+export function createMyBangId() {
+	if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+		return `mybang:${crypto.randomUUID()}`;
+	}
+
+	return `mybang:${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function normalizeBangProvider(value: unknown): BangProviderId | undefined {
+	return value === 'duckduckgo' || value === 'kagi' ? value : undefined;
+}
+
+function normalizeOptionalString(value: unknown) {
+	return typeof value === 'string' && value.trim() ? value : undefined;
+}
+
+function normalizeOptionalStringArray(value: unknown) {
+	if (!Array.isArray(value)) return undefined;
+
+	const strings = value.filter(
+		(item): item is string => typeof item === 'string' && Boolean(item.trim())
+	);
+	return strings.length ? strings : undefined;
 }
 
 export async function readExecutionSettings(): Promise<ExecutionSettings | undefined> {

@@ -6,9 +6,11 @@
 	import { onMount, tick } from 'svelte';
 
 	import {
+		createMyBangId,
 		readMyBangs,
 		writeMyBangs,
 		type BangProviderId,
+		type MyBangRecord,
 		type RankedZbangCatalog,
 		type ZbangRecord
 	} from '$lib/bang-data';
@@ -21,6 +23,17 @@
 	} from '$lib/bang-filter';
 	import ExpandingTextarea from '$lib/components/ExpandingTextarea.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import MyBangEditor, {
+		type MyBangEditorSave,
+		type MyBangEditorSession
+	} from '$lib/components/MyBangEditor.svelte';
+	import {
+		displayBangCode,
+		formatBangCodes,
+		getBangCodeSet,
+		hasBangCodeOverlap,
+		normalizeBangCode
+	} from '$lib/launcher/bang-code';
 	import { createBangCodeMap, parseBangComposition } from '$lib/launcher/bang-composition';
 	import { getBangExecutionTargetUrls, getSearchUrl } from '$lib/launcher/bang-resolver';
 	import { getCompromiseSignals, unique } from '$lib/launcher/compromise-signals';
@@ -305,7 +318,8 @@
 	let doubleKeypress = $state<string>();
 	let tripleKeypress = $state<string>();
 	let expandedLauncherGroups = $state<Record<string, boolean>>({});
-	let myBangs = $state<ZbangRecord[]>([]);
+	let myBangs = $state<MyBangRecord[]>([]);
+	let myBangEditor = $state<MyBangEditorSession>();
 	let bangFanoutTargets = $state<string[]>([]);
 	let bangFanoutError = $state('');
 	let bangFanoutActionLabel = $state('Open');
@@ -332,9 +346,7 @@
 	const hasValue = $derived(Boolean(value.trim()));
 	// Keep NLP signals in the shared launcher context so plugins can score and enrich items.
 	const compromiseSignals = $derived(getCompromiseSignals(value));
-	const myBangCodes = $derived(
-		new Set(myBangs.flatMap((item) => item.code.map(normalizeBangCode)))
-	);
+	const myBangCodes = $derived(getBangCodeSet(myBangs));
 	const providerBangs = $derived(
 		(bangCatalog?.items ?? []).filter((item) => !hasBangCodeOverlap(item, myBangCodes))
 	);
@@ -737,38 +749,169 @@
 	}
 
 	async function addMyBang(item: ZbangRecord) {
-		if (hasBangCodeOverlap(item, myBangCodes)) return;
+		if (hasBangCodeOverlap(item, myBangCodes)) return undefined;
 
-		const nextMyBangs = [...myBangs, cloneBang(item)];
+		const nextItem = createCatalogMyBang(item);
+		const nextMyBangs = [...myBangs, nextItem];
 		myBangs = nextMyBangs;
 		await persistMyBangs(nextMyBangs);
+
+		return nextItem;
+	}
+
+	async function addAndEditMyBang(item: ZbangRecord) {
+		const nextItem = await addMyBang(item);
+
+		if (nextItem) openMyBangEditor(nextItem);
 	}
 
 	async function removeMyBang(item: ZbangRecord) {
-		const index = myBangs.findIndex((myBang) => isSameBang(myBang, item));
+		const myBang = getMyBangRecord(item);
+
+		if (myBang) await deleteMyBang(myBang);
+	}
+
+	async function deleteMyBang(item: MyBangRecord) {
+		const index = myBangs.findIndex((myBang) => myBang.id === item.id);
 
 		if (index === -1) return;
 
 		const nextMyBangs = [...myBangs.slice(0, index), ...myBangs.slice(index + 1)];
 		myBangs = nextMyBangs;
+		myBangEditor = undefined;
 		await persistMyBangs(nextMyBangs);
 	}
 
-	async function persistMyBangs(items: ZbangRecord[]) {
-		const persistedItems = items.map(cloneBang);
+	async function saveMyBangDraft(draft: MyBangEditorSave) {
+		const now = new Date().toISOString();
+		const nextItem = draft.item
+			? updateMyBangFromDraft(draft.item, draft, now)
+			: createCustomMyBang(draft, now);
+		const nextMyBangs = draft.item
+			? myBangs.map((item) => (item.id === draft.item?.id ? nextItem : item))
+			: [...myBangs, nextItem];
+
+		myBangs = nextMyBangs;
+		myBangEditor = undefined;
+		await persistMyBangs(nextMyBangs);
+	}
+
+	function openNewCustomBangEditor() {
+		resetShortcutState();
+		myBangEditor = { key: `new-${Date.now()}-${createMyBangId()}` };
+	}
+
+	function openMyBangEditor(item: ZbangRecord) {
+		const myBang = getMyBangRecord(item);
+
+		if (!myBang) return;
+
+		resetShortcutState();
+		myBangEditor = { key: `edit-${myBang.id}-${Date.now()}`, item: myBang };
+	}
+
+	function closeMyBangEditor() {
+		myBangEditor = undefined;
+		requestAnimationFrame(focusInput);
+	}
+
+	async function persistMyBangs(items: MyBangRecord[]) {
+		const persistedItems = items.map(cloneMyBang);
 		myBangWrite = myBangWrite.catch(() => undefined).then(() => writeMyBangs(persistedItems));
 		await myBangWrite;
 	}
 
-	function cloneBang(item: ZbangRecord): ZbangRecord {
+	function createCustomMyBang(draft: MyBangEditorSave, now: string): MyBangRecord {
 		return {
+			id: createMyBangId(),
+			origin: 'custom',
+			createdAt: now,
+			updatedAt: now,
+			rank: 1,
+			popularity: 1,
+			name: draft.name,
+			code: draft.code,
+			tags: [],
+			urls: { s: draft.urlTemplate }
+		};
+	}
+
+	function createCatalogMyBang(item: ZbangRecord): MyBangRecord {
+		const now = new Date().toISOString();
+		const sourceDomain = getUrlTemplateDomain(item.urls.s);
+
+		return {
+			id: createMyBangId(),
+			origin: 'catalog',
+			sourceProvider: settings.bangProvider,
+			sourceName: item.name,
+			sourceCodes: item.code.map(normalizeBangCode),
+			...(sourceDomain ? { sourceDomain } : {}),
+			sourceUrlTemplate: item.urls.s,
+			createdAt: now,
+			updatedAt: now,
 			rank: item.rank,
 			popularity: item.popularity,
 			name: item.name,
-			code: [...item.code],
+			code: item.code.map(normalizeBangCode),
 			tags: [...item.tags],
 			urls: { s: item.urls.s }
 		};
+	}
+
+	function updateMyBangFromDraft(
+		item: MyBangRecord,
+		draft: MyBangEditorSave,
+		now: string
+	): MyBangRecord {
+		return cloneMyBang({
+			...item,
+			name: draft.name,
+			code: draft.code,
+			urls: { s: draft.urlTemplate },
+			updatedAt: now
+		});
+	}
+
+	function cloneMyBang(item: MyBangRecord): MyBangRecord {
+		return {
+			id: item.id,
+			origin: item.origin,
+			...(item.sourceProvider ? { sourceProvider: item.sourceProvider } : {}),
+			...(item.sourceName ? { sourceName: item.sourceName } : {}),
+			...(item.sourceCodes ? { sourceCodes: item.sourceCodes.map(normalizeBangCode) } : {}),
+			...(item.sourceDomain ? { sourceDomain: item.sourceDomain } : {}),
+			...(item.sourceUrlTemplate ? { sourceUrlTemplate: item.sourceUrlTemplate } : {}),
+			createdAt: item.createdAt,
+			updatedAt: item.updatedAt,
+			rank: item.rank,
+			popularity: item.popularity,
+			name: item.name,
+			code: item.code.map(normalizeBangCode),
+			tags: [...item.tags],
+			urls: { s: item.urls.s }
+		};
+	}
+
+	function getMyBangRecord(item: ZbangRecord) {
+		const itemId = getMyBangRecordId(item);
+		if (itemId) return myBangs.find((myBang) => myBang.id === itemId);
+
+		return myBangs.find((myBang) => isSameBang(myBang, item));
+	}
+
+	function getMyBangRecordId(item: ZbangRecord) {
+		const maybeMyBang = item as Partial<MyBangRecord>;
+
+		return typeof maybeMyBang.id === 'string' ? maybeMyBang.id : undefined;
+	}
+
+	function getUrlTemplateDomain(template: string) {
+		try {
+			return new URL(template.replace(/%s/g, '__zbang_query__')).hostname.replace(/^www\./, '');
+		} catch {
+			return undefined;
+		}
 	}
 
 	function isSameBang(a: ZbangRecord, b: ZbangRecord) {
@@ -783,14 +926,6 @@
 
 	function arrayEquals(a: string[], b: string[]) {
 		return a.length === b.length && a.every((value, index) => value === b[index]);
-	}
-
-	function hasBangCodeOverlap(item: ZbangRecord, codes: Set<string>) {
-		return item.code.some((code) => codes.has(normalizeBangCode(code)));
-	}
-
-	function normalizeBangCode(code: string) {
-		return (code.startsWith('!') ? code : `!${code}`).toLowerCase();
 	}
 
 	function removeTextBeforeCursor(length: number) {
@@ -2017,6 +2152,7 @@
 	}
 
 	function handleDocumentMouseDown(event: MouseEvent) {
+		if (myBangEditor) return;
 		if (!(event.target instanceof HTMLElement)) return;
 
 		const target = event.target;
@@ -2027,6 +2163,8 @@
 	}
 
 	function handleVisibilityChange() {
+		if (myBangEditor) return;
+
 		if (document.visibilityState === 'visible') focusInput();
 	}
 
@@ -2746,6 +2884,10 @@
 					const myItems = hasBangFilter
 						? createBangLauncherItems(myBangResults.items, 'my')
 						: createBangLauncherItemsFromBangs(myBangs, 'my');
+					const visibleMyItems =
+						mode.id === 'bangs' && !hasBangFilter
+							? [createNewCustomBangLauncherItem(), ...myItems]
+							: myItems;
 					const providerItems = createBangLauncherItems(providerBangResults.items, 'provider');
 
 					return [
@@ -2754,8 +2896,8 @@
 							pluginId: 'bangs',
 							title: 'My bangs',
 							description: 'Your custom bangs. Used first.',
-							items: myItems,
-							collapsedItemLimit: getBangGroupCollapsedLimit(myItems),
+							items: visibleMyItems,
+							collapsedItemLimit: getBangGroupCollapsedLimit(visibleMyItems),
 							matchedCount: myBangResults.total,
 							totalCount: myBangs.length
 						},
@@ -3114,37 +3256,105 @@
 		});
 	}
 
+	function createNewCustomBangLauncherItem(): LauncherItem {
+		return {
+			id: 'bangs.my.new-custom',
+			pluginId: 'bangs',
+			kind: 'action',
+			title: 'New custom bang',
+			description: 'Create a MyBang',
+			selectionKey: 'bang:new-custom',
+			score: 101,
+			sortOrder: -1,
+			actions: [
+				{
+					id: 'bangs.my.new-custom.create',
+					label: 'New custom bang',
+					safeForEnter: true,
+					run: openNewCustomBangEditor
+				}
+			]
+		};
+	}
+
 	function getBangItemActions(
 		item: ZbangRecord,
 		source: 'my' | 'provider',
 		itemId: string
 	): [LauncherItemAction, ...LauncherItemAction[]] {
 		if (mode.id === 'bangs') {
+			if (source === 'my') {
+				return [
+					getBangEditAction(item, itemId, true),
+					getBangMembershipAction(item, source, itemId),
+					getBangDefaultSearchAction(item, itemId)
+				];
+			}
+
 			return [
-				{
-					id: `${itemId}.membership`,
-					label: getBangMembershipActionLabel(source),
-					run: () => updateBangMembership(item, source)
-				},
+				getBangMembershipAction(item, source, itemId),
+				getBangAddAndEditAction(item, itemId),
+				getBangDefaultSearchAction(item, itemId)
+			];
+		}
+
+		const insertAction: LauncherItemAction = {
+			id: `${itemId}.insert`,
+			label: `Insert ${item.name}`,
+			title: getBangInsertActionTitle(item),
+			safeForEnter: true,
+			run: () => insertBang(item.code[0])
+		};
+
+		if (source === 'my') {
+			return [
+				insertAction,
+				getBangEditAction(item, itemId),
+				getBangMembershipAction(item, source, itemId),
 				getBangDefaultSearchAction(item, itemId)
 			];
 		}
 
 		return [
-			{
-				id: `${itemId}.insert`,
-				label: `Insert ${item.name}`,
-				title: getBangInsertActionTitle(item),
-				safeForEnter: true,
-				run: () => insertBang(item.code[0])
-			},
-			{
-				id: `${itemId}.membership`,
-				label: getBangMembershipActionLabel(source),
-				run: () => updateBangMembership(item, source)
-			},
+			insertAction,
+			getBangMembershipAction(item, source, itemId),
 			getBangDefaultSearchAction(item, itemId)
 		];
+	}
+
+	function getBangEditAction(
+		item: ZbangRecord,
+		itemId: string,
+		safeForEnter = false
+	): LauncherItemAction {
+		return {
+			id: `${itemId}.edit`,
+			label: 'Edit',
+			title: `Edit ${item.name}`,
+			safeForEnter,
+			run: () => openMyBangEditor(item)
+		};
+	}
+
+	function getBangMembershipAction(
+		item: ZbangRecord,
+		source: 'my' | 'provider',
+		itemId: string
+	): LauncherItemAction {
+		return {
+			id: `${itemId}.membership`,
+			label: getBangMembershipActionLabel(source),
+			run: () => updateBangMembership(item, source)
+		};
+	}
+
+	function getBangAddAndEditAction(item: ZbangRecord, itemId: string): LauncherItemAction {
+		return {
+			id: `${itemId}.add-edit`,
+			label: 'Add and edit copy',
+			title: `Add ${item.name} to My Bangs and edit it`,
+			run: () => addAndEditMyBang(item)
+		};
 	}
 
 	function getBangDefaultSearchAction(item: ZbangRecord, itemId: string): LauncherItemAction {
@@ -3160,8 +3370,13 @@
 		return source === 'my' ? 'Remove from My Bangs' : 'Add to My Bangs';
 	}
 
-	function updateBangMembership(item: ZbangRecord, source: 'my' | 'provider') {
-		return source === 'my' ? removeMyBang(item) : addMyBang(item);
+	async function updateBangMembership(item: ZbangRecord, source: 'my' | 'provider') {
+		if (source === 'my') {
+			await removeMyBang(item);
+			return;
+		}
+
+		await addMyBang(item);
 	}
 
 	function getBangInsertActionTitle(item: ZbangRecord) {
@@ -3187,7 +3402,9 @@
 				score: 100 - index,
 				highlights: {
 					name: [{ text: item.name, matched: false }],
-					code: item.code.map((code) => ({ segments: [{ text: code, matched: false }] })),
+					code: item.code.map((code) => ({
+						segments: [{ text: displayBangCode(code), matched: false }]
+					})),
 					url: [{ text: item.urls.s, matched: false }]
 				}
 			})),
@@ -3196,7 +3413,7 @@
 	}
 
 	function getBangItemDescription(item: ZbangRecord) {
-		return item.code.slice(0, 2).join(' ');
+		return formatBangCodes(item.code.slice(0, 2));
 	}
 
 	function getBangMenuInfo(item: ZbangRecord, highlights: BangFilterResult['highlights']) {
@@ -3204,8 +3421,8 @@
 			id: `${item.code[0] ?? item.rank}.details`,
 			details: [
 				{
-					value: item.code.join(' '),
-					segments: getBangCodeSegments(highlights.code)
+					value: formatBangCodes(item.code),
+					segments: getBangCodeSegments(getDisplayBangCodeHighlights(highlights.code))
 				},
 				{
 					value: item.urls.s,
@@ -3453,7 +3670,7 @@
 	}
 
 	function getBangDescriptionSegments({ code }: BangFilterResult['highlights']) {
-		return getBangCodeSegments(code.slice(0, 2));
+		return getBangCodeSegments(getDisplayBangCodeHighlights(code.slice(0, 2)));
 	}
 
 	function getBangCodeSegments(code: BangFilterResult['highlights']['code']) {
@@ -3465,6 +3682,23 @@
 		}
 
 		return segments;
+	}
+
+	function getDisplayBangCodeHighlights(code: BangFilterResult['highlights']['code']) {
+		return code.map((codeHighlight) => {
+			let strippedBang = false;
+
+			return {
+				segments: codeHighlight.segments.flatMap((segment) => {
+					if (strippedBang || !segment.text.startsWith('!')) return [segment];
+
+					strippedBang = true;
+					const text = segment.text.slice(1);
+
+					return text ? [{ ...segment, text }] : [];
+				})
+			};
+		});
 	}
 
 	function formatItemMeta(item: LauncherItem) {
@@ -3549,7 +3783,8 @@
 				</span>
 				<span
 					class:bang-description={item.pluginId === 'bangs'}
-					class:compact-action-hidden={(!alwaysShowBangDescription && !rowActive) || !item.description}
+					class:compact-action-hidden={(!alwaysShowBangDescription && !rowActive) ||
+						!item.description}
 					class="compact-action-description"
 				>
 					{#if item.description}{@render highlightedText(
@@ -3887,6 +4122,17 @@
 		{/each}
 	</section>
 </main>
+
+{#if myBangEditor}
+	<MyBangEditor
+		session={myBangEditor}
+		{myBangs}
+		providerBangs={bangCatalog?.items ?? []}
+		onSave={saveMyBangDraft}
+		onCancel={closeMyBangEditor}
+		onDelete={deleteMyBang}
+	/>
+{/if}
 
 <style>
 	main {

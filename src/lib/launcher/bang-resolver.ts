@@ -1,6 +1,7 @@
 import type { ZbangRecord } from '$lib/bang-data';
 import { defaultCustomSearchTemplate, type SearchProvider } from '$lib/execution-settings';
 
+import { getBangCodeSet, hasBangCodeOverlap } from './bang-code';
 import { createBangCodeMap, parseBangComposition } from './bang-composition';
 import type { BangComposition } from './types';
 
@@ -61,9 +62,9 @@ export function getBangExecutionTargetUrls(
 }
 
 export function getBangExecutionItems(myBangs: ZbangRecord[], providerBangs: ZbangRecord[]) {
-	const myBangCodes = new Set(myBangs.flatMap((item) => item.code.map(normalizeBangCode)));
+	const myBangCodes = getBangCodeSet(myBangs);
 	const filteredProviderBangs = providerBangs.filter(
-		(item) => !item.code.some((code) => myBangCodes.has(normalizeBangCode(code)))
+		(item) => !hasBangCodeOverlap(item, myBangCodes)
 	);
 
 	return [...myBangs, ...filteredProviderBangs];
@@ -132,8 +133,4 @@ export function getBangOpenUrl(item: ZbangRecord) {
 	} catch {
 		return item.urls.s.replace(/%s/g, '');
 	}
-}
-
-function normalizeBangCode(code: string) {
-	return (code.startsWith('!') ? code : `!${code}`).toLowerCase();
 }

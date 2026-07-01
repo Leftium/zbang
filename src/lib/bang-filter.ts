@@ -1,6 +1,6 @@
 import fuzzysort from 'fuzzysort';
 
-import type { ZbangRecord } from '$lib/bang-data';
+import type { MyBangRecord, ZbangRecord } from '$lib/bang-data';
 
 export type BangFilterResult = {
 	item: ZbangRecord;
@@ -29,12 +29,13 @@ export type BangFilterResults = {
 	total: number;
 };
 
-export type PreparedZbangRecord = Omit<ZbangRecord, 'name' | 'code' | 'tags' | 'urls'> & {
-	name: Fuzzysort.Prepared;
-	code: Fuzzysort.Prepared[];
-	tags: Fuzzysort.Prepared[];
-	urls: { s: Fuzzysort.Prepared };
-};
+export type PreparedZbangRecord = Omit<ZbangRecord, 'name' | 'code' | 'tags' | 'urls'> &
+	Partial<Omit<MyBangRecord, keyof ZbangRecord>> & {
+		name: Fuzzysort.Prepared;
+		code: Fuzzysort.Prepared[];
+		tags: Fuzzysort.Prepared[];
+		urls: { s: Fuzzysort.Prepared };
+	};
 
 const FUZZYSORT_THRESHOLD = 0.7;
 const FUZZYSORT_LIMIT = 20;
@@ -62,7 +63,10 @@ export function prepareBangs(items: ZbangRecord[]): PreparedZbangRecord[] {
 	}));
 }
 
-export function filterBangs(input: string, preparedItems: PreparedZbangRecord[]): BangFilterResults {
+export function filterBangs(
+	input: string,
+	preparedItems: PreparedZbangRecord[]
+): BangFilterResults {
 	const line = normalizeBangSuffixes(getLastLine(input));
 	const query = getBangQuery(line);
 	const usedBangs = getUsedBangs(line);
@@ -172,10 +176,7 @@ function sortBangResults(
 	a: Fuzzysort.KeysResult<PreparedZbangRecord>,
 	b: Fuzzysort.KeysResult<PreparedZbangRecord>
 ) {
-	return (
-		a.obj.rank - b.obj.rank ||
-		b.score - a.score
-	);
+	return a.obj.rank - b.obj.rank || b.score - a.score;
 }
 
 function getBangResultScore(result: Fuzzysort.KeysResult<PreparedZbangRecord>) {
@@ -248,6 +249,7 @@ function getSubstringHighlightSegments(target: string, query: string) {
 
 function unprepareZbangRecord(item: PreparedZbangRecord): ZbangRecord {
 	return {
+		...item,
 		rank: item.rank,
 		popularity: item.popularity,
 		name: item.name.target,
