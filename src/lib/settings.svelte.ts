@@ -6,6 +6,7 @@ import {
 	type ExecutionSettings,
 	type SearchProvider
 } from '$lib/execution-settings';
+import { readHistoryRecordingEnabled, writeHistoryRecordingEnabled } from '$lib/search-history';
 
 import type { BangProviderId } from '$lib/bang-data';
 
@@ -15,6 +16,7 @@ export type ColorScheme = '' | 'dark' | 'light';
 
 export const settings = $state({
 	colorScheme: '' as ColorScheme,
+	historyRecordingEnabled: true,
 	...defaultExecutionSettings
 });
 
@@ -59,12 +61,19 @@ export function setBangProvider(bangProvider: BangProviderId) {
 	mirrorExecutionSettings();
 }
 
+export function setHistoryRecordingEnabled(enabled: boolean) {
+	settings.historyRecordingEnabled = enabled;
+	localStorage.setItem('historyRecordingEnabled', enabled ? 'true' : 'false');
+	mirrorHistoryRecordingEnabled();
+}
+
 export function initSettings() {
 	const storedColorScheme = localStorage.getItem('theme');
 	const storedBangProvider = localStorage.getItem('bangProvider');
 	const storedSearchProvider = localStorage.getItem('searchProvider');
 	const storedCustomSearchLabel = localStorage.getItem('customSearchLabel');
 	const storedCustomSearchTemplate = localStorage.getItem('customSearchTemplate');
+	const storedHistoryRecordingEnabled = localStorage.getItem('historyRecordingEnabled');
 
 	if (storedColorScheme === 'dark' || storedColorScheme === 'light') {
 		applyColorScheme(storedColorScheme);
@@ -81,6 +90,18 @@ export function initSettings() {
 
 	if (isBangProvider(storedBangProvider)) {
 		settings.bangProvider = storedBangProvider;
+	}
+
+	if (storedHistoryRecordingEnabled === 'true' || storedHistoryRecordingEnabled === 'false') {
+		settings.historyRecordingEnabled = storedHistoryRecordingEnabled === 'true';
+		mirrorHistoryRecordingEnabled();
+	} else {
+		void readHistoryRecordingEnabled()
+			.then((enabled) => {
+				settings.historyRecordingEnabled = enabled;
+				localStorage.setItem('historyRecordingEnabled', enabled ? 'true' : 'false');
+			})
+			.catch((error) => console.warn('Failed to read history recording setting', error));
 	}
 
 	mirrorExecutionSettings();
@@ -126,4 +147,10 @@ function mirrorExecutionSettings() {
 		customSearchLabel: settings.customSearchLabel,
 		customSearchTemplate: settings.customSearchTemplate
 	}).catch((error) => console.warn('Failed to mirror execution settings', error));
+}
+
+function mirrorHistoryRecordingEnabled() {
+	void writeHistoryRecordingEnabled(settings.historyRecordingEnabled).catch((error) =>
+		console.warn('Failed to mirror history recording setting', error)
+	);
 }

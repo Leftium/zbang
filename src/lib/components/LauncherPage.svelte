@@ -46,6 +46,15 @@
 		type SharedMyBangDraft
 	} from '$lib/launcher/mybang-share';
 	import { getKeywordScoreBoost, rankItems, scoreInsight } from '$lib/launcher/ranking';
+	import {
+		createBangSearchHistoryEvent,
+		createPlainSearchHistoryEvent,
+		deleteSearchHistoryEvent,
+		getSearchProviderLabel,
+		listSearchHistoryEvents,
+		recordSearchHistoryEvent,
+		type SearchHistoryEvent
+	} from '$lib/search-history';
 	import type {
 		BangComposition,
 		BangEntry,
@@ -63,9 +72,11 @@
 		setBangProvider,
 		setColorScheme,
 		setCustomSearchTarget,
+		setHistoryRecordingEnabled,
 		setSearchProvider,
 		settings,
 		type ColorScheme,
+		type ExecutionSettings,
 		type SearchProvider
 	} from '$lib/settings.svelte';
 	import { loadShippedBangCatalog } from '$lib/shipped-bang-catalog';
@@ -96,6 +107,10 @@
 	const searchProviders = Object.keys(searchProviderLabels) as SearchProvider[];
 	const colorSchemes = Object.keys(colorSchemeLabels) as ColorScheme[];
 	const bangProviders = Object.keys(bangProviderLabels) as BangProviderId[];
+	const historyRecordingLabels = {
+		on: 'On',
+		off: 'Off the record'
+	} as const;
 	const itemShortcutLabels = ['Q', 'W', 'E', 'R', 'T', 'Y'] as const;
 	const groupShortcutLabels = ['O', 'I', 'P'] as const;
 	const menuSlideDuration = 720;
@@ -116,6 +131,8 @@
 	]);
 	const shortcutDelay = 250;
 	const settingsMatchThreshold = 0.4;
+	const historyMatchThreshold = 0.35;
+	const historyGroupCollapsedLimit = 8;
 	const bangFanoutAckTimeoutMs = 2500;
 	const tokenCounterUrl = 'https://hcodx.com/tools/gpt-4o-token-counter';
 	const tokenCounterMaxUrlLength = 6000;
@@ -248,6 +265,13 @@
 		options: ScoredSettingOption[];
 		allOptions: ScoredSettingOption[];
 	};
+	type ScoredHistoryEvent = {
+		event: SearchHistoryEvent;
+		score: number;
+		sortOrder: number;
+		titleResult: Fuzzysort.Result | null;
+		descriptionResult: Fuzzysort.Result | null;
+	};
 	const settingGroups: readonly SettingGroupDefinition[] = [
 		{
 			id: 'color-scheme',
@@ -298,6 +322,32 @@
 				selected: () => settings.bangProvider === value,
 				run: () => setBangProvider(value)
 			}))
+		},
+		{
+			id: 'history-recording',
+			title: 'Search history',
+			description: 'Controls whether executed searches are saved locally.',
+			aliases: ['history', 'recording', 'off the record', 'private search'],
+			currentLabel: () =>
+				settings.historyRecordingEnabled ? historyRecordingLabels.on : historyRecordingLabels.off,
+			options: [
+				{
+					id: 'on',
+					label: historyRecordingLabels.on,
+					description: 'Save executed searches in local History.',
+					aliases: ['record', 'recording', 'history on', 'save searches'],
+					selected: () => settings.historyRecordingEnabled,
+					run: () => setHistoryRecordingEnabled(true)
+				},
+				{
+					id: 'off',
+					label: historyRecordingLabels.off,
+					description: 'Execute future searches without saving them to History.',
+					aliases: ['private', 'otr', 'off the record', 'history off'],
+					selected: () => !settings.historyRecordingEnabled,
+					run: () => setHistoryRecordingEnabled(false)
+				}
+			]
 		}
 	];
 	let bangCatalog = $state<RankedZbangCatalog>();
@@ -326,6 +376,9 @@
 	let tripleKeypress = $state<string>();
 	let expandedLauncherGroups = $state<Record<string, boolean>>({});
 	let myBangs = $state<MyBangRecord[]>([]);
+	let searchHistoryEvents = $state<SearchHistoryEvent[]>([]);
+	let searchHistoryLoaded = $state(false);
+	let searchHistoryError = $state('');
 	let myBangEditor = $state<MyBangEditorSession>();
 	let bangFanoutTargets = $state<string[]>([]);
 	let bangFanoutError = $state('');
@@ -435,6 +488,7 @@
 
 	onMount(() => {
 		void loadMyBangs();
+		if (mode.id === 'history') void loadSearchHistory();
 		window.addEventListener('hashchange', openSharedMyBangEditorFromHash);
 
 		return () => {
@@ -526,22 +580,40 @@
 	}
 
 	function search(provider = settings.searchProvider) {
-		window.open(
-			getSearchUrl(provider, value, settings.customSearchTemplate),
-			'_blank',
-			'noopener,noreferrer'
+		const rawQuery = value.trim();
+		const targetUrl = getSearchUrl(provider, rawQuery, settings.customSearchTemplate);
+		const executionSettings = getExecutionSettingsSnapshot(provider);
+
+		recordHistoryEvent(
+			createPlainSearchHistoryEvent({
+				source: 'launcher',
+				rawQuery,
+				settings: executionSettings,
+				targetUrl
+			})
 		);
+		window.open(targetUrl, '_blank', 'noopener,noreferrer');
 	}
 
-	async function executeBangSearch(composition = bangComposition) {
+	async function executeBangSearch(composition = bangComposition, rawQuery = value.trim()) {
 		clearBangFanoutMessage();
 
-		const targetUrls = getBangExecutionTargetUrls(composition, settings);
+		const executionSettings = getExecutionSettingsSnapshot();
+		const targetUrls = getBangExecutionTargetUrls(composition, executionSettings);
 		const actionLabel = composition.payloadText ? 'Search' : 'Open';
 
 		if (!targetUrls.length) return;
 
 		bangFanoutActionLabel = actionLabel;
+		recordHistoryEvent(
+			createBangSearchHistoryEvent({
+				source: 'launcher',
+				rawQuery,
+				settings: executionSettings,
+				composition,
+				targetUrls
+			})
+		);
 
 		const failedTargets = await openBangTargetsWithRelay(targetUrls);
 
@@ -609,6 +681,25 @@
 		bangFanoutTargets = [];
 		bangFanoutError = '';
 		bangFanoutActionLabel = 'Open';
+	}
+
+	function getExecutionSettingsSnapshot(
+		searchProvider = settings.searchProvider
+	): ExecutionSettings {
+		return {
+			bangProvider: settings.bangProvider,
+			searchProvider,
+			customSearchLabel: settings.customSearchLabel,
+			customSearchTemplate: settings.customSearchTemplate
+		};
+	}
+
+	function recordHistoryEvent(event: SearchHistoryEvent) {
+		if (!settings.historyRecordingEnabled) return;
+
+		void recordSearchHistoryEvent(event).catch((error) =>
+			console.warn('Failed to record search history', error)
+		);
 	}
 
 	function getBangFanoutTargetLabel(targetUrl: string) {
@@ -751,6 +842,19 @@
 		myBangs = await readMyBangs();
 		myBangsLoaded = true;
 		openSharedMyBangEditorFromHash();
+	}
+
+	async function loadSearchHistory() {
+		searchHistoryError = '';
+
+		try {
+			searchHistoryEvents = await listSearchHistoryEvents();
+			searchHistoryLoaded = true;
+		} catch (error) {
+			searchHistoryError = error instanceof Error ? error.message : String(error);
+			searchHistoryLoaded = true;
+			console.warn('Failed to load search history', error);
+		}
 	}
 
 	function insertBang(code: string) {
@@ -2983,7 +3087,7 @@
 									id: 'bang-compose.execute.primary',
 									label: getBangSearchTitle(context.bangComposition),
 									safeForEnter: true,
-									run: () => executeBangSearch(context.bangComposition)
+									run: () => executeBangSearch(context.bangComposition, context.text)
 								}
 							]
 						}
@@ -3121,6 +3225,15 @@
 				}
 			},
 			{
+				id: 'history',
+				getItems(context) {
+					return getHistoryStatusItems(context);
+				},
+				getGroups(context) {
+					return getHistoryGroups(context);
+				}
+			},
+			{
 				id: 'compromise',
 				getItems(context) {
 					return getCompromiseItems(context);
@@ -3140,7 +3253,10 @@
 			return 'Text sample... (NLP signals will be extracted from this text)';
 		}
 		if (mode.id === 'settings') {
-			return 'Filter settings... (settings are read-only for now)';
+			return 'Filter settings...';
+		}
+		if (mode.id === 'history') {
+			return 'Filter history...';
 		}
 
 		return 'Filter term... (modes will be filtered and sorted based on this term)';
@@ -3313,6 +3429,369 @@
 
 	function getSettingGroupDescriptionSegments(group: ScoredSettingGroup) {
 		return getFuzzyHighlightSegments(group.description, group.descriptionResult);
+	}
+
+	function getHistoryStatusItems(context: LauncherContext): LauncherItem[] {
+		if (mode.id !== 'history') return [];
+
+		if (!searchHistoryLoaded) {
+			return [
+				createHistoryInsightItem(
+					'history.loading',
+					'Loading history',
+					'Reading executed searches saved on this device.'
+				)
+			];
+		}
+
+		if (searchHistoryError) {
+			return [
+				createHistoryInsightItem('history.error', 'Could not load history', searchHistoryError)
+			];
+		}
+
+		if (!searchHistoryEvents.length) {
+			return [
+				createHistoryInsightItem(
+					'history.empty',
+					'No search history yet',
+					settings.historyRecordingEnabled
+						? 'Executed Whiz searches will appear here.'
+						: 'Search history recording is off.'
+				)
+			];
+		}
+
+		if (context.hasValue && !getScoredHistoryEvents(context).length) {
+			return [
+				createHistoryInsightItem(
+					'history.no-matches',
+					'No matching history',
+					'Try a query, provider, bang, host, source, or date.'
+				)
+			];
+		}
+
+		return [];
+	}
+
+	function createHistoryInsightItem(id: string, title: string, description: string): LauncherItem {
+		return {
+			id,
+			pluginId: 'history',
+			kind: 'insight',
+			title,
+			description,
+			score: 100
+		};
+	}
+
+	function getHistoryGroups(context: LauncherContext): LauncherGroup[] {
+		if (mode.id !== 'history' || !searchHistoryLoaded || searchHistoryError) return [];
+
+		const scoredEvents = getScoredHistoryEvents(context);
+		const groups: Array<{ localDate: string; events: ScoredHistoryEvent[] }> = [];
+
+		for (const scoredEvent of scoredEvents) {
+			const localDate = scoredEvent.event.localDate;
+			const group = groups.find((item) => item.localDate === localDate);
+
+			if (group) {
+				group.events.push(scoredEvent);
+			} else {
+				groups.push({ localDate, events: [scoredEvent] });
+			}
+		}
+
+		return groups
+			.sort((a, b) => b.localDate.localeCompare(a.localDate))
+			.map((group) => createHistoryGroup(group.localDate, group.events, context));
+	}
+
+	function createHistoryGroup(
+		localDate: string,
+		groupEvents: ScoredHistoryEvent[],
+		context: LauncherContext
+	): LauncherGroup {
+		const items = groupEvents.map(createHistoryItem);
+
+		return {
+			id: `history.${localDate}`,
+			pluginId: 'history',
+			title: formatHistoryDateLabel(localDate),
+			description: getHistoryGroupDescription(groupEvents),
+			items,
+			allItems: items,
+			collapsedItemLimit: context.hasValue ? items.length : historyGroupCollapsedLimit,
+			matchedCount: context.hasValue ? items.length : undefined,
+			totalCount: groupEvents.length
+		};
+	}
+
+	function getHistoryGroupDescription(groupEvents: ScoredHistoryEvent[]) {
+		const count = groupEvents.length;
+		const commonHosts = getCommonHistoryHosts(groupEvents.map(({ event }) => event));
+		const countLabel = `${count} ${count === 1 ? 'search' : 'searches'}`;
+
+		return commonHosts.length ? `${countLabel} - ${commonHosts.join(', ')}` : countLabel;
+	}
+
+	function getCommonHistoryHosts(events: SearchHistoryEvent[]) {
+		const counts: Record<string, number> = {};
+
+		for (const event of events) {
+			for (const host of event.targets.map((target) => target.host).filter(isString)) {
+				counts[host] = (counts[host] ?? 0) + 1;
+			}
+		}
+
+		return Object.entries(counts)
+			.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+			.slice(0, 3)
+			.map(([host]) => host);
+	}
+
+	function getScoredHistoryEvents(context: LauncherContext): ScoredHistoryEvent[] {
+		if (!context.hasValue) {
+			return searchHistoryEvents.map((event, index) => ({
+				event,
+				score: Math.max(1, 100 - index),
+				sortOrder: index,
+				titleResult: null,
+				descriptionResult: null
+			}));
+		}
+
+		return fuzzysort
+			.go(
+				context.text,
+				searchHistoryEvents.map((event) => ({
+					event,
+					searchText: getHistoryEventSearchText(event)
+				})),
+				{
+					key: 'searchText',
+					limit: searchHistoryEvents.length,
+					threshold: historyMatchThreshold
+				}
+			)
+			.map((result, index) => {
+				const event = result.obj.event;
+				const description = getHistoryEventDescription(event);
+
+				return {
+					event,
+					score: Math.max(1, 100 + Math.round(result.score * 20)),
+					sortOrder: index,
+					titleResult: fuzzysort.single(context.text, event.rawQuery),
+					descriptionResult: fuzzysort.single(context.text, description)
+				};
+			});
+	}
+
+	function createHistoryItem(scoredEvent: ScoredHistoryEvent): LauncherItem {
+		const event = scoredEvent.event;
+		const description = getHistoryEventDescription(event);
+
+		return {
+			id: `history.${event.id}`,
+			pluginId: 'history',
+			kind: 'action',
+			title: event.rawQuery,
+			description,
+			titleSegments: getFuzzyHighlightSegments(event.rawQuery, scoredEvent.titleResult),
+			descriptionSegments: getFuzzyHighlightSegments(description, scoredEvent.descriptionResult),
+			selectionKey: getHistoryEventSelectionKey(event),
+			score: scoredEvent.score,
+			sortOrder: scoredEvent.sortOrder,
+			actions: getHistoryEventActions(event),
+			menuInfo: [getHistoryEventMenuInfo(event)]
+		};
+	}
+
+	function getHistoryEventActions(
+		event: SearchHistoryEvent
+	): [LauncherItemAction, ...LauncherItemAction[]] {
+		return [
+			{
+				id: `history.${event.id}.open`,
+				label: 'Open original',
+				title: 'Open the stored target URL without recording a new History event',
+				safeForEnter: true,
+				run: () => openSearchHistoryEvent(event)
+			},
+			{
+				id: `history.${event.id}.reuse-query`,
+				label: 'Reuse query',
+				title: 'Place this query in Search mode for editing',
+				run: () => reuseSearchHistoryQuery(event)
+			},
+			{
+				id: `history.${event.id}.copy-query`,
+				label: 'Copy query',
+				run: () => navigator.clipboard.writeText(event.rawQuery)
+			},
+			{
+				id: `history.${event.id}.copy-url`,
+				label: event.execution.targetUrls.length > 1 ? 'Copy URLs' : 'Copy URL',
+				run: () => navigator.clipboard.writeText(event.execution.targetUrls.join('\n'))
+			},
+			{
+				id: `history.${event.id}.remove`,
+				label: 'Remove from History',
+				run: () => removeSearchHistoryEvent(event)
+			}
+		];
+	}
+
+	function getHistoryEventMenuInfo(event: SearchHistoryEvent): LauncherMenuInfo {
+		return {
+			id: `history.${event.id}.details`,
+			details: [
+				{ value: event.rawQuery },
+				...event.execution.targetUrls.map((targetUrl) => ({ value: targetUrl }))
+			]
+		};
+	}
+
+	async function openSearchHistoryEvent(event: SearchHistoryEvent) {
+		const targetUrls = event.execution.targetUrls;
+
+		if (!targetUrls.length) return;
+
+		clearBangFanoutMessage();
+
+		if (targetUrls.length === 1) {
+			window.open(targetUrls[0], '_blank', 'noopener,noreferrer');
+			return;
+		}
+
+		bangFanoutActionLabel = 'Open';
+		const failedTargets = await openBangTargetsWithRelay(targetUrls);
+
+		if (failedTargets.length) {
+			bangFanoutTargets = failedTargets;
+			bangFanoutError = 'Could not open these history targets. Check popup permissions for Whiz.';
+			return;
+		}
+
+		clearBangFanoutMessage();
+	}
+
+	function reuseSearchHistoryQuery(event: SearchHistoryEvent) {
+		const searchParams = new URLSearchParams({ q: event.rawQuery });
+
+		void goto(resolve(`/search?${searchParams}`));
+	}
+
+	async function removeSearchHistoryEvent(event: SearchHistoryEvent) {
+		await deleteSearchHistoryEvent(event.id);
+		searchHistoryEvents = searchHistoryEvents.filter((item) => item.id !== event.id);
+	}
+
+	function getHistoryEventSearchText(event: SearchHistoryEvent) {
+		return [
+			event.rawQuery,
+			event.normalizedQuery,
+			event.localDate,
+			formatHistoryDateLabel(event.localDate),
+			formatHistoryEventTime(event),
+			getHistoryEventSourceLabel(event),
+			getSearchProviderLabel(event.execution.searchProvider, event.execution.customSearchLabel),
+			event.execution.searchProvider,
+			event.execution.bangProvider,
+			event.execution.type,
+			...event.targets.flatMap((target) => [
+				target.host,
+				target.label,
+				target.bangName,
+				target.catalogProvider,
+				target.kind,
+				...(target.bangCodes ?? [])
+			]),
+			...event.execution.targetUrls
+		]
+			.filter(isString)
+			.join(' ');
+	}
+
+	function getHistoryEventDescription(event: SearchHistoryEvent) {
+		return [
+			getHistoryTargetSummary(event),
+			formatHistoryEventTime(event),
+			getHistoryEventSourceLabel(event)
+		]
+			.filter(Boolean)
+			.join(' - ');
+	}
+
+	function getHistoryTargetSummary(event: SearchHistoryEvent) {
+		const targetLabels = event.targets
+			.map((target) => target.label ?? target.host)
+			.filter(isString);
+
+		if (event.execution.targetUrls.length > 1) {
+			const label = targetLabels.slice(0, 2).join(', ') || 'Multiple targets';
+
+			return `${label} - ${event.execution.targetUrls.length} targets`;
+		}
+
+		return (
+			targetLabels[0] ??
+			getSearchHistoryPrimaryHost(event) ??
+			getSearchProviderLabel(event.execution.searchProvider, event.execution.customSearchLabel)
+		);
+	}
+
+	function getSearchHistoryPrimaryHost(event: SearchHistoryEvent) {
+		const primaryTargetUrl = event.execution.primaryTargetUrl;
+
+		try {
+			return new URL(primaryTargetUrl).hostname.replace(/^www\./, '');
+		} catch {
+			return undefined;
+		}
+	}
+
+	function getHistoryEventSelectionKey(event: SearchHistoryEvent) {
+		return ['history', event.rawQuery, event.executedAt, event.execution.targetUrls.join('|')].join(
+			':'
+		);
+	}
+
+	function getHistoryEventSourceLabel(event: SearchHistoryEvent) {
+		return event.source === 'omnibar' ? 'Omnibar' : 'Search';
+	}
+
+	function formatHistoryEventTime(event: SearchHistoryEvent) {
+		const date = new Date(event.executedAt);
+
+		return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+	}
+
+	function formatHistoryDateLabel(localDate: string) {
+		const today = getLocalDateString(new Date());
+		const yesterday = getLocalDateString(new Date(Date.now() - 24 * 60 * 60 * 1000));
+
+		if (localDate === today) return 'Today';
+		if (localDate === yesterday) return 'Yesterday';
+
+		const date = new Date(`${localDate}T00:00:00`);
+		const year = date.getFullYear() === new Date().getFullYear() ? undefined : 'numeric';
+
+		return date.toLocaleDateString([], { month: 'short', day: 'numeric', year });
+	}
+
+	function getLocalDateString(date: Date) {
+		const year = date.getFullYear().toString().padStart(4, '0');
+		const month = (date.getMonth() + 1).toString().padStart(2, '0');
+		const day = date.getDate().toString().padStart(2, '0');
+
+		return `${year}-${month}-${day}`;
+	}
+
+	function isString(value: unknown): value is string {
+		return typeof value === 'string' && value.length > 0;
 	}
 
 	function getModeListItems(context: LauncherContext): LauncherItem[] {
@@ -3840,6 +4319,7 @@
 	function formatItemMeta(item: LauncherItem) {
 		if (item.pluginId === 'settings') return '';
 		if (item.pluginId === 'bang-data') return '';
+		if (item.pluginId === 'history') return '';
 
 		return [item.pluginId, item.rank ? `rank ${formatCount(item.rank)}` : undefined, item.score]
 			.filter(Boolean)

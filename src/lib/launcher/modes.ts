@@ -40,6 +40,14 @@ export const launcherModes = [
 		path: '/settings',
 		pluginIds: ['settings'],
 		keywords: ['preferences', 'configuration', 'options']
+	},
+	{
+		id: 'history',
+		label: 'History',
+		description: 'Find and rerun searches you executed through Whiz.',
+		path: '/history',
+		pluginIds: ['history'],
+		keywords: ['past searches', 'recent searches', 'search history', 'rerun']
 	}
 ] as const satisfies readonly LauncherMode[];
 

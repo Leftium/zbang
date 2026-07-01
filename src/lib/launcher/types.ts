@@ -71,13 +71,14 @@ export type LauncherPlugin = {
 	getGroups?: (context: LauncherContext) => LauncherGroup[];
 };
 
-export type LauncherModeId = 'everything' | 'bangs' | 'compromise' | 'search' | 'settings';
+export type LauncherModeId =
+	'everything' | 'bangs' | 'compromise' | 'search' | 'settings' | 'history';
 
 export type LauncherMode = {
 	id: LauncherModeId;
 	label: string;
 	description: string;
-	path: '/' | '/search' | '/bang' | '/nlp' | '/settings';
+	path: '/' | '/search' | '/bang' | '/nlp' | '/settings' | '/history';
 	pluginIds: readonly string[];
 	keywords: readonly string[];
 };

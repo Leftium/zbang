@@ -10,6 +10,12 @@
 		hasBangToken,
 		resolveBangExecution
 	} from '$lib/launcher/bang-resolver';
+	import {
+		createBangSearchHistoryEvent,
+		createPlainSearchHistoryEvent,
+		recordSearchHistoryEvent,
+		type SearchHistoryEvent
+	} from '$lib/search-history';
 	import { readStoredExecutionSettings } from '$lib/settings.svelte';
 	import { loadShippedBangCatalog } from '$lib/shipped-bang-catalog';
 
@@ -35,13 +41,21 @@
 				(await readExecutionSettings().catch(() => undefined)) ?? readStoredExecutionSettings();
 
 			if (!hasBangToken(query)) {
-				window.location.replace(
-					getSearchUrl(
-						executionSettings.searchProvider,
-						query,
-						executionSettings.customSearchTemplate
-					)
+				const targetUrl = getSearchUrl(
+					executionSettings.searchProvider,
+					query,
+					executionSettings.customSearchTemplate
 				);
+
+				await recordGoHistoryEvent(
+					createPlainSearchHistoryEvent({
+						source: 'omnibar',
+						rawQuery: query,
+						settings: executionSettings,
+						targetUrl
+					})
+				);
+				window.location.replace(targetUrl);
 				return;
 			}
 
@@ -52,6 +66,16 @@
 			const providerBangs = catalogResult.error ? [] : catalogResult.data.items;
 			const items = getBangExecutionItems(myBangs, providerBangs);
 			const result = resolveBangExecution(query, items, executionSettings);
+
+			await recordGoHistoryEvent(
+				createBangSearchHistoryEvent({
+					source: 'omnibar',
+					rawQuery: query,
+					settings: executionSettings,
+					composition: result.composition,
+					targetUrls: result.targetUrls
+				})
+			);
 
 			if (result.targetUrls.length <= 1) {
 				window.location.replace(result.targetUrl);
@@ -68,6 +92,14 @@
 			window.location.replace(result.targetUrl);
 		} catch (error) {
 			errorMessage = error instanceof Error ? error.message : String(error);
+		}
+	}
+
+	async function recordGoHistoryEvent(event: SearchHistoryEvent) {
+		try {
+			await recordSearchHistoryEvent(event);
+		} catch (error) {
+			console.warn('Failed to record search history', error);
 		}
 	}
 

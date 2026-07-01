@@ -7,6 +7,12 @@ import {
 	hasBangToken,
 	resolveBangExecution
 } from './lib/launcher/bang-resolver';
+import {
+	createBangSearchHistoryEvent,
+	createPlainSearchHistoryEvent,
+	recordSearchHistoryEvent,
+	type SearchHistoryEvent
+} from './lib/search-history';
 import { loadShippedBangCatalog } from './lib/shipped-bang-catalog';
 
 declare const self: ServiceWorkerGlobalScope;
@@ -173,14 +179,22 @@ async function handleGoRequest(request: Request, query: string): Promise<Respons
 		}
 
 		if (!hasBangToken(query)) {
-			return Response.redirect(
-				getSearchUrl(
-					executionSettings.searchProvider,
-					query,
-					executionSettings.customSearchTemplate
-				),
-				302
+			const targetUrl = getSearchUrl(
+				executionSettings.searchProvider,
+				query,
+				executionSettings.customSearchTemplate
 			);
+
+			await recordGoHistoryEvent(
+				createPlainSearchHistoryEvent({
+					source: 'omnibar',
+					rawQuery: query,
+					settings: executionSettings,
+					targetUrl
+				})
+			);
+
+			return Response.redirect(targetUrl, 302);
 		}
 
 		const [myBangs, catalogResult] = await Promise.all([
@@ -195,9 +209,27 @@ async function handleGoRequest(request: Request, query: string): Promise<Respons
 			return fetch(request);
 		}
 
+		await recordGoHistoryEvent(
+			createBangSearchHistoryEvent({
+				source: 'omnibar',
+				rawQuery: query,
+				settings: executionSettings,
+				composition: result.composition,
+				targetUrls: result.targetUrls
+			})
+		);
+
 		return Response.redirect(result.targetUrl, 302);
 	} catch (error) {
 		console.warn('Service worker failed to resolve /go request', error);
 		return fetch(request);
+	}
+}
+
+async function recordGoHistoryEvent(event: SearchHistoryEvent) {
+	try {
+		await recordSearchHistoryEvent(event);
+	} catch (error) {
+		console.warn('Service worker failed to record search history', error);
 	}
 }

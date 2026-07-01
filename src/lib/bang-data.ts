@@ -12,13 +12,15 @@ export {
 
 const DB_NAME: string = 'whiz';
 const LEGACY_DB_NAME: string = 'zbang';
-const DB_VERSION = 5;
+const DB_VERSION = 6;
 const OLD_SOURCE_STORE = 'bangSources';
 const OLD_CATALOG_STORE = 'bangCatalogs';
 const MY_BANG_STORE = 'myBangs';
 const MY_BANG_COLLECTION_KEY = 'items';
 const EXECUTION_SETTINGS_STORE = 'executionSettings';
 const EXECUTION_SETTINGS_KEY = 'current';
+const SEARCH_HISTORY_STORE = 'searchHistory';
+const HISTORY_SETTINGS_STORE = 'historySettings';
 let legacyMigration: Promise<void> | undefined;
 
 export type MyBangRecord = ZbangRecord & {
@@ -59,7 +61,7 @@ type ExecutionSettingsRecord = ExecutionSettings & {
 };
 
 export async function readMyBangs(): Promise<MyBangRecord[]> {
-	const db = await openBangDb();
+	const db = await openWhizDb();
 
 	try {
 		const collection = await getFromStore<MyBangCollection>(
@@ -114,7 +116,7 @@ function normalizeStoredBang(item: StoredMyBangRecord): MyBangRecord {
 }
 
 export async function writeMyBangs(items: MyBangRecord[]): Promise<void> {
-	const db = await openBangDb();
+	const db = await openWhizDb();
 
 	try {
 		await putInStore(db, MY_BANG_STORE, { id: MY_BANG_COLLECTION_KEY, items });
@@ -149,7 +151,7 @@ function normalizeOptionalStringArray(value: unknown) {
 }
 
 export async function readExecutionSettings(): Promise<ExecutionSettings | undefined> {
-	const db = await openBangDb();
+	const db = await openWhizDb();
 
 	try {
 		const storedSettings = await getFromStore<ExecutionSettingsRecord>(
@@ -164,7 +166,7 @@ export async function readExecutionSettings(): Promise<ExecutionSettings | undef
 }
 
 export async function writeExecutionSettings(settings: ExecutionSettings): Promise<void> {
-	const db = await openBangDb();
+	const db = await openWhizDb();
 
 	try {
 		await putInStore(db, EXECUTION_SETTINGS_STORE, {
@@ -176,7 +178,7 @@ export async function writeExecutionSettings(settings: ExecutionSettings): Promi
 	}
 }
 
-async function openBangDb(): Promise<IDBDatabase> {
+export async function openWhizDb(): Promise<IDBDatabase> {
 	const db = await openIndexedBangDb(DB_NAME);
 	legacyMigration ??= migrateLegacyBangDb(db).catch((error: unknown) => {
 		legacyMigration = undefined;
@@ -192,6 +194,7 @@ function openIndexedBangDb(name: string): Promise<IDBDatabase> {
 
 		request.onupgradeneeded = () => {
 			const db = request.result;
+			const transaction = request.transaction;
 
 			if (db.objectStoreNames.contains(OLD_SOURCE_STORE)) {
 				db.deleteObjectStore(OLD_SOURCE_STORE);
@@ -207,6 +210,20 @@ function openIndexedBangDb(name: string): Promise<IDBDatabase> {
 
 			if (!db.objectStoreNames.contains(EXECUTION_SETTINGS_STORE)) {
 				db.createObjectStore(EXECUTION_SETTINGS_STORE, { keyPath: 'id' });
+			}
+
+			if (!db.objectStoreNames.contains(SEARCH_HISTORY_STORE)) {
+				const store = db.createObjectStore(SEARCH_HISTORY_STORE, { keyPath: 'id' });
+
+				createSearchHistoryIndexes(store);
+			} else {
+				const store = transaction?.objectStore(SEARCH_HISTORY_STORE);
+
+				if (store) createSearchHistoryIndexes(store);
+			}
+
+			if (!db.objectStoreNames.contains(HISTORY_SETTINGS_STORE)) {
+				db.createObjectStore(HISTORY_SETTINGS_STORE, { keyPath: 'id' });
 			}
 		};
 
@@ -270,7 +287,21 @@ async function hasLegacyBangDb(): Promise<boolean> {
 	}
 }
 
-function getFromStore<T>(
+function createSearchHistoryIndexes(store: IDBObjectStore) {
+	if (!store.indexNames.contains('executedAt')) {
+		store.createIndex('executedAt', 'executedAt');
+	}
+
+	if (!store.indexNames.contains('localDate')) {
+		store.createIndex('localDate', 'localDate');
+	}
+
+	if (!store.indexNames.contains('normalizedQuery')) {
+		store.createIndex('normalizedQuery', 'normalizedQuery');
+	}
+}
+
+export function getFromStore<T>(
 	db: IDBDatabase,
 	storeName: string,
 	key: IDBValidKey
@@ -283,7 +314,16 @@ function getFromStore<T>(
 	});
 }
 
-function putInStore(db: IDBDatabase, storeName: string, value: unknown): Promise<void> {
+export function getAllFromStore<T>(db: IDBDatabase, storeName: string): Promise<T[]> {
+	return new Promise((resolve, reject) => {
+		const request = db.transaction(storeName, 'readonly').objectStore(storeName).getAll();
+
+		request.onsuccess = () => resolve(request.result as T[]);
+		request.onerror = () => reject(request.error ?? new Error(`Failed to read ${storeName}`));
+	});
+}
+
+export function putInStore(db: IDBDatabase, storeName: string, value: unknown): Promise<void> {
 	return new Promise((resolve, reject) => {
 		const transaction = db.transaction(storeName, 'readwrite');
 		const request = transaction.objectStore(storeName).put(value);
@@ -292,5 +332,21 @@ function putInStore(db: IDBDatabase, storeName: string, value: unknown): Promise
 		transaction.oncomplete = () => resolve();
 		transaction.onerror = () =>
 			reject(transaction.error ?? new Error(`Failed to write ${storeName}`));
+	});
+}
+
+export function deleteFromStore(
+	db: IDBDatabase,
+	storeName: string,
+	key: IDBValidKey
+): Promise<void> {
+	return new Promise((resolve, reject) => {
+		const transaction = db.transaction(storeName, 'readwrite');
+		const request = transaction.objectStore(storeName).delete(key);
+
+		request.onerror = () => reject(request.error ?? new Error(`Failed to delete ${storeName}`));
+		transaction.oncomplete = () => resolve();
+		transaction.onerror = () =>
+			reject(transaction.error ?? new Error(`Failed to delete ${storeName}`));
 	});
 }
