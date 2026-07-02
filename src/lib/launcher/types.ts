@@ -55,6 +55,7 @@ export type LauncherGroup = {
 	descriptionSegments?: BangHighlightSegment[];
 	items: LauncherItem[];
 	allItems?: LauncherItem[];
+	availableItemCount?: number;
 	actions?: readonly LauncherItemAction[];
 	collapsedItemLimit?: number;
 	matchedCount?: number;

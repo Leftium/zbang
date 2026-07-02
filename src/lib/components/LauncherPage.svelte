@@ -163,6 +163,8 @@
 	const historyGroupCollapsedLimit = 8;
 	const journalMatchThreshold = 0.32;
 	const journalSummaryCollapsedLimit = 5;
+	const launcherGroupItemLimitOptions = [5, 8, 20, 50] as const;
+	const countFormatter = new Intl.NumberFormat();
 	const bangFanoutAckTimeoutMs = 2500;
 	const tokenCounterUrl = 'https://hcodx.com/tools/gpt-4o-token-counter';
 	const tokenCounterMaxUrlLength = 6000;
@@ -439,6 +441,8 @@
 	let doubleKeypress = $state<string>();
 	let tripleKeypress = $state<string>();
 	let expandedLauncherGroups = $state<Record<string, boolean>>({});
+	let launcherGroupPageStarts = $state<Record<string, number>>({});
+	let launcherGroupItemLimitOverrides = $state<Record<string, number>>({});
 	let myBangs = $state<MyBangRecord[]>([]);
 	let searchHistoryEvents = $state<SearchHistoryEvent[]>([]);
 	let searchHistoryLoaded = $state(false);
@@ -457,6 +461,7 @@
 	let skipNextSettingsFilterReset = false;
 	let myBangsLoaded = false;
 	let activeSharedMyBangPayload = '';
+	let launcherGroupPagingResetKey = '';
 	let shortcutScrollFrame: number | undefined;
 	let shortcutScrollRequestId = 0;
 	const launcherTargetElements = new Map<string, HTMLElement>();
@@ -493,12 +498,20 @@
 	const bangPickerActive = $derived(Boolean(bangEntry));
 	const bangFilterInput = $derived(bangEntry ? `!${bangEntry.fragment}` : value);
 	const hasBangFilter = $derived(bangEntry ? Boolean(bangEntry.fragment.trim()) : hasValue);
-	const myBangResults = $derived(filterBangs(bangFilterInput, preparedMyBangs));
+	const myBangResults = $derived(
+		filterBangs(bangFilterInput, preparedMyBangs, {
+			limit: getBangFilterRequestedLimit('bangs.my')
+		})
+	);
 	const popularProviderBangResults = $derived(
-		filterBangs(bangFilterInput, preparedPopularProviderBangs)
+		filterBangs(bangFilterInput, preparedPopularProviderBangs, {
+			limit: getBangFilterRequestedLimit('bangs.popular')
+		})
 	);
 	const extendedProviderBangResults = $derived(
-		filterBangs(bangFilterInput, preparedExtendedProviderBangs)
+		filterBangs(bangFilterInput, preparedExtendedProviderBangs, {
+			limit: getBangFilterRequestedLimit('bangs.extended')
+		})
 	);
 	const launcherContext = $derived({
 		text: value.trim(),
@@ -613,6 +626,15 @@
 		if (!anchor) return;
 		if (allShortcutItemTargets.some((target) => target.id === anchor.targetId)) return;
 
+		itemShortcutAnchor = undefined;
+	});
+
+	$effect(() => {
+		const nextKey = getLauncherGroupPagingResetKey();
+		if (nextKey === launcherGroupPagingResetKey) return;
+
+		launcherGroupPagingResetKey = nextKey;
+		launcherGroupPageStarts = {};
 		itemShortcutAnchor = undefined;
 	});
 
@@ -2769,9 +2791,9 @@
 
 		const nextTarget =
 			event.key === 'PageUp'
-				? shortcutItemSlots[0]?.target
+				? getRenderedPageNavigationTarget('start')
 				: event.key === 'PageDown'
-					? shortcutItemSlots[shortcutItemSlots.length - 1]?.target
+					? getRenderedPageNavigationTarget('end')
 					: getAdjacentPrimaryNavigationTarget(event.key === 'ArrowUp' ? 'ArrowUp' : 'ArrowDown');
 
 		if (!nextTarget) return false;
@@ -2781,6 +2803,20 @@
 		targetShortcutInitiatorGateOpen = true;
 
 		return true;
+	}
+
+	function getRenderedPageNavigationTarget(edge: 'start' | 'end') {
+		const group = activeLauncherGroup;
+		if (group) {
+			const items = getVisibleGroupItems(group);
+			const item = edge === 'start' ? items[0] : items[items.length - 1];
+			const target = item ? createSelectableItemTarget(item, group.id)[0] : undefined;
+			if (target) return target;
+		}
+
+		return edge === 'start'
+			? shortcutItemSlots[0]?.target
+			: shortcutItemSlots[shortcutItemSlots.length - 1]?.target;
 	}
 
 	function getAdjacentPrimaryNavigationTarget(key: 'ArrowUp' | 'ArrowDown') {
@@ -3009,7 +3045,7 @@
 		slots = shortcutItemSlots
 	) {
 		updateItemShortcutAnchorForSelection(target, label, slots);
-		focusLauncherTarget(target);
+		focusLauncherTarget(target, { shortcutLabel: label });
 	}
 
 	function focusLauncherGroupShortcutTarget(
@@ -3066,7 +3102,10 @@
 		}
 	}
 
-	function focusLauncherTarget(target: PrimaryLauncherTarget) {
+	function focusLauncherTarget(
+		target: PrimaryLauncherTarget,
+		options: { shortcutLabel?: ItemShortcutLabel } = {}
+	) {
 		selectedPrimaryItemId = target.id;
 
 		if (target.kind === 'group') {
@@ -3075,7 +3114,48 @@
 			activeLauncherGroupId = target.groupId;
 		}
 
+		shiftLauncherGroupPageToEdgeTarget(target, options.shortcutLabel);
 		scheduleShortcutViewportScroll(target);
+	}
+
+	function shiftLauncherGroupPageToEdgeTarget(
+		target: PrimaryLauncherTarget,
+		shortcutLabel?: ItemShortcutLabel
+	) {
+		if (target.kind !== 'item' || !target.groupId) return false;
+
+		const group = visibleLauncherGroups.find(({ id }) => id === target.groupId);
+		if (!group) return false;
+
+		const sourceItems = getGroupSourceItems(group);
+		const limit = getGroupItemLimit(group, sourceItems);
+		const availableCount = getGroupAvailableItemCount(group, sourceItems);
+		const visibleItems = getVisibleGroupItems(group);
+		const visibleIndex = visibleItems.findIndex((item) => item.id === target.id);
+		if (limit <= 0 || visibleIndex === -1 || visibleItems.length === 0) return false;
+
+		const start = getGroupPageStart(group, sourceItems);
+		const absoluteIndex = start + visibleIndex;
+		let nextStart: number | undefined;
+		let edge: ItemShortcutAnchor['edge'] | undefined;
+
+		if (visibleIndex === 0 && absoluteIndex > 0) {
+			nextStart = absoluteIndex - limit + 1;
+			edge = 'top';
+		} else if (visibleIndex === visibleItems.length - 1 && absoluteIndex < availableCount - 1) {
+			nextStart = absoluteIndex;
+			edge = 'bottom';
+		}
+
+		if (nextStart === undefined || !edge) return false;
+
+		const clampedStart = getClampedGroupPageStart(group.id, availableCount, limit, nextStart);
+		if (clampedStart === start) return false;
+
+		launcherGroupPageStarts = { ...launcherGroupPageStarts, [group.id]: clampedStart };
+		if (shortcutLabel) itemShortcutAnchor = { targetId: target.id, label: shortcutLabel, edge };
+
+		return true;
 	}
 
 	function getActiveLauncherGroup() {
@@ -3190,7 +3270,12 @@
 					label: getGroupPrimaryActionLabel(group),
 					run: () => activateLauncherGroup(group.id)
 				},
-				...(group.actions ?? []).map((action) => ({ ...action, kind: 'action' as const }))
+				...(group.actions ?? []).map((action) => ({ ...action, kind: 'action' as const })),
+				...getGroupPagingActions(group).map((action) => ({ ...action, kind: 'action' as const })),
+				...getGroupItemLimitActions(group).map((action) => ({
+					...action,
+					kind: 'action' as const
+				}))
 			]
 		};
 	}
@@ -3232,7 +3317,7 @@
 			return group.items.length > 0;
 		}
 
-		return (group.allItems ?? group.items).length > getGroupCollapsedLimit(group);
+		return getGroupSourceItems(group).length > getGroupCollapsedLimit(group);
 	}
 
 	function getGroupCollapsedLimit(group: LauncherGroup) {
@@ -3250,21 +3335,99 @@
 		return group.items.length > 0 || isBangGroup || isMatchedSettingsGroup;
 	}
 
-	function getBangGroupCollapsedLimit(items: LauncherItem[], groupId: string) {
-		return mode.id === 'bangs' ? (launcherGroupItemLimits[groupId] ?? 8) : items.length;
+	function getLauncherGroupPagingResetKey() {
+		return [
+			mode.id,
+			bangPickerActive ? 'bang-picker' : 'normal',
+			bangFilterInput,
+			value.trim(),
+			settings.bangProvider,
+			loadedPopularBangProvider ?? '',
+			loadedExtendedBangProvider ?? '',
+			popularProviderBangCount,
+			extendedProviderBangCount,
+			myBangs.length,
+			searchHistoryLoaded ? searchHistoryEvents.length : 'history-loading',
+			journalEntriesLoaded ? journalEntries.length : 'journal-loading'
+		].join('\u0000');
+	}
+
+	function getBangFilterRequestedLimit(groupId: string) {
+		const limit = getBangGroupCollapsedLimit(groupId, Number.POSITIVE_INFINITY);
+		const start = Math.max(0, launcherGroupPageStarts[groupId] ?? 0);
+
+		return start + limit;
+	}
+
+	function getBangGroupCollapsedLimit(groupId: string, itemCount: number) {
+		const override = launcherGroupItemLimitOverrides[groupId];
+		if (override !== undefined) return override;
+
+		if (mode.id === 'bangs') return launcherGroupItemLimits[groupId] ?? 8;
+
+		return Math.min(itemCount, 20);
+	}
+
+	function getBangGroupRequestedItemCount(groupId: string, itemCount: number) {
+		const limit = getBangGroupCollapsedLimit(groupId, itemCount);
+		const start = getClampedGroupPageStart(groupId, itemCount, limit);
+
+		return Math.min(itemCount, start + limit);
+	}
+
+	function getGroupSourceItems(group: LauncherGroup) {
+		if (group.pluginId === 'bangs' && !hasBangFilter && !isLauncherGroupExpanded(group)) return [];
+		if (group.pluginId !== 'bangs' && isLauncherGroupExpanded(group)) {
+			return group.allItems ?? group.items;
+		}
+
+		return group.items;
+	}
+
+	function getGroupItemLimit(group: LauncherGroup, sourceItems = getGroupSourceItems(group)) {
+		const override = launcherGroupItemLimitOverrides[group.id];
+		if (override !== undefined) return override;
+		if (group.pluginId !== 'bangs' && isLauncherGroupExpanded(group)) return sourceItems.length;
+
+		return getGroupCollapsedLimit(group);
+	}
+
+	function getGroupAvailableItemCount(
+		group: LauncherGroup,
+		sourceItems = getGroupSourceItems(group)
+	) {
+		return group.availableItemCount ?? sourceItems.length;
+	}
+
+	function getClampedGroupPageStart(
+		groupId: string,
+		itemCount: number,
+		itemLimit: number,
+		requestedStart = launcherGroupPageStarts[groupId] ?? 0
+	) {
+		if (!Number.isFinite(itemCount) || itemLimit <= 0) return 0;
+
+		const maxStart = Math.max(0, itemCount - itemLimit);
+
+		return Math.max(0, Math.min(maxStart, Math.floor(requestedStart)));
+	}
+
+	function getGroupPageStart(group: LauncherGroup, sourceItems = getGroupSourceItems(group)) {
+		return getClampedGroupPageStart(
+			group.id,
+			getGroupAvailableItemCount(group, sourceItems),
+			getGroupItemLimit(group, sourceItems)
+		);
 	}
 
 	function getVisibleGroupItems(group: LauncherGroup) {
-		if (group.pluginId === 'bangs') {
-			if (hasBangFilter) return group.items;
-			if (!isLauncherGroupExpanded(group)) return [];
+		const sourceItems = getGroupSourceItems(group);
+		const limit = getGroupItemLimit(group, sourceItems);
+		if (limit <= 0) return [];
 
-			return group.items.slice(0, getGroupCollapsedLimit(group));
-		}
+		const start = getGroupPageStart(group, sourceItems);
 
-		if (isLauncherGroupExpanded(group)) return group.allItems ?? group.items;
-
-		return group.items.slice(0, getGroupCollapsedLimit(group));
+		return sourceItems.slice(start, start + limit);
 	}
 
 	function getRenderedGroupItems(group: LauncherGroup) {
@@ -3308,13 +3471,120 @@
 		return false;
 	}
 
-	function getGroupMobileCountLabel(group: LauncherGroup) {
-		if (group.matchedCount !== undefined && group.totalCount !== undefined) {
-			return `${group.matchedCount}/${group.totalCount}`;
+	function getGroupPagingActions(group: LauncherGroup): LauncherItemAction[] {
+		const sourceItems = getGroupSourceItems(group);
+		const count = getGroupAvailableItemCount(group, sourceItems);
+		const limit = getGroupItemLimit(group, sourceItems);
+		const start = getGroupPageStart(group, sourceItems);
+		const actions: LauncherItemAction[] = [];
+
+		if (limit > 0 && start > 0) {
+			actions.push({
+				id: `${group.id}.page.previous`,
+				label: 'Previous page',
+				title: `Show previous ${formatCount(limit)} ${limit === 1 ? 'item' : 'items'}`,
+				run: () => pageLauncherGroup(group, -1)
+			});
 		}
 
-		if (group.matchedCount !== undefined) return `${group.matchedCount} matched`;
-		if (group.totalCount !== undefined) return `${group.totalCount} total`;
+		if (limit > 0 && start + limit < count) {
+			actions.push({
+				id: `${group.id}.page.next`,
+				label: 'Next page',
+				title: `Show next ${formatCount(limit)} ${limit === 1 ? 'item' : 'items'}`,
+				run: () => pageLauncherGroup(group, 1)
+			});
+		}
+
+		return actions;
+	}
+
+	function getGroupItemLimitActions(group: LauncherGroup): LauncherItemAction[] {
+		const sourceItems = getGroupSourceItems(group);
+		const count = getGroupAvailableItemCount(group, sourceItems);
+		const currentLimit = getGroupItemLimit(group, sourceItems);
+		if (count <= 0) return [];
+
+		return launcherGroupItemLimitOptions
+			.filter((limit) => limit !== currentLimit)
+			.map((limit) => ({
+				id: `${group.id}.limit.${limit}`,
+				label: `Show ${formatCount(limit)}`,
+				title: `Show ${formatCount(limit)} items per page`,
+				run: () => setLauncherGroupItemLimit(group, limit)
+			}));
+	}
+
+	function pageLauncherGroup(group: LauncherGroup, direction: 1 | -1) {
+		const sourceItems = getGroupSourceItems(group);
+		const limit = getGroupItemLimit(group, sourceItems);
+		const start = getGroupPageStart(group, sourceItems);
+
+		setLauncherGroupPageStart(group, start + direction * limit);
+	}
+
+	function setLauncherGroupItemLimit(group: LauncherGroup, limit: number) {
+		launcherGroupItemLimitOverrides = { ...launcherGroupItemLimitOverrides, [group.id]: limit };
+		setLauncherGroupPageStart(group, getGroupPageStart(group));
+	}
+
+	function setLauncherGroupPageStart(group: LauncherGroup, requestedStart: number) {
+		const sourceItems = getGroupSourceItems(group);
+		const limit = getGroupItemLimit(group, sourceItems);
+		const count = getGroupAvailableItemCount(group, sourceItems);
+		const start = getClampedGroupPageStart(group.id, count, limit, requestedStart);
+
+		launcherGroupPageStarts = { ...launcherGroupPageStarts, [group.id]: start };
+		itemShortcutAnchor = undefined;
+	}
+
+	function getGroupVisibleRange(group: LauncherGroup) {
+		const visibleItems = getVisibleGroupItems(group);
+		if (!visibleItems.length) return undefined;
+
+		const sourceItems = getGroupSourceItems(group);
+		const count = getGroupAvailableItemCount(group, sourceItems);
+		const start = getGroupPageStart(group, sourceItems);
+
+		return {
+			start,
+			end: Math.min(count, start + visibleItems.length),
+			count
+		};
+	}
+
+	function getGroupRangeLabel(group: LauncherGroup) {
+		const range = getGroupVisibleRange(group);
+		if (!range || (range.start === 0 && range.end >= range.count)) return '';
+
+		return `${formatCount(range.start + 1)}-${formatCount(range.end)}`;
+	}
+
+	function getGroupRangeTitle(group: LauncherGroup) {
+		const range = getGroupVisibleRange(group);
+		if (!range) return '';
+
+		return `Showing ${formatCount(range.start + 1)}-${formatCount(range.end)} of ${formatCount(range.count)}`;
+	}
+
+	function getGroupCountLabel(group: LauncherGroup) {
+		if (group.matchedCount !== undefined && group.totalCount !== undefined) {
+			return `${formatCount(group.matchedCount)}/${formatCount(group.totalCount)}`;
+		}
+
+		if (group.matchedCount !== undefined) return `${formatCount(group.matchedCount)} matched`;
+		if (group.totalCount !== undefined) return `${formatCount(group.totalCount)} total`;
+
+		return '';
+	}
+
+	function getGroupCountTitle(group: LauncherGroup) {
+		if (group.matchedCount !== undefined && group.totalCount !== undefined) {
+			return `${formatCount(group.matchedCount)} matched of ${formatCount(group.totalCount)} total`;
+		}
+
+		if (group.matchedCount !== undefined) return `${formatCount(group.matchedCount)} matched`;
+		if (group.totalCount !== undefined) return `${formatCount(group.totalCount)} total`;
 
 		return '';
 	}
@@ -3359,16 +3629,44 @@
 				getGroups() {
 					if (!bangPickerActive && mode.id !== 'bangs') return [];
 
+					const myActionCount = mode.id === 'bangs' && !hasBangFilter ? 1 : 0;
+					const myAvailableItemCount = hasBangFilter
+						? myBangResults.total
+						: myBangs.length + myActionCount;
+					const myRequestedItemCount = getBangGroupRequestedItemCount(
+						'bangs.my',
+						myAvailableItemCount
+					);
 					const myItems = hasBangFilter
 						? createBangLauncherItems(myBangResults.items, 'my')
-						: createBangLauncherItemsFromBangs(myBangs, 'my');
+						: createBangLauncherItemsFromBangs(
+								myBangs.slice(0, Math.max(0, myRequestedItemCount - myActionCount)),
+								'my'
+							);
 					const visibleMyItems =
 						mode.id === 'bangs' && !hasBangFilter
 							? [createNewCustomBangLauncherItem(), ...myItems]
 							: myItems;
-					const popularItems = createBangLauncherItems(popularProviderBangResults.items, 'popular');
+					const popularAvailableItemCount = hasBangFilter
+						? popularProviderBangResults.total
+						: popularProviderBangCount;
+					const popularItems = hasBangFilter
+						? createBangLauncherItems(popularProviderBangResults.items, 'popular')
+						: createBangLauncherItemsFromBangs(
+								popularProviderBangs.slice(
+									0,
+									getBangGroupRequestedItemCount('bangs.popular', popularAvailableItemCount)
+								),
+								'popular'
+							);
 					const extendedItems = getExtendedBangLauncherItems();
 					const providerLabel = bangProviderLabels[settings.bangProvider];
+					const extendedAvailableItemCount =
+						loadedExtendedBangProvider === settings.bangProvider
+							? hasBangFilter
+								? extendedProviderBangResults.total
+								: extendedProviderBangCount
+							: extendedItems.length;
 
 					return [
 						{
@@ -3377,7 +3675,8 @@
 							title: 'My bangs',
 							description: 'Your custom bangs. Used first.',
 							items: visibleMyItems,
-							collapsedItemLimit: getBangGroupCollapsedLimit(visibleMyItems, 'bangs.my'),
+							availableItemCount: myAvailableItemCount,
+							collapsedItemLimit: getBangGroupCollapsedLimit('bangs.my', myAvailableItemCount),
 							matchedCount: myBangResults.total,
 							totalCount: myBangs.length
 						},
@@ -3387,8 +3686,14 @@
 							title: `Popular ${providerLabel} bangs`,
 							description: 'Default built-in bangs. Used as fallback.',
 							items: popularItems,
-							collapsedItemLimit: getBangGroupCollapsedLimit(popularItems, 'bangs.popular'),
-							matchedCount: popularProviderBangResults.total,
+							availableItemCount: popularAvailableItemCount,
+							collapsedItemLimit: getBangGroupCollapsedLimit(
+								'bangs.popular',
+								popularAvailableItemCount
+							),
+							matchedCount: hasBangFilter
+								? popularProviderBangResults.total
+								: popularProviderBangCount,
 							totalCount: popularProviderBangCount
 						},
 						{
@@ -3397,10 +3702,16 @@
 							title: `Extended ${providerLabel} bangs`,
 							description: 'Long-tail built-in bangs. Loaded on demand.',
 							items: extendedItems,
-							collapsedItemLimit: getBangGroupCollapsedLimit(extendedItems, 'bangs.extended'),
+							availableItemCount: extendedAvailableItemCount,
+							collapsedItemLimit: getBangGroupCollapsedLimit(
+								'bangs.extended',
+								extendedAvailableItemCount
+							),
 							matchedCount:
 								loadedExtendedBangProvider === settings.bangProvider
-									? extendedProviderBangResults.total
+									? hasBangFilter
+										? extendedProviderBangResults.total
+										: extendedProviderBangCount
 									: undefined,
 							totalCount:
 								loadedExtendedBangProvider === settings.bangProvider
@@ -4643,7 +4954,15 @@
 		const providerLabel = bangProviderLabels[provider];
 
 		if (loadedExtendedBangProvider === provider) {
-			return createBangLauncherItems(extendedProviderBangResults.items, 'extended');
+			return hasBangFilter
+				? createBangLauncherItems(extendedProviderBangResults.items, 'extended')
+				: createBangLauncherItemsFromBangs(
+						extendedProviderBangs.slice(
+							0,
+							getBangGroupRequestedItemCount('bangs.extended', extendedProviderBangCount)
+						),
+						'extended'
+					);
 		}
 
 		if (loadingExtendedBangProvider === provider) {
@@ -5116,7 +5435,7 @@
 	}
 
 	function formatCount(count: number) {
-		return new Intl.NumberFormat().format(count);
+		return countFormatter.format(count);
 	}
 
 	function getBangDescriptionSegments({ code }: BangFilterResult['highlights']) {
@@ -5263,8 +5582,7 @@
 	group: LauncherGroup,
 	shortcutLabel: string | undefined,
 	focusedTarget: PrimaryLauncherTarget | undefined,
-	stagedMenu: StagedActionMenu | undefined,
-	mobileCountLabel: string
+	stagedMenu: StagedActionMenu | undefined
 )}
 	{@const groupTarget = stagedMenu?.target ?? focusedTarget ?? createSelectableGroupTarget(group)}
 	{@const rowActive = Boolean(focusedTarget || stagedMenu)}
@@ -5272,6 +5590,10 @@
 	{@const primaryActionEffective = isGroupPrimaryActionEffective(group)}
 	{@const primaryActionArmed =
 		rowActive && primaryActionEffective && !stagedMenu && Boolean(primaryAction)}
+	{@const countLabel = getGroupCountLabel(group)}
+	{@const countTitle = getGroupCountTitle(group)}
+	{@const rangeLabel = getGroupRangeLabel(group)}
+	{@const rangeTitle = getGroupRangeTitle(group)}
 	<div
 		class:has-staged-menu={Boolean(stagedMenu)}
 		class:primary={primaryLauncherTarget?.kind === 'group' && primaryLauncherTarget.id === group.id}
@@ -5292,6 +5614,12 @@
 							<span class="group-title-value"
 								>{@render highlightedText(group.titleValueSegments, group.titleValue)}</span
 							>{/if}
+						{#if countLabel}
+							<span class="group-count-badge" title={countTitle}>{countLabel}</span>
+						{/if}
+						{#if rangeLabel}
+							<span class="group-range-badge" title={rangeTitle}>{rangeLabel}</span>
+						{/if}
 					</span>
 				</span>
 				<span
@@ -5304,9 +5632,6 @@
 							group.description
 						)}{/if}
 				</span>
-				{#if rowActive && mobileCountLabel}
-					<span class="group-mobile-count">{mobileCountLabel}</span>
-				{/if}
 			</span>
 			<span class="compact-action-shortcuts">
 				{#if primaryActionArmed}<span class="shortcut-label enter-shortcut-label">↵</span>{/if}
@@ -5481,14 +5806,13 @@
 
 {#snippet launcherGroup(group: LauncherGroup)}
 	{@const renderedItems = getRenderedGroupItems(group)}
-	{@const mobileCountLabel = getGroupMobileCountLabel(group)}
 	{@const shortcutLabel = getShortcutLabel(group.id)}
 	{@const isFocusedGroup =
 		primaryLauncherTarget?.kind === 'group' && primaryLauncherTarget.id === group.id}
 	{@const focusedTarget = isFocusedGroup ? primaryLauncherTarget : undefined}
 	{@const stagedMenu = stagedActionMenu?.target.id === group.id ? stagedActionMenu : undefined}
 	<section class="launcher-group" aria-labelledby={`${group.id}-heading`}>
-		{@render compactGroupHeader(group, shortcutLabel, focusedTarget, stagedMenu, mobileCountLabel)}
+		{@render compactGroupHeader(group, shortcutLabel, focusedTarget, stagedMenu)}
 
 		<div class="launcher-group-items">
 			{#each renderedItems as item (item.id)}
@@ -5840,11 +6164,28 @@
 	}
 
 	.group-title-line {
-		display: block;
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+		min-width: 0;
 	}
 
-	.group-mobile-count {
-		display: none;
+	.group-count-badge,
+	.group-range-badge {
+		flex: 0 0 auto;
+		display: inline-flex;
+		align-items: center;
+		min-height: 1rem;
+		padding-inline: 0.35rem;
+		color: color-mix(in srgb, var(--nc-tx-2) 86%, transparent);
+		background: color-mix(in srgb, var(--nc-surface-2) 72%, transparent);
+		border: 1px solid color-mix(in srgb, var(--nc-border) 76%, transparent);
+		border-radius: calc(var(--nc-radius) * 0.55);
+		font-size: 0.68rem;
+		font-weight: 700;
+		line-height: 1;
+		letter-spacing: normal;
+		text-transform: none;
 	}
 
 	.bang-composition {
@@ -6444,12 +6785,8 @@
 			display: none;
 		}
 
-		.group-mobile-count {
-			display: block;
-			overflow: hidden;
-			color: var(--nc-tx-2);
-			text-overflow: ellipsis;
-			white-space: nowrap;
+		.group-range-badge {
+			display: none;
 		}
 
 		.launcher-item .meta {

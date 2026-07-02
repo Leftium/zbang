@@ -29,6 +29,10 @@ export type BangFilterResults = {
 	total: number;
 };
 
+export type BangFilterOptions = {
+	limit?: number;
+};
+
 export type PreparedZbangRecord = Omit<ZbangRecord, 'name' | 'code' | 'tags' | 'urls'> &
 	Partial<Omit<MyBangRecord, keyof ZbangRecord>> & {
 		name: Fuzzysort.Prepared;
@@ -65,18 +69,20 @@ export function prepareBangs(items: ZbangRecord[]): PreparedZbangRecord[] {
 
 export function filterBangs(
 	input: string,
-	preparedItems: PreparedZbangRecord[]
+	preparedItems: PreparedZbangRecord[],
+	options: BangFilterOptions = {}
 ): BangFilterResults {
 	const line = normalizeBangSuffixes(getLastLine(input));
 	const query = getBangQuery(line);
 	const usedBangs = getUsedBangs(line);
 	const keys = getFuzzysortKeys(line);
 	const isUrlQuery = line.includes('//');
+	const limit = Math.max(0, options.limit ?? FUZZYSORT_LIMIT);
 
 	const results = fuzzysort.go(query, preparedItems, {
 		all: true,
 		keys,
-		limit: FUZZYSORT_LIMIT + usedBangs.length,
+		limit: limit + usedBangs.length,
 		threshold: FUZZYSORT_THRESHOLD
 	});
 
@@ -95,7 +101,7 @@ export function filterBangs(
 						}
 					];
 		})
-		.slice(0, FUZZYSORT_LIMIT);
+		.slice(0, limit);
 
 	return {
 		items,
